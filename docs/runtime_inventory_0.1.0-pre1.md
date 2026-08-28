@@ -1,0 +1,239 @@
+# Runtime inventory for Neurocast Tools 0.1.0-pre1
+
+> Source snapshot: 2026-08-28. Lua inventory is pinned to `auphonic-mt` commit
+> `6a277016a15a25148300120c317fbcc195f640ec`. Binary observations describe the
+> named local candidates inspected on this date; re-verify their hashes and
+> architecture immediately before assembly. This is planning, not an
+> installable package or a current backend-contract review.
+
+## Inventory result
+
+The exact Lua closure contains **23 files**: two entrypoints and 21 support
+modules. There are exactly two planned Main actions. No file in this closure
+uses `dofile(...)` or `loadfile(...)`, and no runtime source is loaded through a
+module-directory glob.
+
+The planned payload also contains three Windows command-line binary inputs,
+three mutually exclusive native-extension variants, and four applicable
+third-party notice inputs. That is 33 unique planned payload entries: 2 Main
+actions, 25 support files, 3 binaries, and 3 extensions.
+
+## Literal entrypoint imports
+
+`scr/elevenlabs_tool.lua` uses `pcall(require, ...)` for these literal project
+modules:
+
+```text
+modules-neurocast.elevenlabs_tool_languages
+modules-neurocast.json
+modules-neurocast.Util
+modules-neurocast.Files
+modules-neurocast.elevenlabs_voice_catalog
+modules-neurocast.elevenlabs_shared_voices_api
+modules-neurocast.elevenlabs_voice_library_state
+modules-neurocast.elevenlabs_voice_library_taxonomy
+modules-neurocast.elevenlabs_voice_library_ui_state
+modules-neurocast.elevenlabs_voice_preview
+modules-neurocast.elevenlabs_api_via_neurocast
+modules-neurocast.Curl
+modules-neurocast.neurocast_auth
+modules-neurocast.Jobs
+modules-neurocast.Cleanup
+modules-neurocast.prompts
+modules-neurocast.Telemetry
+```
+
+It separately calls `require("imgui")("0.10")` through a protected function
+after switching `package.path` to ReaImGui's built-in Lua path.
+
+`scr/elevenlabs_manager_tool.lua` passes these literal names to its local
+`require_module(name)` helper, which calls `pcall(require, name)` and aborts on
+failure:
+
+```text
+modules-neurocast.Util
+modules-neurocast.Files
+modules-neurocast.Curl
+modules-neurocast.Jobs
+modules-neurocast.neurocast_auth
+modules-neurocast.reaper_manager_elevenlabs_api
+modules-neurocast.Telemetry
+modules-neurocast.Utf8Tools
+```
+
+It also calls `require("imgui")("0.10")` through a protected function.
+
+## Nested module dependencies
+
+All literal module-to-module edges in the closure are:
+
+| Module | Literal dependencies |
+| --- | --- |
+| `Cleanup.lua` | `modules-neurocast.Util`, `modules-neurocast.Files` |
+| `Curl.lua` | `modules-neurocast.Util`, `modules-neurocast.Files`, `modules-neurocast.Cleanup`, `modules-neurocast.json` |
+| `elevenlabs_api_via_neurocast.lua` | `modules-neurocast.Util` via `pcall(require, ...)`, hard-required after validation |
+| `elevenlabs_shared_voices_api.lua` | `modules-neurocast.json` |
+| `elevenlabs_voice_catalog.lua` | `modules-neurocast.elevenlabs_voice_library_taxonomy` |
+| `Files.lua` | `modules-neurocast.Util` |
+| `Jobs.lua` | `modules-neurocast.Util`, `modules-neurocast.Curl`, `modules-neurocast.Cleanup` |
+| `neurocast_auth.lua` | `modules-neurocast.json`, `modules-neurocast.base64_encode_decode`, `modules-neurocast.Curl`, `modules-neurocast.Util`; each uses `pcall(require, ...)` but is hard-required after validation |
+| `reaper_manager_elevenlabs_api.lua` | `modules-neurocast.Util`, `modules-neurocast.json` |
+| `Telemetry.lua` | `modules-neurocast.json`, `modules-neurocast.Util`, `modules-neurocast.Files`, `modules-neurocast.Curl` |
+| `Utf8Tools.lua` | `modules-neurocast.Utf8SimpleLowerData` |
+| `Util.lua` | lazy `pcall(require, "modules-neurocast.json")` for table stringification; optional at that call site |
+
+The remaining closure modules have no literal project-module imports:
+`base64_encode_decode.lua`, `elevenlabs_tool_languages.lua`,
+`elevenlabs_voice_library_state.lua`,
+`elevenlabs_voice_library_taxonomy.lua`,
+`elevenlabs_voice_library_ui_state.lua`, `elevenlabs_voice_preview.lua`,
+`json.lua`, `prompts.lua`, and `Utf8SimpleLowerData.lua`.
+
+## Included file map
+
+`all` below means `win64`, `darwin64`, and `darwin-arm64`. Destinations are
+logical paths relative to the REAPER resource/package layout, not local-machine
+paths.
+
+| Source or logical input | Intended destination | Role | Platform | Purpose |
+| --- | --- | --- | --- | --- |
+| `auphonic-mt:scr/elevenlabs_tool.lua` | `Neurocast_Tools/elevenlabs_tool.lua` | Main action | all | Main Studio Neurocast ElevenLabs workflow |
+| `auphonic-mt:scr/elevenlabs_manager_tool.lua` | `Neurocast_Tools/elevenlabs_manager_tool.lua` | Main action | all | Studio Neurocast user/account assignment manager |
+| `auphonic-mt:scr/modules-neurocast/base64_encode_decode.lua` | `Neurocast_Tools/modules-neurocast/base64_encode_decode.lua` | support file | all | JWT URL-safe base64 decoding for auth |
+| `auphonic-mt:scr/modules-neurocast/Cleanup.lua` | `Neurocast_Tools/modules-neurocast/Cleanup.lua` | support file | all | Deferred cleanup queue |
+| `auphonic-mt:scr/modules-neurocast/Curl.lua` | `Neurocast_Tools/modules-neurocast/Curl.lua` | support file | all | Asynchronous curl transport |
+| `auphonic-mt:scr/modules-neurocast/elevenlabs_api_via_neurocast.lua` | `Neurocast_Tools/modules-neurocast/elevenlabs_api_via_neurocast.lua` | support file | all | Studio backend request builders |
+| `auphonic-mt:scr/modules-neurocast/elevenlabs_shared_voices_api.lua` | `Neurocast_Tools/modules-neurocast/elevenlabs_shared_voices_api.lua` | support file | all | Voice Library query/response normalization |
+| `auphonic-mt:scr/modules-neurocast/elevenlabs_tool_languages.lua` | `Neurocast_Tools/modules-neurocast/elevenlabs_tool_languages.lua` | support file | all | Generated runtime localization table |
+| `auphonic-mt:scr/modules-neurocast/elevenlabs_voice_catalog.lua` | `Neurocast_Tools/modules-neurocast/elevenlabs_voice_catalog.lua` | support file | all | Account voice catalog normalization/filtering |
+| `auphonic-mt:scr/modules-neurocast/elevenlabs_voice_library_state.lua` | `Neurocast_Tools/modules-neurocast/elevenlabs_voice_library_state.lua` | support file | all | Voice Library page/cache state |
+| `auphonic-mt:scr/modules-neurocast/elevenlabs_voice_library_taxonomy.lua` | `Neurocast_Tools/modules-neurocast/elevenlabs_voice_library_taxonomy.lua` | support file | all | Voice Library filter taxonomy |
+| `auphonic-mt:scr/modules-neurocast/elevenlabs_voice_library_ui_state.lua` | `Neurocast_Tools/modules-neurocast/elevenlabs_voice_library_ui_state.lua` | support file | all | Voice Library UI preference/state helpers |
+| `auphonic-mt:scr/modules-neurocast/elevenlabs_voice_preview.lua` | `Neurocast_Tools/modules-neurocast/elevenlabs_voice_preview.lua` | support file | all | Download/cache/native-preview controller |
+| `auphonic-mt:scr/modules-neurocast/Files.lua` | `Neurocast_Tools/modules-neurocast/Files.lua` | support file | all | Safe file/path/project-media operations |
+| `auphonic-mt:scr/modules-neurocast/Jobs.lua` | `Neurocast_Tools/modules-neurocast/Jobs.lua` | support file | all | Job scheduling, progress, and retry state |
+| `auphonic-mt:scr/modules-neurocast/json.lua` | `Neurocast_Tools/modules-neurocast/json.lua` | support file | all | JSON encode/decode |
+| `auphonic-mt:scr/modules-neurocast/neurocast_auth.lua` | `Neurocast_Tools/modules-neurocast/neurocast_auth.lua` | support file | all | Studio login, refresh, JWT timing, and persistence |
+| `auphonic-mt:scr/modules-neurocast/prompts.lua` | `Neurocast_Tools/modules-neurocast/prompts.lua` | support file | all | Maintained OpenAI rewrite prompt text |
+| `auphonic-mt:scr/modules-neurocast/reaper_manager_elevenlabs_api.lua` | `Neurocast_Tools/modules-neurocast/reaper_manager_elevenlabs_api.lua` | support file | all | Manager route/request/response helpers |
+| `auphonic-mt:scr/modules-neurocast/Telemetry.lua` | `Neurocast_Tools/modules-neurocast/Telemetry.lua` | support file | all | Identity validation, event queues, and flushes |
+| `auphonic-mt:scr/modules-neurocast/Utf8SimpleLowerData.lua` | `Neurocast_Tools/modules-neurocast/Utf8SimpleLowerData.lua` | support file | all | Generated Unicode simple-lowercase data |
+| `auphonic-mt:scr/modules-neurocast/Utf8Tools.lua` | `Neurocast_Tools/modules-neurocast/Utf8Tools.lua` | support file | all | UTF-8 case-insensitive manager sorting/search helpers |
+| `auphonic-mt:scr/modules-neurocast/Util.lua` | `Neurocast_Tools/modules-neurocast/Util.lua` | support file | all | Shared platform, path, ExtState, and diagnostics utilities |
+| `windows-curl-8.13.0-x64` | `Neurocast_Tools/bin/win/curl.exe` | binary | `win64` | Pinned Windows curl transport |
+| `windows-7zip-26.00-x64-console` | `Neurocast_Tools/bin/win/7z.exe` | binary | `win64` | Deliberate shared archive-tool input for upcoming parity |
+| `windows-7zip-26.00-x64-library` | `Neurocast_Tools/bin/win/7z.dll` | binary | `win64` | Required matching runtime library for `7z.exe` |
+| `reaper-cyr-essentials-windows-x64-build-30766075451` | `UserPlugins/reaper_cyr_essentials.dll` | extension | `win64` | Native preview API |
+| `reaper-cyr-essentials-macos-x86_64-build-30765082450` | `UserPlugins/reaper_cyr_essentials.dylib` | extension | `darwin64` | Thin x86_64 native preview API |
+| `reaper-cyr-essentials-macos-arm64-build-30765082450` | `UserPlugins/reaper_cyr_essentials.dylib` | extension | `darwin-arm64` | Thin ARM64 native preview API |
+| `reapack-reference:Slava-Testing/licenses/curl-COPYING.license` | `Neurocast_Tools/licenses/curl-COPYING.txt` | support file | `win64` | curl license notice |
+| `reapack-reference:Slava-Testing/licenses/zlib-LICENSE.license` | `Neurocast_Tools/licenses/zlib-LICENSE.txt` | support file | `win64` | Notice for curl's reported zlib component |
+| `reapack-reference:Slava-Testing/licenses/7-Zip-License.license` | `Neurocast_Tools/licenses/7-Zip-License.txt` | support file | `win64` | 7-Zip LGPL/BSD/unRAR notices |
+| `reapack-reference:Slava-Testing/licenses/Unicode-License.license` | `Neurocast_Tools/licenses/Unicode-License.txt` | support file | all | Unicode data license for `Utf8SimpleLowerData.lua` |
+
+## Optional and external runtime inputs
+
+- `modules-neurocast.elevenlabs_tool_languages` is the only optional
+  entrypoint project import. Failure keeps the source-text English UI. It is
+  still included so the supported generated localization is present.
+- `Util.lua` treats its lazy JSON import as optional only for diagnostic table
+  stringification. JSON is independently hard-required elsewhere in both
+  entrypoint closures.
+- ReaImGui's built-in `imgui` Lua module is externally required. Both
+  entrypoints abort cleanly if it cannot load; ReaImGui is not shipped here.
+- On Windows, both entrypoints prefer the bundled curl only when its version
+  output contains `curl 8.13.0 (Windows)` and otherwise fall back to `curl` on
+  `PATH`. On macOS they use `/usr/bin/curl`.
+- `reaper_cyr_essentials` is optional for general startup but required for the
+  unified native preview channel. The package deliberately plans to install
+  the matching variant so preview is self-contained after qualification.
+- `CirilicaTools_telemetry_identity.json` is a required per-installation file
+  in the REAPER resource-path root. It contains installation identity material
+  and must be provisioned separately, never shipped in the public package.
+
+## Runtime file reads and generated artifacts
+
+There are no runtime `dofile` or `loadfile` references. The maintained inputs
+above are loaded only through Lua `require`.
+
+Runtime reads/writes that are not maintained package inputs include:
+
+- REAPER's `reaper-kb.ini`, read to detect already registered generated
+  actions;
+- `CirilicaTools_telemetry_identity.json`, read from the REAPER resource root;
+- `CirilicaTools_telemetry_settings.json`, a local telemetry-policy/settings
+  file;
+- `CirilicaTools_telemetry/`, containing runtime JSONL queues, diagnostics,
+  failed-event retention, and temporary curl payload/header/meta/output files;
+- `Neurocast_Tools_tmp/` below the effective project recording path for curl
+  job state, upload staging, and preview caches such as
+  `voice_library_previews/*.download.part`;
+- network result audio written directly to the effective project recording
+  path before REAPER import;
+- REAPER ExtState values for UI state and obfuscated Studio refresh tokens;
+- `Neurocast_Tools__<label>__<action-id>.lua` helper action wrappers generated
+  beside the entrypoint and registered through `AddRemoveReaScript`. The four
+  current action IDs are `fast_STS_flow_action_for_hotkey_trigger`,
+  `fast_TTS_flow_action_for_hotkey_trigger`,
+  `audio_tags_insert_selected_notes_action_for_hotkey_trigger`, and
+  `audio_tags_remove_brackets_selected_notes_action_for_hotkey_trigger`;
+  localized labels can change the filename's `<label>` segment.
+
+Generated action wrappers, telemetry/runtime files, downloads, partials,
+caches, logs, and ExtState data must never be copied back into the maintained
+package inventory.
+
+## Inspected binary candidates
+
+The selected Windows inputs were present with identical hashes in existing
+`auphonic-mt` release material and in the read-only ReaPack reference
+repository. No broader provenance research was performed.
+
+| Logical input | Observed version / format | Architecture | Size (bytes) | SHA-256 |
+| --- | --- | --- | ---: | --- |
+| `windows-curl-8.13.0-x64` | curl/libcurl 8.13.0, Schannel, zlib 1.3.1, WinIDN; PE machine `0x8664` | x86_64 | 711,736 | `3345339164cf384eff527b6c3160fea8d849a4231ec6ca80513e3a739e505168` |
+| `windows-7zip-26.00-x64-console` | 7-Zip 26.00; PE machine `0x8664` | x86_64 | 575,488 | `4a41aa37786c7eae7451e81c2c97458d5d1ae5a3a8154637a0d5f77adc05e619` |
+| `windows-7zip-26.00-x64-library` | 7-Zip 26.00; PE machine `0x8664` | x86_64 | 1,908,736 | `bbd705e3b58ca7677c1e9e67473f166a6712da034dcb567d571fbb67507a443f` |
+
+The native files below are the actual inspected files under the local native
+repository's `build` outputs. They were not rebuilt, signed, notarized, or
+copied. The named evidence records prove build/binary checks only, not REAPER
+runtime behavior on macOS.
+
+| Logical input | Actual filename | Format / architecture | Size (bytes) | SHA-256 | Recorded build evidence |
+| --- | --- | --- | ---: | --- | --- |
+| `reaper-cyr-essentials-windows-x64-build-30766075451` | `reaper_cyr_essentials.dll` | PE x86_64 | 14,336 | `1df283154fa3183c4437132b621ca9bda908f4a52dbca9051bee5c07410c1527` | run `30766075451`, source `ae71dd8260631bbd490f0206afbabdc8e447f135` |
+| `reaper-cyr-essentials-macos-x86_64-build-30765082450` | `reaper_cyr_essentials.dylib` | thin Mach-O x86_64 | 17,856 | `adac7be285d1bb7ee30fcc85f2241d8f797eb152165a9d1d20cf66810e0eb9fa` | run `30765082450`, source `3566e976853bcc5073acd5910c6df7ff6fd45ce9` |
+| `reaper-cyr-essentials-macos-arm64-build-30765082450` | `reaper_cyr_essentials.dylib` | thin Mach-O ARM64 | 51,064 | `541c511053b19685f81aa3470a82891c728a8d1ee7597800d51382fb3d9ee72d` | run `30765082450`, source `3566e976853bcc5073acd5910c6df7ff6fd45ce9` |
+
+An additional local Windows build at `build/reaper_cyr_essentials.dll` had the
+same size but a different SHA-256
+(`01b4657b94e6a704b104275151a7a5d6571c25ff9508c4aab3e856ff10fa89db`).
+It is not selected because the architecture-labelled candidate matches the
+committed successful build-evidence record.
+
+## Explicit exclusions
+
+The package excludes all Direct API `*_dev_main.lua` entrypoints and the entire
+`scr/modules/` tree; unused `modules-neurocast` files; every test and test
+fixture; FakeReaper; the Network Fault Lab; repository/development/manual
+documentation; the manual localization source
+`elevenlabs_tool_languages_manual_edit.lua`; Python helpers; local release
+outputs other than the three selected logical Windows candidates; source maps;
+build systems; caches; logs; telemetry identities; credentials, tokens, `.env`
+files, cookies, private notes; generated action wrappers; generated runtime
+JSON/JSONL/header/meta/body/partial/audio files; package assembly outputs; and
+all Linux payloads.
+
+## Genuinely unresolved items
+
+- The final ReaPack-relative mapping needed to install the metapackage's Lua
+  directory and architecture-scoped native binary into `UserPlugins` must be
+  proven by the implementation milestone's clean-install tests.
+- macOS binaries are unsigned and unnotarized, and no macOS REAPER runtime
+  record exists. Signing/notarization/quarantine policy and native preview must
+  be resolved by the macOS qualification gate.
+- The public distribution repository does not yet contain a project-license
+  file or final consolidated third-party-notices document. The implementation
+  milestone must settle and add the required public notices before payload
+  assembly.

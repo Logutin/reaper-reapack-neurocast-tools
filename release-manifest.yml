@@ -1,0 +1,198 @@
+status: draft
+schema_version: 1
+
+package:
+  display_name: Neurocast Tools
+  slug: Neurocast_Tools
+  version: 0.1.0-pre1
+  architecture: one_metapackage
+  installable: false
+
+source:
+  repository: https://github.com/Logutin/auphonic-mt
+  commit: 6a277016a15a25148300120c317fbcc195f640ec
+
+platforms:
+  - win64
+  - darwin64
+  - darwin-arm64
+
+external_prerequisites:
+  - name: ReaImGui
+    reason: Provides the required imgui Lua module and REAPER ImGui API.
+  - name: per-installation telemetry identity
+    logical_path: CirilicaTools_telemetry_identity.json
+    shipped: false
+    reason: Required local identity material must never be distributed publicly.
+
+entrypoints:
+  - scr/elevenlabs_tool.lua
+  - scr/elevenlabs_manager_tool.lua
+
+payload:
+  - source: auphonic-mt:scr/elevenlabs_tool.lua
+    destination: Neurocast_Tools/elevenlabs_tool.lua
+    platforms: [win64, darwin64, darwin-arm64]
+    role: main_action
+  - source: auphonic-mt:scr/elevenlabs_manager_tool.lua
+    destination: Neurocast_Tools/elevenlabs_manager_tool.lua
+    platforms: [win64, darwin64, darwin-arm64]
+    role: main_action
+  - source: auphonic-mt:scr/modules-neurocast/base64_encode_decode.lua
+    destination: Neurocast_Tools/modules-neurocast/base64_encode_decode.lua
+    platforms: [win64, darwin64, darwin-arm64]
+    role: support_file
+  - source: auphonic-mt:scr/modules-neurocast/Cleanup.lua
+    destination: Neurocast_Tools/modules-neurocast/Cleanup.lua
+    platforms: [win64, darwin64, darwin-arm64]
+    role: support_file
+  - source: auphonic-mt:scr/modules-neurocast/Curl.lua
+    destination: Neurocast_Tools/modules-neurocast/Curl.lua
+    platforms: [win64, darwin64, darwin-arm64]
+    role: support_file
+  - source: auphonic-mt:scr/modules-neurocast/elevenlabs_api_via_neurocast.lua
+    destination: Neurocast_Tools/modules-neurocast/elevenlabs_api_via_neurocast.lua
+    platforms: [win64, darwin64, darwin-arm64]
+    role: support_file
+  - source: auphonic-mt:scr/modules-neurocast/elevenlabs_shared_voices_api.lua
+    destination: Neurocast_Tools/modules-neurocast/elevenlabs_shared_voices_api.lua
+    platforms: [win64, darwin64, darwin-arm64]
+    role: support_file
+  - source: auphonic-mt:scr/modules-neurocast/elevenlabs_tool_languages.lua
+    destination: Neurocast_Tools/modules-neurocast/elevenlabs_tool_languages.lua
+    platforms: [win64, darwin64, darwin-arm64]
+    role: support_file
+  - source: auphonic-mt:scr/modules-neurocast/elevenlabs_voice_catalog.lua
+    destination: Neurocast_Tools/modules-neurocast/elevenlabs_voice_catalog.lua
+    platforms: [win64, darwin64, darwin-arm64]
+    role: support_file
+  - source: auphonic-mt:scr/modules-neurocast/elevenlabs_voice_library_state.lua
+    destination: Neurocast_Tools/modules-neurocast/elevenlabs_voice_library_state.lua
+    platforms: [win64, darwin64, darwin-arm64]
+    role: support_file
+  - source: auphonic-mt:scr/modules-neurocast/elevenlabs_voice_library_taxonomy.lua
+    destination: Neurocast_Tools/modules-neurocast/elevenlabs_voice_library_taxonomy.lua
+    platforms: [win64, darwin64, darwin-arm64]
+    role: support_file
+  - source: auphonic-mt:scr/modules-neurocast/elevenlabs_voice_library_ui_state.lua
+    destination: Neurocast_Tools/modules-neurocast/elevenlabs_voice_library_ui_state.lua
+    platforms: [win64, darwin64, darwin-arm64]
+    role: support_file
+  - source: auphonic-mt:scr/modules-neurocast/elevenlabs_voice_preview.lua
+    destination: Neurocast_Tools/modules-neurocast/elevenlabs_voice_preview.lua
+    platforms: [win64, darwin64, darwin-arm64]
+    role: support_file
+  - source: auphonic-mt:scr/modules-neurocast/Files.lua
+    destination: Neurocast_Tools/modules-neurocast/Files.lua
+    platforms: [win64, darwin64, darwin-arm64]
+    role: support_file
+  - source: auphonic-mt:scr/modules-neurocast/Jobs.lua
+    destination: Neurocast_Tools/modules-neurocast/Jobs.lua
+    platforms: [win64, darwin64, darwin-arm64]
+    role: support_file
+  - source: auphonic-mt:scr/modules-neurocast/json.lua
+    destination: Neurocast_Tools/modules-neurocast/json.lua
+    platforms: [win64, darwin64, darwin-arm64]
+    role: support_file
+  - source: auphonic-mt:scr/modules-neurocast/neurocast_auth.lua
+    destination: Neurocast_Tools/modules-neurocast/neurocast_auth.lua
+    platforms: [win64, darwin64, darwin-arm64]
+    role: support_file
+  - source: auphonic-mt:scr/modules-neurocast/prompts.lua
+    destination: Neurocast_Tools/modules-neurocast/prompts.lua
+    platforms: [win64, darwin64, darwin-arm64]
+    role: support_file
+  - source: auphonic-mt:scr/modules-neurocast/reaper_manager_elevenlabs_api.lua
+    destination: Neurocast_Tools/modules-neurocast/reaper_manager_elevenlabs_api.lua
+    platforms: [win64, darwin64, darwin-arm64]
+    role: support_file
+  - source: auphonic-mt:scr/modules-neurocast/Telemetry.lua
+    destination: Neurocast_Tools/modules-neurocast/Telemetry.lua
+    platforms: [win64, darwin64, darwin-arm64]
+    role: support_file
+  - source: auphonic-mt:scr/modules-neurocast/Utf8SimpleLowerData.lua
+    destination: Neurocast_Tools/modules-neurocast/Utf8SimpleLowerData.lua
+    platforms: [win64, darwin64, darwin-arm64]
+    role: support_file
+  - source: auphonic-mt:scr/modules-neurocast/Utf8Tools.lua
+    destination: Neurocast_Tools/modules-neurocast/Utf8Tools.lua
+    platforms: [win64, darwin64, darwin-arm64]
+    role: support_file
+  - source: auphonic-mt:scr/modules-neurocast/Util.lua
+    destination: Neurocast_Tools/modules-neurocast/Util.lua
+    platforms: [win64, darwin64, darwin-arm64]
+    role: support_file
+  - source: windows-curl-8.13.0-x64
+    destination: Neurocast_Tools/bin/win/curl.exe
+    platforms: [win64]
+    role: binary
+    size_bytes: 711736
+    sha256: 3345339164cf384eff527b6c3160fea8d849a4231ec6ca80513e3a739e505168
+  - source: windows-7zip-26.00-x64-console
+    destination: Neurocast_Tools/bin/win/7z.exe
+    platforms: [win64]
+    role: binary
+    size_bytes: 575488
+    sha256: 4a41aa37786c7eae7451e81c2c97458d5d1ae5a3a8154637a0d5f77adc05e619
+  - source: windows-7zip-26.00-x64-library
+    destination: Neurocast_Tools/bin/win/7z.dll
+    platforms: [win64]
+    role: binary
+    size_bytes: 1908736
+    sha256: bbd705e3b58ca7677c1e9e67473f166a6712da034dcb567d571fbb67507a443f
+  - source: reaper-cyr-essentials-windows-x64-build-30766075451
+    destination: UserPlugins/reaper_cyr_essentials.dll
+    platforms: [win64]
+    role: extension
+    architecture: x86_64
+    size_bytes: 14336
+    sha256: 1df283154fa3183c4437132b621ca9bda908f4a52dbca9051bee5c07410c1527
+  - source: reaper-cyr-essentials-macos-x86_64-build-30765082450
+    destination: UserPlugins/reaper_cyr_essentials.dylib
+    platforms: [darwin64]
+    role: extension
+    architecture: x86_64
+    size_bytes: 17856
+    sha256: adac7be285d1bb7ee30fcc85f2241d8f797eb152165a9d1d20cf66810e0eb9fa
+  - source: reaper-cyr-essentials-macos-arm64-build-30765082450
+    destination: UserPlugins/reaper_cyr_essentials.dylib
+    platforms: [darwin-arm64]
+    role: extension
+    architecture: arm64
+    size_bytes: 51064
+    sha256: 541c511053b19685f81aa3470a82891c728a8d1ee7597800d51382fb3d9ee72d
+  - source: reapack-reference:Slava-Testing/licenses/curl-COPYING.license
+    destination: Neurocast_Tools/licenses/curl-COPYING.txt
+    platforms: [win64]
+    role: support_file
+  - source: reapack-reference:Slava-Testing/licenses/zlib-LICENSE.license
+    destination: Neurocast_Tools/licenses/zlib-LICENSE.txt
+    platforms: [win64]
+    role: support_file
+  - source: reapack-reference:Slava-Testing/licenses/7-Zip-License.license
+    destination: Neurocast_Tools/licenses/7-Zip-License.txt
+    platforms: [win64]
+    role: support_file
+  - source: reapack-reference:Slava-Testing/licenses/Unicode-License.license
+    destination: Neurocast_Tools/licenses/Unicode-License.txt
+    platforms: [win64, darwin64, darwin-arm64]
+    role: support_file
+
+exclusions:
+  - direct_api_entrypoints
+  - scr/modules
+  - unused_modules_neurocast_files
+  - tests_and_fixtures
+  - FakeReaper
+  - Network_Fault_Lab
+  - development_documentation
+  - manual_localization_source
+  - python_helpers
+  - caches
+  - logs
+  - secrets_credentials_tokens_and_private_notes
+  - telemetry_identity_files
+  - generated_action_wrappers
+  - generated_runtime_artifacts
+  - package_assembly_outputs
+  - linux_payloads
