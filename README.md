@@ -11,10 +11,12 @@ extension source and build evidence are owned by
 [Logutin/reaper_cyr_essentials](https://github.com/Logutin/reaper_cyr_essentials).
 This repository will contain only the ReaPack distribution surface.
 
-The planned architecture is one self-contained metapackage with two initial
-Main actions: `elevenlabs_tool.lua` and `elevenlabs_manager_tool.lua`. The
-target matrix is Windows x64, macOS x86_64, and macOS ARM64. ReaImGui remains
-an external prerequisite.
+The planned architecture is one self-contained metapackage with exactly six
+Main actions: the full `elevenlabs_tool.lua` and
+`elevenlabs_manager_tool.lua` entrypoints plus four fixed maintained actions in
+`actions-neurocast/` for fast STS, fast TTS, audio-tag insertion, and
+audio-tag bracket removal. The target matrix is Windows x64, macOS x86_64,
+and macOS ARM64. ReaImGui remains an external prerequisite.
 
 **Current status:** planning and inventory only. No installable package,
 package metadata, or ReaPack index has been assembled or published yet.

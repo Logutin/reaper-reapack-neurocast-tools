@@ -1,24 +1,56 @@
 # Runtime inventory for Neurocast Tools 0.1.0-pre1
 
 > Source snapshot: 2026-08-28. Lua inventory is pinned to `auphonic-mt` commit
-> `6a277016a15a25148300120c317fbcc195f640ec`. Binary observations describe the
+> `238097e631e0cbf6e9c687dab09184649864fc6a`. Binary observations describe the
 > named local candidates inspected on this date; re-verify their hashes and
 > architecture immediately before assembly. This is planning, not an
 > installable package or a current backend-contract review.
 
 ## Inventory result
 
-The exact Lua closure contains **23 files**: two entrypoints and 21 support
-modules. There are exactly two planned Main actions. No file in this closure
-uses `dofile(...)` or `loadfile(...)`, and no runtime source is loaded through a
-module-directory glob.
+The exact Lua inventory contains **27 files**: six Main actions and 21 support
+modules. The two full tool Main actions are module-loading entrypoints. The four
+fixed maintained wrapper Main actions are dependency-free action roots. No file
+in this inventory uses `dofile(...)` or `loadfile(...)`, and no runtime source
+is loaded through a module-directory glob.
 
 The planned payload also contains three Windows command-line binary inputs,
 three mutually exclusive native-extension variants, and four applicable
-third-party notice inputs. That is 33 unique planned payload entries: 2 Main
-actions, 25 support files, 3 binaries, and 3 extensions.
+third-party notice inputs. That is **37 unique planned payload entries**: six
+Main actions, 25 support files (the 21 Lua modules plus four notice files),
+three binaries, and three mutually exclusive extension variants.
 
-## Literal entrypoint imports
+The manifest-derived applicable totals are:
+
+| Platform | Applicable entries | Main actions | Support files | Windows binaries | Extension |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `win64` | 35 | 6 | 25 | 3 | 1 |
+| `darwin64` | 29 | 6 | 22 | 0 | 1 |
+| `darwin-arm64` | 29 | 6 | 22 | 0 | 1 |
+
+The macOS support count is the 21 Lua support modules plus the platform-shared
+Unicode notice. The three Windows-specific notices bring the Windows support
+count to 25.
+
+## Fixed maintained wrapper action roots
+
+The approved source contains these four fixed, maintained one-line actions.
+Each calls `reaper.SetExtState` in section `nc_dDeSm_Acr33`, writes a fresh
+`reaper.time_precise()` timestamp without persistence, and has no module
+dependencies:
+
+| Source | Exact ExtState action ID |
+| --- | --- |
+| `scr/actions-neurocast/action_neurocast_tools_fast_sts_action.lua` | `fast_STS_flow_action_for_hotkey_trigger` |
+| `scr/actions-neurocast/action_neurocast_tools_fast_tts_action.lua` | `fast_TTS_flow_action_for_hotkey_trigger` |
+| `scr/actions-neurocast/action_neurocast_tools_audio_tags_insert_action.lua` | `audio_tags_insert_selected_notes_action_for_hotkey_trigger` |
+| `scr/actions-neurocast/action_neurocast_tools_audio_tags_remove_brackets_action.lua` | `audio_tags_remove_brackets_selected_notes_action_for_hotkey_trigger` |
+
+They remain in `actions-neurocast/` because the main tool resolves those exact
+fixed relative paths. They are Main actions, not support files, and are not
+copied into this repository during this planning milestone.
+
+## Literal imports of the two full tool entrypoints
 
 `scr/elevenlabs_tool.lua` uses `pcall(require, ...)` for these literal project
 modules:
@@ -99,6 +131,10 @@ paths.
 | --- | --- | --- | --- | --- |
 | `auphonic-mt:scr/elevenlabs_tool.lua` | `Neurocast_Tools/elevenlabs_tool.lua` | Main action | all | Main Studio Neurocast ElevenLabs workflow |
 | `auphonic-mt:scr/elevenlabs_manager_tool.lua` | `Neurocast_Tools/elevenlabs_manager_tool.lua` | Main action | all | Studio Neurocast user/account assignment manager |
+| `auphonic-mt:scr/actions-neurocast/action_neurocast_tools_fast_sts_action.lua` | `Neurocast_Tools/actions-neurocast/action_neurocast_tools_fast_sts_action.lua` | Main action | all | Fixed ExtState trigger for fast speech-to-speech |
+| `auphonic-mt:scr/actions-neurocast/action_neurocast_tools_fast_tts_action.lua` | `Neurocast_Tools/actions-neurocast/action_neurocast_tools_fast_tts_action.lua` | Main action | all | Fixed ExtState trigger for fast text-to-speech |
+| `auphonic-mt:scr/actions-neurocast/action_neurocast_tools_audio_tags_insert_action.lua` | `Neurocast_Tools/actions-neurocast/action_neurocast_tools_audio_tags_insert_action.lua` | Main action | all | Fixed ExtState trigger for selected-note audio-tag insertion |
+| `auphonic-mt:scr/actions-neurocast/action_neurocast_tools_audio_tags_remove_brackets_action.lua` | `Neurocast_Tools/actions-neurocast/action_neurocast_tools_audio_tags_remove_brackets_action.lua` | Main action | all | Fixed ExtState trigger for selected-note bracket removal |
 | `auphonic-mt:scr/modules-neurocast/base64_encode_decode.lua` | `Neurocast_Tools/modules-neurocast/base64_encode_decode.lua` | support file | all | JWT URL-safe base64 decoding for auth |
 | `auphonic-mt:scr/modules-neurocast/Cleanup.lua` | `Neurocast_Tools/modules-neurocast/Cleanup.lua` | support file | all | Deferred cleanup queue |
 | `auphonic-mt:scr/modules-neurocast/Curl.lua` | `Neurocast_Tools/modules-neurocast/Curl.lua` | support file | all | Asynchronous curl transport |
@@ -138,12 +174,13 @@ paths.
   still included so the supported generated localization is present.
 - `Util.lua` treats its lazy JSON import as optional only for diagnostic table
   stringification. JSON is independently hard-required elsewhere in both
-  entrypoint closures.
+  full-tool entrypoint closures.
 - ReaImGui's built-in `imgui` Lua module is externally required. Both
-  entrypoints abort cleanly if it cannot load; ReaImGui is not shipped here.
-- On Windows, both entrypoints prefer the bundled curl only when its version
-  output contains `curl 8.13.0 (Windows)` and otherwise fall back to `curl` on
-  `PATH`. On macOS they use `/usr/bin/curl`.
+  full-tool entrypoints abort cleanly if it cannot load; ReaImGui is not
+  shipped here.
+- On Windows, both full-tool entrypoints prefer the bundled curl only when its
+  version output contains `curl 8.13.0 (Windows)` and otherwise fall back to
+  `curl` on `PATH`. On macOS they use `/usr/bin/curl`.
 - `reaper_cyr_essentials` is optional for general startup but required for the
   unified native preview channel. The package deliberately plans to install
   the matching variant so preview is self-contained after qualification.
@@ -158,8 +195,9 @@ above are loaded only through Lua `require`.
 
 Runtime reads/writes that are not maintained package inputs include:
 
-- REAPER's `reaper-kb.ini`, read to detect already registered generated
-  actions;
+- REAPER's `reaper-kb.ini`, read to check whether each fixed maintained wrapper
+  action is already registered before the existing file is registered through
+  `AddRemoveReaScript`;
 - `CirilicaTools_telemetry_identity.json`, read from the REAPER resource root;
 - `CirilicaTools_telemetry_settings.json`, a local telemetry-policy/settings
   file;
@@ -171,17 +209,26 @@ Runtime reads/writes that are not maintained package inputs include:
 - network result audio written directly to the effective project recording
   path before REAPER import;
 - REAPER ExtState values for UI state and obfuscated Studio refresh tokens;
-- `Neurocast_Tools__<label>__<action-id>.lua` helper action wrappers generated
-  beside the entrypoint and registered through `AddRemoveReaScript`. The four
-  current action IDs are `fast_STS_flow_action_for_hotkey_trigger`,
-  `fast_TTS_flow_action_for_hotkey_trigger`,
-  `audio_tags_insert_selected_notes_action_for_hotkey_trigger`, and
-  `audio_tags_remove_brackets_selected_notes_action_for_hotkey_trigger`;
-  localized labels can change the filename's `<label>` segment.
+- fixed maintained wrapper action timestamps written to REAPER ExtState under
+  the four exact action IDs listed above.
 
-Generated action wrappers, telemetry/runtime files, downloads, partials,
-caches, logs, and ExtState data must never be copied back into the maintained
-package inventory.
+Former Neurocast-generated files matching `Neurocast_Tools__*.lua` are legacy
+migration artifacts, not maintained package inputs. Existing tester installs
+must inventory those files and their registrations, identify only the four
+legacy Neurocast actions bound to the established IDs, record hotkeys,
+deliberately unregister and remove the obsolete Neurocast registrations and
+files, install or update the package, and then verify exactly-once registration,
+hotkeys, and exact trigger behavior for each fixed package-owned wrapper. The
+two full tool actions must also be verified. The separate Direct API
+runtime-generated wrapper workflow and its files must be preserved. Current
+runtime code must not automatically delete, rewrite, migrate, or synthesize
+these legacy files.
+
+Legacy Neurocast-generated wrappers, Direct API runtime-generated wrappers,
+telemetry/runtime files, downloads, partials, caches, logs, and ExtState data
+must never be copied back into the maintained package inventory. This exclusion
+does not apply to the four fixed maintained wrapper Main actions under
+`scr/actions-neurocast/action_neurocast_tools_*.lua`.
 
 ## Inspected binary candidates
 
@@ -199,6 +246,11 @@ The native files below are the actual inspected files under the local native
 repository's `build` outputs. They were not rebuilt, signed, notarized, or
 copied. The named evidence records prove build/binary checks only, not REAPER
 runtime behavior on macOS.
+
+The selected macOS jobs in the cited shared workflow run succeeded, although
+the aggregate result of that workflow run is failure. This planning snapshot
+preserves those selected job artifacts and does not reinterpret the aggregate
+run as successful.
 
 | Logical input | Actual filename | Format / architecture | Size (bytes) | SHA-256 | Recorded build evidence |
 | --- | --- | --- | ---: | --- | --- |
@@ -221,9 +273,12 @@ documentation; the manual localization source
 `elevenlabs_tool_languages_manual_edit.lua`; Python helpers; local release
 outputs other than the three selected logical Windows candidates; source maps;
 build systems; caches; logs; telemetry identities; credentials, tokens, `.env`
-files, cookies, private notes; generated action wrappers; generated runtime
-JSON/JSONL/header/meta/body/partial/audio files; package assembly outputs; and
-all Linux payloads.
+files, cookies, private notes; legacy Neurocast-generated
+`Neurocast_Tools__*.lua` wrappers; Direct API runtime-generated wrappers;
+generated runtime JSON/JSONL/header/meta/body/partial/audio files; package
+assembly outputs; and all Linux payloads. The four fixed maintained wrapper
+Main actions under `scr/actions-neurocast/action_neurocast_tools_*.lua` are
+explicitly included and are not covered by these exclusions.
 
 ## Genuinely unresolved items
 

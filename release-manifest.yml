@@ -10,7 +10,7 @@ package:
 
 source:
   repository: https://github.com/Logutin/auphonic-mt
-  commit: 6a277016a15a25148300120c317fbcc195f640ec
+  commit: 238097e631e0cbf6e9c687dab09184649864fc6a
 
 platforms:
   - win64
@@ -28,6 +28,10 @@ external_prerequisites:
 entrypoints:
   - scr/elevenlabs_tool.lua
   - scr/elevenlabs_manager_tool.lua
+  - scr/actions-neurocast/action_neurocast_tools_fast_sts_action.lua
+  - scr/actions-neurocast/action_neurocast_tools_fast_tts_action.lua
+  - scr/actions-neurocast/action_neurocast_tools_audio_tags_insert_action.lua
+  - scr/actions-neurocast/action_neurocast_tools_audio_tags_remove_brackets_action.lua
 
 payload:
   - source: auphonic-mt:scr/elevenlabs_tool.lua
@@ -36,6 +40,22 @@ payload:
     role: main_action
   - source: auphonic-mt:scr/elevenlabs_manager_tool.lua
     destination: Neurocast_Tools/elevenlabs_manager_tool.lua
+    platforms: [win64, darwin64, darwin-arm64]
+    role: main_action
+  - source: auphonic-mt:scr/actions-neurocast/action_neurocast_tools_fast_sts_action.lua
+    destination: Neurocast_Tools/actions-neurocast/action_neurocast_tools_fast_sts_action.lua
+    platforms: [win64, darwin64, darwin-arm64]
+    role: main_action
+  - source: auphonic-mt:scr/actions-neurocast/action_neurocast_tools_fast_tts_action.lua
+    destination: Neurocast_Tools/actions-neurocast/action_neurocast_tools_fast_tts_action.lua
+    platforms: [win64, darwin64, darwin-arm64]
+    role: main_action
+  - source: auphonic-mt:scr/actions-neurocast/action_neurocast_tools_audio_tags_insert_action.lua
+    destination: Neurocast_Tools/actions-neurocast/action_neurocast_tools_audio_tags_insert_action.lua
+    platforms: [win64, darwin64, darwin-arm64]
+    role: main_action
+  - source: auphonic-mt:scr/actions-neurocast/action_neurocast_tools_audio_tags_remove_brackets_action.lua
+    destination: Neurocast_Tools/actions-neurocast/action_neurocast_tools_audio_tags_remove_brackets_action.lua
     platforms: [win64, darwin64, darwin-arm64]
     role: main_action
   - source: auphonic-mt:scr/modules-neurocast/base64_encode_decode.lua
@@ -192,7 +212,8 @@ exclusions:
   - logs
   - secrets_credentials_tokens_and_private_notes
   - telemetry_identity_files
-  - generated_action_wrappers
+  - legacy_neurocast_generated_wrappers_matching_Neurocast_Tools__star_dot_lua
+  - direct_api_runtime_generated_wrappers
   - generated_runtime_artifacts
   - package_assembly_outputs
   - linux_payloads
