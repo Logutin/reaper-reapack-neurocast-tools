@@ -190,8 +190,10 @@ paths.
 
 ## Runtime file reads and generated artifacts
 
-There are no runtime `dofile` or `loadfile` references. The maintained inputs
-above are loaded only through Lua `require`.
+There are no runtime `dofile` or `loadfile` references. REAPER executes the six
+Main actions directly; the two full-tool actions load their 21-module support
+closure through Lua `require`, while the four fixed wrapper actions have no
+module dependencies.
 
 Runtime reads/writes that are not maintained package inputs include:
 
