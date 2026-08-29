@@ -6,7 +6,8 @@
 -- @about
 --   Self-contained Neurocast-backed REAPER tools for Windows x64, macOS x86_64, and macOS ARM64.
 --   ReaImGui is an external prerequisite and is not bundled.
---   This assembled candidate is unqualified and unpublished.
+--   Windows x64 is qualified for limited internal use; macOS x86_64 and ARM64 remain unqualified.
+--   This is not a broadly qualified public production release.
 -- @link https://github.com/Logutin/reaper-reapack-neurocast-tools
 -- @provides
 --   [win64 main] elevenlabs_tool.lua
