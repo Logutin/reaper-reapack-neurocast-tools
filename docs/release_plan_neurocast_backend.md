@@ -2,8 +2,10 @@
 
 > Source snapshot: 2026-08-29, based on `auphonic-mt` commit
 > `238097e631e0cbf6e9c687dab09184649864fc6a`. The package source tree is
-> assembled but unqualified and unpublished. This document is not a live
-> backend contract; recheck source and release inputs before future work.
+> assembled and its Windows x64 local qualification passed on 2026-08-29;
+> macOS remains unqualified and the package remains unpublished. This document
+> is not a live backend contract; recheck source and release inputs before
+> future work.
 
 ## Scope and ownership
 
@@ -139,6 +141,14 @@ ExtState trigger, the support modules load, the pinned curl version is used,
 every package-owned file is removed without removing runtime/user-created
 data.
 
+The `0.1.0-pre1` clean-install/live-test/uninstall pass completed successfully
+on 2026-08-29 against package commit
+`3960757e8a9a0452c8aac1a36248f26a4a9274fe`; see the
+[Windows qualification record](2026-08-29_windows_local_qualification_0.1.0-pre1.md).
+Prior-version update behavior was not exercised because no earlier Neurocast
+Tools ReaPack version exists. That deferred case must not be inferred from the
+fresh-install result.
+
 ### macOS internal install/native-preview gate
 
 Separate internal passes are required on macOS x86_64 and macOS ARM64. Each
@@ -150,6 +160,9 @@ all four fixed wrapper Main actions, use of `/usr/bin/curl`, and clean
 uninstall. Signing, notarization, quarantine, and Gatekeeper acceptance remain
 unresolved qualification work; build evidence alone is not native runtime
 evidence.
+
+Both macOS architecture passes are deliberately deferred by owner decision and
+remain unqualified.
 
 ### Existing tester installation migration gate
 
@@ -187,14 +200,18 @@ files.
    component notices, and copied payloads are present. No reusable assembly
    tooling was added. Static and isolated ReaPack checks are the gate for this
    milestone.
-2. **Package qualification — pending:** run the automated gate plus Windows
-   install/update/uninstall and both macOS install/native-preview gates. Resolve
-   signing/notarization policy and any ReaPack destination details found during
-   real installation.
-3. **Release — pending:** approve final package metadata, generate and semantically review
-   `index.xml`, tag the immutable distribution commit, push, and create the
-   public pre-release only after qualification evidence is accepted.
+2. **Package qualification — Windows local pass recorded:** the Windows x64
+   fresh-install, live-test, and uninstall gates passed. Prior-version update,
+   legacy-wrapper migration, other-machine testing, both macOS architecture
+   passes, and signing/notarization remain unqualified.
+3. **Limited internal publication — next:** the candidate may proceed to a
+   limited internal ReaPack publication milestone. This does not authorize or
+   imply a broadly qualified public production release.
+4. **Public release — pending:** approve final package metadata, generate and
+   semantically review `index.xml`, tag the immutable distribution commit,
+   push, and create a public pre-release only after the remaining required
+   qualification evidence is accepted.
 
-The implementation milestone does not perform qualification or publication.
-The candidate remains `installable: false` until later evidence and release
-state exist.
+The candidate remains `installable: false` and the repository still has no
+root `index.xml`, tag, or GitHub release. The Windows qualification evidence
+does not change package payload or version.
