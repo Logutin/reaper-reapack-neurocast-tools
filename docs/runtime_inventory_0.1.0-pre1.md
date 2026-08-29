@@ -2,9 +2,10 @@
 
 > Source snapshot: 2026-08-29. Lua inventory is pinned to `auphonic-mt` commit
 > `238097e631e0cbf6e9c687dab09184649864fc6a`. The named local binaries and
-> pinned notice/native inputs were reverified during assembly. This is an
-> unqualified package-source record, not a published package or a current
-> backend-contract review.
+> pinned notice/native inputs were reverified during assembly. This is the
+> immutable source record for the package now published for limited internal
+> testing; Windows x64 is qualified, macOS remains unqualified, and this is not
+> a current backend-contract review.
 
 ## Inventory result
 
@@ -291,12 +292,15 @@ binary, package metadata, index, or other payload came from that repository.
 
 ## Genuinely unresolved items
 
-- The ReaPack metadata uses extension-typed sources with architecture-scoped
-  package paths and normal basenames for `UserPlugins`; real clean-install
-  behavior remains to be proven during qualification.
+- The Windows x64 extension-typed source and normal `UserPlugins` destination
+  passed both local qualification and a clean install from the real GitHub
+  feed. Equivalent macOS clean-install and native-loading behavior remains to
+  be proven.
 - macOS binaries are unsigned and unnotarized, and no macOS REAPER runtime
   record exists. Signing/notarization/quarantine policy and native preview must
   be resolved by the macOS qualification gate.
+- Prior-version update, legacy-install migration, and another-user or
+  another-machine testing remain unqualified or pending.
 - Project licensing and any consolidated third-party-notices document remain
   unresolved. The four approved component notices are present; no project
   license or consolidated-notices payload is added in this milestone.

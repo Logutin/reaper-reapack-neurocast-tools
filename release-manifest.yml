@@ -1,4 +1,4 @@
-status: assembled_unqualified
+status: published_limited_internal_windows_qualified
 schema_version: 1
 
 package:
@@ -6,7 +6,7 @@ package:
   slug: Neurocast_Tools
   version: 0.1.0-pre1
   architecture: one_metapackage
-  installable: false
+  installable: true
 
 source:
   repository: https://github.com/Logutin/auphonic-mt

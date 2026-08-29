@@ -2,10 +2,10 @@
 
 > Source snapshot: 2026-08-29, based on `auphonic-mt` commit
 > `238097e631e0cbf6e9c687dab09184649864fc6a`. The package source tree is
-> assembled and its Windows x64 local qualification passed on 2026-08-29;
-> macOS remains unqualified and the package remains unpublished. This document
-> is not a live backend contract; recheck source and release inputs before
-> future work.
+> assembled, its Windows x64 local qualification passed, and its limited
+> internal GitHub publication plus real-feed Windows clean-install check passed
+> on 2026-08-29. macOS remains unqualified. This document is not a live backend
+> contract; recheck source and release inputs before future work.
 
 ## Scope and ownership
 
@@ -22,8 +22,9 @@ The repositories have deliberately separate responsibilities:
   native builds, and build evidence.
 - `Logutin/reaper-reapack-neurocast-tools` is distribution-only. It owns the
   assembled ReaPack package metadata, explicitly selected payload copies, and
-  version-specific source lock. A generated repository index and release
-  history remain later-milestone work.
+  version-specific source lock. Its generated repository index is now published
+  for limited internal testing; tags and GitHub releases remain later-milestone
+  work.
 
 The existing Google Drive ZIP workflow in `auphonic-mt` remains the **Direct API release track**. It is not renamed, edited, or replaced by this plan. The
 new **Neurocast-backend release track** is likewise owned and documented in
@@ -126,9 +127,10 @@ unless all of the following pass:
   legacy Neurocast-generated wrapper, and Direct API runtime-generated wrapper
   files are absent, without excluding the four fixed maintained
   `scr/actions-neurocast/action_neurocast_tools_*.lua` Main-action sources;
-- strict ReaPack validation of the metadata-only source tree passes with an
-  external temporary index; semantic review of the repository `index.xml`
-  remains a later milestone because no repository index exists yet.
+- strict ReaPack validation and semantic review of the generated repository
+  `index.xml` pass with one package, one version, and all 93 version sources
+  pinned to package commit
+  `3960757e8a9a0452c8aac1a36248f26a4a9274fe`.
 
 ### Windows internal install/update/uninstall gate
 
@@ -148,6 +150,13 @@ on 2026-08-29 against package commit
 Prior-version update behavior was not exercised because no earlier Neurocast
 Tools ReaPack version exists. That deferred case must not be inferred from the
 fresh-install result.
+
+The real GitHub delivery-path check also passed on 2026-08-29 using the
+disposable Windows REAPER instance. ReaPack synchronized the public raw-GitHub
+index, clean-installed 35 package-owned Windows files, registered six Main
+actions, and loaded both native preview APIs after restart. All installed files
+matched the qualified package commit. This delivery check does not qualify
+prior-version update, legacy-install migration, or another user or machine.
 
 ### macOS internal install/native-preview gate
 
@@ -204,14 +213,18 @@ files.
    fresh-install, live-test, and uninstall gates passed. Prior-version update,
    legacy-wrapper migration, other-machine testing, both macOS architecture
    passes, and signing/notarization remain unqualified.
-3. **Limited internal publication — next:** the candidate may proceed to a
-   limited internal ReaPack publication milestone. This does not authorize or
-   imply a broadly qualified public production release.
-4. **Public release — pending:** approve final package metadata, generate and
-   semantically review `index.xml`, tag the immutable distribution commit,
-   push, and create a public pre-release only after the remaining required
-   qualification evidence is accepted.
+3. **Limited internal publication — completed:** the generated root
+   `index.xml` is published at the real raw-GitHub repository URL for 1–2
+   trusted internal testers, and the Windows delivery path passed from that
+   feed. This did not change the qualified package payload or version and does
+   not imply a broadly qualified public production release.
+4. **Broader release — pending:** accept the remaining platform, update,
+   migration, and another-user or another-machine evidence before broadening
+   the release. A tag or GitHub release was not required for the limited
+   internal milestone and has not been created.
 
-The candidate remains `installable: false` and the repository still has no
-root `index.xml`, tag, or GitHub release. The Windows qualification evidence
-does not change package payload or version.
+The package is now `installable: true` for limited internal testing through the
+root `index.xml`. Windows x64 is qualified. macOS x86_64 and ARM64,
+prior-version update, legacy-install migration, and another-user or
+another-machine testing remain unqualified or pending. No tag, GitHub release,
+GitHub Actions workflow, signing, or notarization was added.

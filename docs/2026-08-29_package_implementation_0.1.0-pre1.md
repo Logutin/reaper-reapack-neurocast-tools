@@ -7,8 +7,8 @@
 
 ## Assembly result
 
-The repository now contains the assembled but unqualified source tree for the
-single `Neurocast_Tools` metapackage. It contains 27 Lua payload files (six Main
+The repository contains the assembled source tree for the single
+`Neurocast_Tools` metapackage. It contains 27 Lua payload files (six Main
 actions and 21 support modules), three Windows utilities, three mutually
 exclusive native-extension variants, four component notices, and one
 metadata-only package descriptor. The manifest has 37 unique payload entries,
@@ -89,10 +89,16 @@ Lua files and the copied action/module directories from standalone discovery.
 The expected result is one checked metapackage with zero failures and zero
 warnings.
 
-## Qualification boundary
+## Publication and qualification boundary
 
-The source tree remains unqualified and unpublished. Project licensing and a
-possible consolidated notice remain unresolved and are deliberately not
-payload entries. GitHub Actions are postponed. No repository `index.xml`, tag,
-release, live REAPER qualification, signing, notarization, or installation has
-been created or performed at this milestone.
+The immutable package payload at commit
+`3960757e8a9a0452c8aac1a36248f26a4a9274fe` is published through the root
+`index.xml` for limited internal testing. Windows x64 passed local
+qualification and a clean install from the real GitHub feed on 2026-08-29.
+macOS x86_64 and ARM64, prior-version update, legacy-install migration, and
+another-user or another-machine testing remain unqualified or pending. This is
+not a broadly qualified public production release.
+
+Project licensing and a possible consolidated notice remain unresolved and are
+deliberately not payload entries. No tag, GitHub release, GitHub Actions
+workflow, signing, or notarization was added for the limited publication.

@@ -12,8 +12,10 @@ proceed to the next limited internal ReaPack publication milestone. It is not a
 broadly qualified public production release.
 
 The package payload and version were not changed during qualification. The
-repository still has no root `index.xml`, tag, GitHub release, or GitHub Actions
-workflow.
+repository still had no root `index.xml`, tag, GitHub release, or GitHub Actions
+workflow at that qualification checkpoint. Later on 2026-08-29, the unchanged
+qualified payload was published through the root `index.xml` for limited
+internal testing and passed a clean Windows install from the real GitHub feed.
 
 ## Environment
 
@@ -174,10 +176,13 @@ extension, and closed REAPER. Automated inspection then confirmed:
   this run used a fresh disposable environment;
 - another team member or another computer;
 - GitHub Actions;
-- public repository `index.xml`;
 - tag or GitHub release;
 - signing or notarization;
 - broad public production qualification.
+
+The public root `index.xml` and the real-GitHub Windows clean-install delivery
+check were completed later on 2026-08-29. That publication milestone did not
+qualify any of the remaining areas above.
 
 macOS was deliberately skipped by owner decision. The Windows result does not
 imply qualification of any deferred area.
