@@ -1,8 +1,9 @@
 # Neurocast-backend ReaPack release plan
 
-> Planning snapshot: 2026-08-28, based on `auphonic-mt` commit
-> `238097e631e0cbf6e9c687dab09184649864fc6a`. This document is not a live
-> backend contract. Recheck source and release inputs before implementation.
+> Source snapshot: 2026-08-29, based on `auphonic-mt` commit
+> `238097e631e0cbf6e9c687dab09184649864fc6a`. The package source tree is
+> assembled but unqualified and unpublished. This document is not a live
+> backend contract; recheck source and release inputs before future work.
 
 ## Scope and ownership
 
@@ -17,9 +18,10 @@ The repositories have deliberately separate responsibilities:
   Neurocast-backend release policy and documentation.
 - `Logutin/reaper_cyr_essentials` owns the native preview extension source,
   native builds, and build evidence.
-- `Logutin/reaper-reapack-neurocast-tools` is distribution-only. It will own
-  ReaPack package metadata, explicitly selected payload copies, the generated
-  ReaPack index, and release history after later milestones approve them.
+- `Logutin/reaper-reapack-neurocast-tools` is distribution-only. It owns the
+  assembled ReaPack package metadata, explicitly selected payload copies, and
+  version-specific source lock. A generated repository index and release
+  history remain later-milestone work.
 
 The existing Google Drive ZIP workflow in `auphonic-mt` remains the **Direct API release track**. It is not renamed, edited, or replaced by this plan. The
 new **Neurocast-backend release track** is likewise owned and documented in
@@ -28,8 +30,8 @@ repository.
 
 ## One-package architecture
 
-There will be one ReaPack metapackage and no split feature packages. Its first
-version exposes exactly six Main actions:
+There is one assembled ReaPack metapackage and no split feature packages. Its
+first candidate exposes exactly six Main actions:
 
 1. `Neurocast_Tools/elevenlabs_tool.lua`
 2. `Neurocast_Tools/elevenlabs_manager_tool.lua`
@@ -38,7 +40,7 @@ version exposes exactly six Main actions:
 5. `Neurocast_Tools/actions-neurocast/action_neurocast_tools_audio_tags_insert_action.lua`
 6. `Neurocast_Tools/actions-neurocast/action_neurocast_tools_audio_tags_remove_brackets_action.lua`
 
-The intended installed layout is:
+The intended installed layout represented by the assembled source tree is:
 
 ```text
 Neurocast_Tools/
@@ -85,7 +87,7 @@ Keeping `7z.exe` and its matching `7z.dll` together prevents a later parity
 release from accidentally depending on a developer machine's global 7-Zip.
 
 The manifest-derived Lua inventory is 27 files: six Main actions and 21
-support modules. The unique planned payload inventory is 37 entries: six Main
+support modules. The unique assembled payload inventory is 37 entries: six Main
 actions, 25 support files (the 21 modules plus four notice files), three
 binaries, and three mutually exclusive extension variants. The applicable
 per-platform totals are 35 for `win64` (6 Main actions, 25 support files, 3
@@ -122,8 +124,9 @@ unless all of the following pass:
   legacy Neurocast-generated wrapper, and Direct API runtime-generated wrapper
   files are absent, without excluding the four fixed maintained
   `scr/actions-neurocast/action_neurocast_tools_*.lua` Main-action sources;
-- strict ReaPack validation and a semantic index review pass when package
-  metadata and `index.xml` exist in a later milestone.
+- strict ReaPack validation of the metadata-only source tree passes with an
+  external temporary index; semantic review of the repository `index.xml`
+  remains a later milestone because no repository index exists yet.
 
 ### Windows internal install/update/uninstall gate
 
@@ -180,16 +183,18 @@ files.
 
 ## Follow-on milestones
 
-1. **Implementation:** add a source-lock snapshot, package metadata, controlled
-   assembly tooling, required license/notices, and copied payloads only after
-   this inventory is approved.
-2. **Package qualification:** run the automated gate plus Windows
+1. **Implementation — assembled:** the source lock, package metadata, required
+   component notices, and copied payloads are present. No reusable assembly
+   tooling was added. Static and isolated ReaPack checks are the gate for this
+   milestone.
+2. **Package qualification — pending:** run the automated gate plus Windows
    install/update/uninstall and both macOS install/native-preview gates. Resolve
    signing/notarization policy and any ReaPack destination details found during
    real installation.
-3. **Release:** approve final package metadata, generate and semantically review
+3. **Release — pending:** approve final package metadata, generate and semantically review
    `index.xml`, tag the immutable distribution commit, push, and create the
    public pre-release only after qualification evidence is accepted.
 
-This milestone performs none of those implementation, qualification, or
-publication actions.
+The implementation milestone does not perform qualification or publication.
+The candidate remains `installable: false` until later evidence and release
+state exist.

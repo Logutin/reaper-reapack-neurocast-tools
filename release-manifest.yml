@@ -1,4 +1,4 @@
-status: draft
+status: assembled_unqualified
 schema_version: 1
 
 package:
@@ -11,6 +11,23 @@ package:
 source:
   repository: https://github.com/Logutin/auphonic-mt
   commit: 238097e631e0cbf6e9c687dab09184649864fc6a
+  tracked_lua_count: 27
+  tracked_lua_policy: commit_pinned_byte_exact
+
+local_windows_release_inputs:
+  repository: https://github.com/Logutin/auphonic-mt
+  source_root: scr/bin
+  policy: Local gitignored release inputs are selected by relative path, size, and SHA-256 and are not claimed to be contained in the tracked source commit.
+
+notice_source:
+  repository: https://github.com/Logutin/slava-reaper-reapack-test-curl-jobs-imgui
+  commit: dc1632c0d576a375002cc78c5df7d134764acb40
+  policy: This repository supplies only the four pinned committed component notice texts; it supplies no runtime, binary, native, or package metadata.
+
+native_source:
+  repository: https://github.com/Logutin/reaper_cyr_essentials
+  evidence_commit: 3163f56ba9729aa7f00f0b11e01c9ea091cc0445
+  policy: Native build outputs are selected by build-relative path, size, SHA-256, architecture, and recorded build evidence.
 
 platforms:
   - win64
@@ -143,24 +160,29 @@ payload:
     platforms: [win64, darwin64, darwin-arm64]
     role: support_file
   - source: windows-curl-8.13.0-x64
+    source_path: scr/bin/win/curl.exe
     destination: Neurocast_Tools/bin/win/curl.exe
     platforms: [win64]
     role: binary
     size_bytes: 711736
     sha256: 3345339164cf384eff527b6c3160fea8d849a4231ec6ca80513e3a739e505168
   - source: windows-7zip-26.00-x64-console
+    source_path: scr/bin/win/7z.exe
     destination: Neurocast_Tools/bin/win/7z.exe
     platforms: [win64]
     role: binary
     size_bytes: 575488
     sha256: 4a41aa37786c7eae7451e81c2c97458d5d1ae5a3a8154637a0d5f77adc05e619
   - source: windows-7zip-26.00-x64-library
+    source_path: scr/bin/win/7z.dll
     destination: Neurocast_Tools/bin/win/7z.dll
     platforms: [win64]
     role: binary
     size_bytes: 1908736
     sha256: bbd705e3b58ca7677c1e9e67473f166a6712da034dcb567d571fbb67507a443f
   - source: reaper-cyr-essentials-windows-x64-build-30766075451
+    package_source: Neurocast_Tools/native/win64/reaper_cyr_essentials.dll
+    build_source_path: build/reaper_cyr_essentials-windows-x64/Release/reaper_cyr_essentials.dll
     destination: UserPlugins/reaper_cyr_essentials.dll
     platforms: [win64]
     role: extension
@@ -168,6 +190,8 @@ payload:
     size_bytes: 14336
     sha256: 1df283154fa3183c4437132b621ca9bda908f4a52dbca9051bee5c07410c1527
   - source: reaper-cyr-essentials-macos-x86_64-build-30765082450
+    package_source: Neurocast_Tools/native/darwin64/reaper_cyr_essentials.dylib
+    build_source_path: build/reaper_cyr_essentials-macos-x86_64/reaper_cyr_essentials.dylib
     destination: UserPlugins/reaper_cyr_essentials.dylib
     platforms: [darwin64]
     role: extension
@@ -175,6 +199,8 @@ payload:
     size_bytes: 17856
     sha256: adac7be285d1bb7ee30fcc85f2241d8f797eb152165a9d1d20cf66810e0eb9fa
   - source: reaper-cyr-essentials-macos-arm64-build-30765082450
+    package_source: Neurocast_Tools/native/darwin-arm64/reaper_cyr_essentials.dylib
+    build_source_path: build/reaper_cyr_essentials-macos-arm64/reaper_cyr_essentials.dylib
     destination: UserPlugins/reaper_cyr_essentials.dylib
     platforms: [darwin-arm64]
     role: extension
@@ -182,18 +208,30 @@ payload:
     size_bytes: 51064
     sha256: 541c511053b19685f81aa3470a82891c728a8d1ee7597800d51382fb3d9ee72d
   - source: reapack-reference:Slava-Testing/licenses/curl-COPYING.license
+    source_repository: https://github.com/Logutin/slava-reaper-reapack-test-curl-jobs-imgui
+    source_commit: dc1632c0d576a375002cc78c5df7d134764acb40
+    source_path: Slava-Testing/licenses/curl-COPYING.license
     destination: Neurocast_Tools/licenses/curl-COPYING.txt
     platforms: [win64]
     role: support_file
   - source: reapack-reference:Slava-Testing/licenses/zlib-LICENSE.license
+    source_repository: https://github.com/Logutin/slava-reaper-reapack-test-curl-jobs-imgui
+    source_commit: dc1632c0d576a375002cc78c5df7d134764acb40
+    source_path: Slava-Testing/licenses/zlib-LICENSE.license
     destination: Neurocast_Tools/licenses/zlib-LICENSE.txt
     platforms: [win64]
     role: support_file
   - source: reapack-reference:Slava-Testing/licenses/7-Zip-License.license
+    source_repository: https://github.com/Logutin/slava-reaper-reapack-test-curl-jobs-imgui
+    source_commit: dc1632c0d576a375002cc78c5df7d134764acb40
+    source_path: Slava-Testing/licenses/7-Zip-License.license
     destination: Neurocast_Tools/licenses/7-Zip-License.txt
     platforms: [win64]
     role: support_file
   - source: reapack-reference:Slava-Testing/licenses/Unicode-License.license
+    source_repository: https://github.com/Logutin/slava-reaper-reapack-test-curl-jobs-imgui
+    source_commit: dc1632c0d576a375002cc78c5df7d134764acb40
+    source_path: Slava-Testing/licenses/Unicode-License.license
     destination: Neurocast_Tools/licenses/Unicode-License.txt
     platforms: [win64, darwin64, darwin-arm64]
     role: support_file

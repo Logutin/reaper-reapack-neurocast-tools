@@ -1,0 +1,104 @@
+-- @description Neurocast Tools
+-- @version 0.1.0-pre1
+-- @author Slava Logutin
+-- @metapackage
+-- @changelog Initial pre-release candidate with six Main actions and the pinned cross-platform runtime payload.
+-- @about
+--   Self-contained Neurocast-backed REAPER tools for Windows x64, macOS x86_64, and macOS ARM64.
+--   ReaImGui is an external prerequisite and is not bundled.
+--   This assembled candidate is unqualified and unpublished.
+-- @link https://github.com/Logutin/reaper-reapack-neurocast-tools
+-- @provides
+--   [win64 main] elevenlabs_tool.lua
+--   [win64 main] elevenlabs_manager_tool.lua
+--   [win64 main] actions-neurocast/action_neurocast_tools_fast_sts_action.lua
+--   [win64 main] actions-neurocast/action_neurocast_tools_fast_tts_action.lua
+--   [win64 main] actions-neurocast/action_neurocast_tools_audio_tags_insert_action.lua
+--   [win64 main] actions-neurocast/action_neurocast_tools_audio_tags_remove_brackets_action.lua
+--   [win64] modules-neurocast/base64_encode_decode.lua
+--   [win64] modules-neurocast/Cleanup.lua
+--   [win64] modules-neurocast/Curl.lua
+--   [win64] modules-neurocast/elevenlabs_api_via_neurocast.lua
+--   [win64] modules-neurocast/elevenlabs_shared_voices_api.lua
+--   [win64] modules-neurocast/elevenlabs_tool_languages.lua
+--   [win64] modules-neurocast/elevenlabs_voice_catalog.lua
+--   [win64] modules-neurocast/elevenlabs_voice_library_state.lua
+--   [win64] modules-neurocast/elevenlabs_voice_library_taxonomy.lua
+--   [win64] modules-neurocast/elevenlabs_voice_library_ui_state.lua
+--   [win64] modules-neurocast/elevenlabs_voice_preview.lua
+--   [win64] modules-neurocast/Files.lua
+--   [win64] modules-neurocast/Jobs.lua
+--   [win64] modules-neurocast/json.lua
+--   [win64] modules-neurocast/neurocast_auth.lua
+--   [win64] modules-neurocast/prompts.lua
+--   [win64] modules-neurocast/reaper_manager_elevenlabs_api.lua
+--   [win64] modules-neurocast/Telemetry.lua
+--   [win64] modules-neurocast/Utf8SimpleLowerData.lua
+--   [win64] modules-neurocast/Utf8Tools.lua
+--   [win64] modules-neurocast/Util.lua
+--   [win64] bin/win/curl.exe
+--   [win64] bin/win/7z.exe
+--   [win64] bin/win/7z.dll
+--   [win64] licenses/curl-COPYING.txt
+--   [win64] licenses/zlib-LICENSE.txt
+--   [win64] licenses/7-Zip-License.txt
+--   [win64] licenses/Unicode-License.txt
+--   [win64 extension] native/win64/reaper_cyr_essentials.dll > reaper_cyr_essentials.dll
+--   [darwin64 main] elevenlabs_tool.lua
+--   [darwin64 main] elevenlabs_manager_tool.lua
+--   [darwin64 main] actions-neurocast/action_neurocast_tools_fast_sts_action.lua
+--   [darwin64 main] actions-neurocast/action_neurocast_tools_fast_tts_action.lua
+--   [darwin64 main] actions-neurocast/action_neurocast_tools_audio_tags_insert_action.lua
+--   [darwin64 main] actions-neurocast/action_neurocast_tools_audio_tags_remove_brackets_action.lua
+--   [darwin64] modules-neurocast/base64_encode_decode.lua
+--   [darwin64] modules-neurocast/Cleanup.lua
+--   [darwin64] modules-neurocast/Curl.lua
+--   [darwin64] modules-neurocast/elevenlabs_api_via_neurocast.lua
+--   [darwin64] modules-neurocast/elevenlabs_shared_voices_api.lua
+--   [darwin64] modules-neurocast/elevenlabs_tool_languages.lua
+--   [darwin64] modules-neurocast/elevenlabs_voice_catalog.lua
+--   [darwin64] modules-neurocast/elevenlabs_voice_library_state.lua
+--   [darwin64] modules-neurocast/elevenlabs_voice_library_taxonomy.lua
+--   [darwin64] modules-neurocast/elevenlabs_voice_library_ui_state.lua
+--   [darwin64] modules-neurocast/elevenlabs_voice_preview.lua
+--   [darwin64] modules-neurocast/Files.lua
+--   [darwin64] modules-neurocast/Jobs.lua
+--   [darwin64] modules-neurocast/json.lua
+--   [darwin64] modules-neurocast/neurocast_auth.lua
+--   [darwin64] modules-neurocast/prompts.lua
+--   [darwin64] modules-neurocast/reaper_manager_elevenlabs_api.lua
+--   [darwin64] modules-neurocast/Telemetry.lua
+--   [darwin64] modules-neurocast/Utf8SimpleLowerData.lua
+--   [darwin64] modules-neurocast/Utf8Tools.lua
+--   [darwin64] modules-neurocast/Util.lua
+--   [darwin64] licenses/Unicode-License.txt
+--   [darwin64 extension] native/darwin64/reaper_cyr_essentials.dylib > reaper_cyr_essentials.dylib
+--   [darwin-arm64 main] elevenlabs_tool.lua
+--   [darwin-arm64 main] elevenlabs_manager_tool.lua
+--   [darwin-arm64 main] actions-neurocast/action_neurocast_tools_fast_sts_action.lua
+--   [darwin-arm64 main] actions-neurocast/action_neurocast_tools_fast_tts_action.lua
+--   [darwin-arm64 main] actions-neurocast/action_neurocast_tools_audio_tags_insert_action.lua
+--   [darwin-arm64 main] actions-neurocast/action_neurocast_tools_audio_tags_remove_brackets_action.lua
+--   [darwin-arm64] modules-neurocast/base64_encode_decode.lua
+--   [darwin-arm64] modules-neurocast/Cleanup.lua
+--   [darwin-arm64] modules-neurocast/Curl.lua
+--   [darwin-arm64] modules-neurocast/elevenlabs_api_via_neurocast.lua
+--   [darwin-arm64] modules-neurocast/elevenlabs_shared_voices_api.lua
+--   [darwin-arm64] modules-neurocast/elevenlabs_tool_languages.lua
+--   [darwin-arm64] modules-neurocast/elevenlabs_voice_catalog.lua
+--   [darwin-arm64] modules-neurocast/elevenlabs_voice_library_state.lua
+--   [darwin-arm64] modules-neurocast/elevenlabs_voice_library_taxonomy.lua
+--   [darwin-arm64] modules-neurocast/elevenlabs_voice_library_ui_state.lua
+--   [darwin-arm64] modules-neurocast/elevenlabs_voice_preview.lua
+--   [darwin-arm64] modules-neurocast/Files.lua
+--   [darwin-arm64] modules-neurocast/Jobs.lua
+--   [darwin-arm64] modules-neurocast/json.lua
+--   [darwin-arm64] modules-neurocast/neurocast_auth.lua
+--   [darwin-arm64] modules-neurocast/prompts.lua
+--   [darwin-arm64] modules-neurocast/reaper_manager_elevenlabs_api.lua
+--   [darwin-arm64] modules-neurocast/Telemetry.lua
+--   [darwin-arm64] modules-neurocast/Utf8SimpleLowerData.lua
+--   [darwin-arm64] modules-neurocast/Utf8Tools.lua
+--   [darwin-arm64] modules-neurocast/Util.lua
+--   [darwin-arm64] licenses/Unicode-License.txt
+--   [darwin-arm64 extension] native/darwin-arm64/reaper_cyr_essentials.dylib > reaper_cyr_essentials.dylib

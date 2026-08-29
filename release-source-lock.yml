@@ -1,0 +1,92 @@
+schema_version: 1
+
+package:
+  display_name: Neurocast Tools
+  slug: Neurocast_Tools
+  version: 0.1.0-pre1
+  inventory: release-manifest.yml
+
+tracked_lua:
+  repository: https://github.com/Logutin/auphonic-mt
+  commit: 238097e631e0cbf6e9c687dab09184649864fc6a
+  count: 27
+  policy: All Lua inputs are extracted from commit-qualified Git blobs and copied byte-for-byte.
+
+local_windows_inputs:
+  repository: https://github.com/Logutin/auphonic-mt
+  policy: These local gitignored release inputs are path-, size-, and hash-pinned and are not claimed to be contained in the tracked Lua commit.
+  files:
+    - source_path: scr/bin/win/curl.exe
+      destination: Neurocast_Tools/bin/win/curl.exe
+      size_bytes: 711736
+      sha256: 3345339164cf384eff527b6c3160fea8d849a4231ec6ca80513e3a739e505168
+    - source_path: scr/bin/win/7z.exe
+      destination: Neurocast_Tools/bin/win/7z.exe
+      size_bytes: 575488
+      sha256: 4a41aa37786c7eae7451e81c2c97458d5d1ae5a3a8154637a0d5f77adc05e619
+    - source_path: scr/bin/win/7z.dll
+      destination: Neurocast_Tools/bin/win/7z.dll
+      size_bytes: 1908736
+      sha256: bbd705e3b58ca7677c1e9e67473f166a6712da034dcb567d571fbb67507a443f
+
+component_notices:
+  repository: https://github.com/Logutin/slava-reaper-reapack-test-curl-jobs-imgui
+  commit: dc1632c0d576a375002cc78c5df7d134764acb40
+  policy: This pinned repository supplies only these four curated notice texts and supplies no runtime, executable, native, or package metadata.
+  files:
+    - source_path: Slava-Testing/licenses/curl-COPYING.license
+      destination: Neurocast_Tools/licenses/curl-COPYING.txt
+      size_bytes: 1088
+      sha256: e18f1989333b70044b2adfb7dc2f905d0119dbdcac3bc9f4bc9d540e3a29de5b
+      platforms: [win64]
+    - source_path: Slava-Testing/licenses/zlib-LICENSE.license
+      destination: Neurocast_Tools/licenses/zlib-LICENSE.txt
+      size_bytes: 1001
+      sha256: 32341cbfaac7f5b3c9eec9887530353204fa231bcd354dfdc3d750c10fabfb0a
+      platforms: [win64]
+    - source_path: Slava-Testing/licenses/7-Zip-License.license
+      destination: Neurocast_Tools/licenses/7-Zip-License.txt
+      size_bytes: 5885
+      sha256: 32369594a3a9f7c643d124035120eaa6a7707e75e57c4386ef509f801447bc49
+      platforms: [win64]
+    - source_path: Slava-Testing/licenses/Unicode-License.license
+      destination: Neurocast_Tools/licenses/Unicode-License.txt
+      size_bytes: 1995
+      sha256: e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96
+      platforms: [win64, darwin64, darwin-arm64]
+
+native_inputs:
+  repository: https://github.com/Logutin/reaper_cyr_essentials
+  evidence_repository_commit: 3163f56ba9729aa7f00f0b11e01c9ea091cc0445
+  policy: Native build outputs are hash- and evidence-pinned; they are not rebuilt or modified here.
+  files:
+    - source_path: build/reaper_cyr_essentials-windows-x64/Release/reaper_cyr_essentials.dll
+      package_source: Neurocast_Tools/native/win64/reaper_cyr_essentials.dll
+      installed_destination: UserPlugins/reaper_cyr_essentials.dll
+      size_bytes: 14336
+      sha256: 1df283154fa3183c4437132b621ca9bda908f4a52dbca9051bee5c07410c1527
+      architecture: PE x86_64
+      evidence_run: 30766075451
+      evidence_source_commit: ae71dd8260631bbd490f0206afbabdc8e447f135
+    - source_path: build/reaper_cyr_essentials-macos-x86_64/reaper_cyr_essentials.dylib
+      package_source: Neurocast_Tools/native/darwin64/reaper_cyr_essentials.dylib
+      installed_destination: UserPlugins/reaper_cyr_essentials.dylib
+      size_bytes: 17856
+      sha256: adac7be285d1bb7ee30fcc85f2241d8f797eb152165a9d1d20cf66810e0eb9fa
+      architecture: thin Mach-O x86_64
+      evidence_run: 30765082450
+      evidence_source_commit: 3566e976853bcc5073acd5910c6df7ff6fd45ce9
+    - source_path: build/reaper_cyr_essentials-macos-arm64/reaper_cyr_essentials.dylib
+      package_source: Neurocast_Tools/native/darwin-arm64/reaper_cyr_essentials.dylib
+      installed_destination: UserPlugins/reaper_cyr_essentials.dylib
+      size_bytes: 51064
+      sha256: 541c511053b19685f81aa3470a82891c728a8d1ee7597800d51382fb3d9ee72d
+      architecture: thin Mach-O arm64
+      evidence_run: 30765082450
+      evidence_source_commit: 3566e976853bcc5073acd5910c6df7ff6fd45ce9
+
+validated_toolchain:
+  ruby: 4.0.6
+  reapack_index: 1.2.6
+  pandoc: 3.10.2
+  git: 2.55.0.windows.3

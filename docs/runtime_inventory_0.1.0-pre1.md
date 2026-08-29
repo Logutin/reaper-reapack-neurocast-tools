@@ -1,10 +1,10 @@
 # Runtime inventory for Neurocast Tools 0.1.0-pre1
 
-> Source snapshot: 2026-08-28. Lua inventory is pinned to `auphonic-mt` commit
-> `238097e631e0cbf6e9c687dab09184649864fc6a`. Binary observations describe the
-> named local candidates inspected on this date; re-verify their hashes and
-> architecture immediately before assembly. This is planning, not an
-> installable package or a current backend-contract review.
+> Source snapshot: 2026-08-29. Lua inventory is pinned to `auphonic-mt` commit
+> `238097e631e0cbf6e9c687dab09184649864fc6a`. The named local binaries and
+> pinned notice/native inputs were reverified during assembly. This is an
+> unqualified package-source record, not a published package or a current
+> backend-contract review.
 
 ## Inventory result
 
@@ -14,9 +14,9 @@ fixed maintained wrapper Main actions are dependency-free action roots. No file
 in this inventory uses `dofile(...)` or `loadfile(...)`, and no runtime source
 is loaded through a module-directory glob.
 
-The planned payload also contains three Windows command-line binary inputs,
+The assembled payload also contains three Windows command-line binary inputs,
 three mutually exclusive native-extension variants, and four applicable
-third-party notice inputs. That is **37 unique planned payload entries**: six
+third-party notice inputs. That is **37 unique assembled payload entries**: six
 Main actions, 25 support files (the 21 Lua modules plus four notice files),
 three binaries, and three mutually exclusive extension variants.
 
@@ -47,8 +47,8 @@ dependencies:
 | `scr/actions-neurocast/action_neurocast_tools_audio_tags_remove_brackets_action.lua` | `audio_tags_remove_brackets_selected_notes_action_for_hotkey_trigger` |
 
 They remain in `actions-neurocast/` because the main tool resolves those exact
-fixed relative paths. They are Main actions, not support files, and are not
-copied into this repository during this planning milestone.
+fixed relative paths. They are copied byte-for-byte as Main actions, not
+support files.
 
 ## Literal imports of the two full tool entrypoints
 
@@ -234,9 +234,10 @@ does not apply to the four fixed maintained wrapper Main actions under
 
 ## Inspected binary candidates
 
-The selected Windows inputs were present with identical hashes in existing
-`auphonic-mt` release material and in the read-only ReaPack reference
-repository. No broader provenance research was performed.
+The selected Windows inputs were copied only from the local `auphonic-mt`
+release-input paths under `scr/bin/win`. The ReaPack test repository was not a
+binary source. These ignored local files are path-, size-, and hash-pinned and
+are not claimed to be contained in the tracked Lua commit.
 
 | Logical input | Observed version / format | Architecture | Size (bytes) | SHA-256 |
 | --- | --- | --- | ---: | --- |
@@ -244,10 +245,10 @@ repository. No broader provenance research was performed.
 | `windows-7zip-26.00-x64-console` | 7-Zip 26.00; PE machine `0x8664` | x86_64 | 575,488 | `4a41aa37786c7eae7451e81c2c97458d5d1ae5a3a8154637a0d5f77adc05e619` |
 | `windows-7zip-26.00-x64-library` | 7-Zip 26.00; PE machine `0x8664` | x86_64 | 1,908,736 | `bbd705e3b58ca7677c1e9e67473f166a6712da034dcb567d571fbb67507a443f` |
 
-The native files below are the actual inspected files under the local native
-repository's `build` outputs. They were not rebuilt, signed, notarized, or
-copied. The named evidence records prove build/binary checks only, not REAPER
-runtime behavior on macOS.
+The native files below are the actual inspected and copied files under the
+local native repository's `build` outputs. They were not rebuilt, signed,
+notarized, or modified. The named evidence records prove build/binary checks
+only, not REAPER runtime behavior on macOS.
 
 The selected macOS jobs in the cited shared workflow run succeeded, although
 the aggregate result of that workflow run is failure. This planning snapshot
@@ -282,15 +283,20 @@ assembly outputs; and all Linux payloads. The four fixed maintained wrapper
 Main actions under `scr/actions-neurocast/action_neurocast_tools_*.lua` are
 explicitly included and are not covered by these exclusions.
 
+The sole approved use of
+`Logutin/slava-reaper-reapack-test-curl-jobs-imgui` is the four component notice
+blobs under `Slava-Testing/licenses/` at commit
+`dc1632c0d576a375002cc78c5df7d134764acb40`. No executable, Lua source, native
+binary, package metadata, index, or other payload came from that repository.
+
 ## Genuinely unresolved items
 
-- The final ReaPack-relative mapping needed to install the metapackage's Lua
-  directory and architecture-scoped native binary into `UserPlugins` must be
-  proven by the implementation milestone's clean-install tests.
+- The ReaPack metadata uses extension-typed sources with architecture-scoped
+  package paths and normal basenames for `UserPlugins`; real clean-install
+  behavior remains to be proven during qualification.
 - macOS binaries are unsigned and unnotarized, and no macOS REAPER runtime
   record exists. Signing/notarization/quarantine policy and native preview must
   be resolved by the macOS qualification gate.
-- The public distribution repository does not yet contain a project-license
-  file or final consolidated third-party-notices document. The implementation
-  milestone must settle and add the required public notices before payload
-  assembly.
+- Project licensing and any consolidated third-party-notices document remain
+  unresolved. The four approved component notices are present; no project
+  license or consolidated-notices payload is added in this milestone.

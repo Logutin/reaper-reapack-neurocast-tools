@@ -1,0 +1,7 @@
+/Neurocast_Tools/elevenlabs_tool.lua -text
+/Neurocast_Tools/elevenlabs_manager_tool.lua -text
+/Neurocast_Tools/actions-neurocast/*.lua -text
+/Neurocast_Tools/modules-neurocast/*.lua -text -whitespace
+/Neurocast_Tools/bin/win/* -text
+/Neurocast_Tools/native/*/* -text
+/Neurocast_Tools/licenses/*.txt -text
