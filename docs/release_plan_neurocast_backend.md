@@ -7,6 +7,13 @@
 > on 2026-08-29. macOS remains unqualified. This document is not a live backend
 > contract; recheck source and release inputs before future work.
 
+> **Future planning note:** `Neurocast Tools 0.1.1` is now the approved future
+> additive target with 13 planned Main actions, but it is not assembled or
+> released. See
+> [`2026-08-31_future_release_0.1.1.md`](2026-08-31_future_release_0.1.1.md).
+> All `0.1.0-pre1` inventory, source, qualification, and publication statements
+> below remain historical/current-release facts and must not be rebound.
+
 ## Scope and ownership
 
 The package display name is **Neurocast Tools**, the repository/package

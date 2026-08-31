@@ -27,6 +27,20 @@ another-machine testing remain unqualified or pending. This is not a broadly
 qualified public production release. No tag, GitHub release, GitHub Actions
 workflow, signing, or notarization was added for this milestone.
 
+## Future release: 0.1.1 (planning only)
+
+`Neurocast Tools 0.1.1` is the approved future target, not a current package.
+The additive plan preserves the existing Manager and four fixed ElevenLabs
+actions and targets 13 Main actions total: ElevenLabs, Manager, DOCX Import,
+Script Aligner, MVSEP, four fixed ElevenLabs actions, and the four standalone
+helpers from the Direct API package. No `0.1.1` payload, manifest, source lock,
+metapackage metadata, generated index, tag, or release has been created.
+
+See the dated
+[`0.1.1` future-release plan](docs/2026-08-31_future_release_0.1.1.md) for the
+projected dependency closure, evidence boundaries, and gates. The published
+`0.1.0-pre1` payload and its immutable historical sources remain unchanged.
+
 See [the release plan](docs/release_plan_neurocast_backend.md) and the
 [`0.1.0-pre1` runtime inventory](docs/runtime_inventory_0.1.0-pre1.md). The
 complete payload inventory is in [`release-manifest.yml`](release-manifest.yml),
