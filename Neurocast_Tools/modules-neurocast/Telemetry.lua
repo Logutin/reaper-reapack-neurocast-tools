@@ -34,6 +34,8 @@ local DEFAULT_BUDGET_SOFT_EVENTS_PER_SESSION = 10000
 local DEFAULT_BUDGET_HARD_EVENTS_PER_SESSION = 15000
 local DEFAULT_BUDGET_RESERVED_EVENTS = 250
 local HARD_BACKEND_FAILURES_BEFORE_PAUSE = 5
+local RETRY_BACKOFF_BASE_SEC = 5
+local RETRY_BACKOFF_MAX_SEC = 5 * 60
 
 local budget_limits = {
   sendable_queue_soft_max_bytes = DEFAULT_SENDABLE_QUEUE_SOFT_MAX_BYTES,
@@ -115,6 +117,8 @@ local runtime = {
   paths = {},
   flush_requested = false,
   next_flush_at = nil,
+  retry_not_before = nil,
+  consecutive_transient_failures = 0,
   active_job_id = nil,
   active_queue_path = nil,
   active_source_file = nil,
@@ -1266,11 +1270,23 @@ local function is_permanent_failure(result, decoded)
   if backend_error == "AUTH_FAILED" or backend_error == "INVALID_REQUEST" or backend_error == "POST_ONLY" then
     return true
   end
-  local http = tonumber(result and result.http_code)
-  if http and http >= 400 and http < 500 and http ~= 408 and http ~= 429 then
-    return true
-  end
   return false
+end
+
+local function schedule_transient_retry()
+  runtime.consecutive_transient_failures = runtime.consecutive_transient_failures + 1
+  local exponent = math.max(0, runtime.consecutive_transient_failures - 1)
+  local delay = math.min(RETRY_BACKOFF_BASE_SEC * (2 ^ exponent), RETRY_BACKOFF_MAX_SEC)
+  local now = type(r.time_precise) == "function" and r.time_precise() or os.clock()
+  runtime.retry_not_before = now + delay
+  runtime.next_flush_at = runtime.retry_not_before
+  runtime.flush_requested = true
+  return delay
+end
+
+local function clear_transient_retry()
+  runtime.retry_not_before = nil
+  runtime.consecutive_transient_failures = 0
 end
 
 local function finish_flush(result, job, batch)
@@ -1355,6 +1371,7 @@ local function finish_flush(result, job, batch)
     runtime.last_error = ""
     runtime.last_backend_error = ""
     runtime.hard_backend_failures_session = 0
+    clear_transient_retry()
     local ok_remaining, remaining_err = write_remaining_lines(runtime.active_queue_path, batch.remaining_lines)
     if not ok_remaining then
       runtime.last_error = "Flush succeeded but remaining queue rewrite failed: " .. tostring(remaining_err)
@@ -1376,7 +1393,15 @@ local function finish_flush(result, job, batch)
     if err_txt == "" and result and result.err then err_txt = tostring(result.err) end
     if err_txt == "" then err_txt = "telemetry flush failed" end
     runtime.last_error = err_txt
-    runtime.status = permanent and "flush failed permanently" or "flush failed; queued for retry"
+    local retry_delay = nil
+    if permanent then
+      clear_transient_retry()
+    else
+      retry_delay = schedule_transient_retry()
+    end
+    runtime.status = permanent
+      and "flush failed permanently"
+      or string.format("flush failed; queued for retry in %.0fs", retry_delay)
     runtime.failed_batches_session = runtime.failed_batches_session + 1
     if permanent then
       runtime.send_paused = true
@@ -1394,6 +1419,8 @@ local function finish_flush(result, job, batch)
     log_debug(
       "finish_flush: failure permanent=" .. tostring(permanent) ..
       " send_paused=" .. tostring(runtime.send_paused) ..
+      " retry_in_sec=" .. tostring(retry_delay or "") ..
+      " retry_not_before=" .. tostring(runtime.retry_not_before or "") ..
       " err=" .. tostring(err_txt) ..
       " response_preview=" .. Util.clip_text(tostring(result and result.body or ""), 512),
       2
@@ -1509,6 +1536,8 @@ function Telemetry.init(opts)
   runtime.last_backend_error = ""
   runtime.flush_requested = false
   runtime.next_flush_at = nil
+  runtime.retry_not_before = nil
+  runtime.consecutive_transient_failures = 0
   runtime.active_job_id = nil
   runtime.active_queue_path = nil
   runtime.active_source_file = nil
@@ -1725,6 +1754,8 @@ function Telemetry.flush_async(opts)
       log_file_only("[telemetry][unsafe_debug] flush_async curl_submit failed: " .. tostring(submit_err))
     end
     move_failed_or_back(sending_path, false)
+    local retry_delay = schedule_transient_retry()
+    runtime.status = string.format("flush submit failed; queued for retry in %.0fs", retry_delay)
     return false, submit_err
   end
 
@@ -1871,10 +1902,18 @@ end
 function Telemetry.tick(now_t)
   if runtime.initialized ~= true then return true end
   maybe_run_retention_cleanup(now_t)
+  if runtime.send_paused == true then return true end
   if runtime.active_job_id ~= nil then return true end
   if runtime.flush_requested ~= true then return true end
   local now = tonumber(now_t) or (type(r.time_precise) == "function" and r.time_precise() or os.clock())
+  if runtime.retry_not_before and now < runtime.retry_not_before then return true end
   if runtime.next_flush_at and now < runtime.next_flush_at then return true end
+  if total_sendable_queue_bytes() <= 0 then
+    runtime.flush_requested = false
+    runtime.next_flush_at = nil
+    runtime.retry_not_before = nil
+    return true
+  end
   log_debug(
     "tick: firing scheduled flush now=" .. tostring(now) ..
     " next_flush_at=" .. tostring(runtime.next_flush_at)
@@ -1950,6 +1989,11 @@ function Telemetry.resume_sending(reason)
   runtime.send_paused = false
   runtime.send_pause_reason = ""
   runtime.hard_backend_failures_session = 0
+  clear_transient_retry()
+  if total_sendable_queue_bytes() > 0 then
+    runtime.flush_requested = true
+    runtime.next_flush_at = (type(r.time_precise) == "function" and r.time_precise() or os.clock()) + 0.25
+  end
   runtime.status = tostring(reason or "") ~= "" and tostring(reason) or "telemetry sending resumed"
   return true
 end
@@ -1976,6 +2020,10 @@ function Telemetry.describe_status()
     send_paused = runtime.send_paused == true,
     send_pause_reason = runtime.send_pause_reason,
     hard_backend_failures_session = runtime.hard_backend_failures_session,
+    flush_requested = runtime.flush_requested == true,
+    next_flush_at = runtime.next_flush_at,
+    retry_not_before = runtime.retry_not_before,
+    consecutive_transient_failures = runtime.consecutive_transient_failures,
     paths = runtime.paths,
     queued_file_count = 0,
     sending_file_count = 0,
@@ -2023,6 +2071,8 @@ Telemetry.VERSION = VERSION
 Telemetry.IDENTITY_FILE_NAME = IDENTITY_FILE_NAME
 Telemetry.SETTINGS_FILE_NAME = SETTINGS_FILE_NAME
 Telemetry.RUNTIME_DIR_NAME = RUNTIME_DIR_NAME
+Telemetry.RETRY_BACKOFF_BASE_SEC = RETRY_BACKOFF_BASE_SEC
+Telemetry.RETRY_BACKOFF_MAX_SEC = RETRY_BACKOFF_MAX_SEC
 
 function Telemetry._test_set_budget_limits(limits)
   apply_budget_limits(limits)

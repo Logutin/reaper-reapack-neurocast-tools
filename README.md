@@ -28,13 +28,13 @@ another-machine testing remain unqualified or pending. This is not a broadly
 qualified public production release. No tag, GitHub release, GitHub Actions
 workflow, signing, or notarization was added for this milestone.
 
-## Future release: 0.1.1 (planning only)
+## Release candidate: 0.1.1
 
-`Neurocast Tools 0.1.1` is the approved future limited-internal target, not a
-current package. The additive plan preserves the existing Manager and four
-fixed ElevenLabs Tool Actions and targets 13 Main actions total: five Tools,
-four Tool Actions, and four Utilities under `utilities-neurocast/`. Package
-minimum is REAPER 7.72+.
+`Neurocast Tools 0.1.1` is an assembled limited-internal candidate, not yet a
+published package. It preserves the existing Manager and four fixed ElevenLabs
+Tool Actions and contains 13 Main actions total: five Tools, four Tool Actions,
+and four Utilities under `utilities-neurocast/`. Package minimum is REAPER
+7.72+.
 
 | Concept | Meaning | Naming |
 | --- | --- | --- |
@@ -43,18 +43,22 @@ minimum is REAPER 7.72+.
 | Tool Action | Thin shortcut into functionality owned by a Tool | `action_neurocast_tools_*.lua` |
 
 The Script Aligner ambiguous-create duplicate risk is accepted documented
-technical debt and is not a blocker for this limited-internal release. No
-`0.1.1` payload, manifest, source lock, metapackage metadata, generated index,
-tag, or release has been created.
+technical debt and is not a blocker for this limited-internal release. The
+`0.1.1` payload, manifest, source lock, and metapackage metadata are assembled
+from `auphonic-mt` commit `109e5d138b0f459319caa849b6684e602acfe629`.
+The published `index.xml` still exposes only `0.1.0-pre1`; `0.1.1` has not yet
+been indexed, published, tagged, or released.
 
-Release operations are blocked until the owner prepares a disposable isolated
-REAPER installation, provides its exact path, and explicitly authorizes the
-agent to use it. Preparatory source and documentation changes do not satisfy or
-bypass that gate.
+The owner supplied and authorized the disposable installation at
+`C:\extra_Reapers\Reaper_Empty_01`. Pre-assembly Windows checks passed for DOCX
+Import and all four Utilities. Authenticated Tool requalification is explicitly
+deferred because no test account is available; macOS and broader reliability,
+migration, and another-machine scopes remain unqualified.
 
 See the dated
-[`0.1.1` future-release plan](docs/2026-08-31_future_release_0.1.1.md) for the
-projected dependency closure, evidence boundaries, and gates. The published
+[`0.1.1` release plan](docs/2026-08-31_future_release_0.1.1.md) and
+[`0.1.1` assembly record](docs/2026-08-31_package_implementation_0.1.1.md) for
+the dependency closure, evidence boundaries, and gates. The published
 `0.1.0-pre1` payload and its immutable historical sources remain unchanged.
 
 See [the release plan](docs/release_plan_neurocast_backend.md) and the

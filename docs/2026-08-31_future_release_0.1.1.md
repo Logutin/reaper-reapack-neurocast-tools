@@ -7,19 +7,20 @@
 
 ## Status boundary
 
-`Neurocast Tools 0.1.1` is an approved future limited-internal release target.
-It is not assembled, indexed, qualified, published, tagged, or released.
+`Neurocast Tools 0.1.1` is an assembled limited-internal release candidate. It
+is not yet indexed, installed-package qualified, published, tagged, or released.
 
 The current published package remains the immutable `0.1.0-pre1`
-limited-internal snapshot. This planning milestone does not modify
-`release-manifest.yml`, `release-source-lock.yml`, `Neurocast_Tools/`, or
-`index.xml`, and it does not rebind any historical `0.1.0-pre1` source URL.
+limited-internal snapshot. The candidate updates `release-manifest.yml`,
+`release-source-lock.yml`, `Neurocast_Tools/`, and metapackage metadata. The
+published `index.xml` remains unchanged until qualification, and no historical
+`0.1.0-pre1` source URL is rebound.
 
 The dependency projection originated from `auphonic-mt` runtime commit
 `c046a69a6f48a81dfab18bb34d6db8182cc63bee` and was rechecked on 2026-08-31
 against the source-preparation working tree containing the new Utility copies.
-Neither state is the approved `0.1.1` source lock. A later release execution
-must select and verify one clean pushed source commit.
+Release execution selected the clean pushed source commit
+`109e5d138b0f459319caa849b6684e602acfe629` as the `0.1.1` source lock.
 
 ## Release audience and authorization boundary
 
@@ -197,6 +198,30 @@ until reconciliation or backend idempotency exists.
 
 ## Future release execution
 
+### Execution checkpoint — 2026-08-31
+
+The owner supplied and explicitly authorized the disposable Windows REAPER at
+`C:\extra_Reapers\Reaper_Empty_01`.
+
+- Fresh production OpenAPI documents were retrieved from
+  `reaper.neurocast.tech` and the Script Aligner exception host
+  `studio.neurocast.tech`; protected routes rejected unauthenticated requests.
+- The DOCX Tool completed a clean two-row import in REAPER.
+- All four Utilities passed focused real-REAPER checks from the staged package
+  path, including ordered merge behavior and both toggle directions.
+- No test account exists for this cycle. Authenticated ElevenLabs, Manager,
+  MVSEP, and Script Aligner workflows are explicitly unqualified rather than
+  simulated. Existing earlier live evidence remains historical evidence only.
+- The candidate contains 53 byte-exact Lua files from the selected source
+  commit: 13 Main actions and 40 support modules. The metapackage has 171
+  platform-scoped `@provides` rows: 61 win64 and 55 for each macOS architecture.
+- Strict ReaPack metadata, Lua syntax, source-byte, pinned-input, exclusion,
+  bundled curl, and release-local 7-Zip/DOCX checks pass.
+
+Installed-package update, clean-install, uninstall, action-registration, and
+real-feed checks remain pending. The root `index.xml` must not expose `0.1.1`
+until the applicable candidate qualification is accepted.
+
 Only after a separate release command and the authorization gate above:
 
 1. Create new `0.1.1` manifest and source-lock state while preserving all
@@ -218,5 +243,5 @@ Only after a separate release command and the authorization gate above:
    every deferred platform, migration, machine, signing, backend, reliability,
    and technical-debt boundary without implying broad production readiness.
 
-Until those steps are explicitly authorized and completed, `0.1.1` remains a
-future plan and `0.1.0-pre1` remains the only published package version.
+Until those steps are completed, `0.1.1` remains an unpublished candidate and
+`0.1.0-pre1` remains the only published package version.

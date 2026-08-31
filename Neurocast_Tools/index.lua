@@ -1,21 +1,30 @@
 -- @description Neurocast Tools
--- @version 0.1.0-pre1
+-- @version 0.1.1
 -- @author Slava Logutin
 -- @metapackage
--- @changelog Initial pre-release candidate with six Main actions and the pinned cross-platform runtime payload.
+-- @changelog Add DOCX Import, Script Aligner, MVSEP, and four Utilities; refresh the existing Neurocast-backed runtime.
 -- @about
 --   Self-contained Neurocast-backed REAPER tools for Windows x64, macOS x86_64, and macOS ARM64.
 --   ReaImGui is an external prerequisite and is not bundled.
---   Windows x64 is qualified for limited internal use; macOS x86_64 and ARM64 remain unqualified.
+--   Package minimum: REAPER 7.72+.
+--   Windows x64 release qualification is pending; macOS and authenticated workflow requalification remain unqualified.
+--   Script Aligner ambiguous-create retry duplication is accepted technical debt for this limited-internal release.
 --   This is not a broadly qualified public production release.
 -- @link https://github.com/Logutin/reaper-reapack-neurocast-tools
 -- @provides
 --   [win64 main] elevenlabs_tool.lua
 --   [win64 main] elevenlabs_manager_tool.lua
+--   [win64 main] docx_import_tool.lua
+--   [win64 main] neurocast_script_aligner_tool.lua
+--   [win64 main] mvsep_tool.lua
 --   [win64 main] actions-neurocast/action_neurocast_tools_fast_sts_action.lua
 --   [win64 main] actions-neurocast/action_neurocast_tools_fast_tts_action.lua
 --   [win64 main] actions-neurocast/action_neurocast_tools_audio_tags_insert_action.lua
 --   [win64 main] actions-neurocast/action_neurocast_tools_audio_tags_remove_brackets_action.lua
+--   [win64 main] utilities-neurocast/utility_neurocast_Merge_selected_items_text_notes.lua
+--   [win64 main] utilities-neurocast/utility_neurocast_Search_Text.lua
+--   [win64 main] utilities-neurocast/utility_neurocast_set_track_for_toggle_track_vol_and_solo.lua
+--   [win64 main] utilities-neurocast/utility_neurocast_toggle_track_vol_and_solo.lua
 --   [win64] modules-neurocast/base64_encode_decode.lua
 --   [win64] modules-neurocast/Cleanup.lua
 --   [win64] modules-neurocast/Curl.lua
@@ -37,6 +46,25 @@
 --   [win64] modules-neurocast/Utf8SimpleLowerData.lua
 --   [win64] modules-neurocast/Utf8Tools.lua
 --   [win64] modules-neurocast/Util.lua
+--   [win64] modules-neurocast/docx_dialogue_parser.lua
+--   [win64] modules-neurocast/docx_import_tool_languages.lua
+--   [win64] modules-neurocast/docx_telemetry_summary.lua
+--   [win64] modules-neurocast/docx_xml_extractor.lua
+--   [win64] modules-neurocast/docx_xml_parser.lua
+--   [win64] modules-neurocast/Parse.lua
+--   [win64] modules-neurocast/ReaperX_import_Dialogue.lua
+--   [win64] modules-neurocast/track_colors.lua
+--   [win64] modules-neurocast/neurocast_script_aligner_helper.lua
+--   [win64] modules-neurocast/neurocast_script_aligner_reaper.lua
+--   [win64] modules-neurocast/neurocast_script_aligner_result.lua
+--   [win64] modules-neurocast/neurocast_script_aligner_settings.lua
+--   [win64] modules-neurocast/neurocast_script_aligner_tool_languages.lua
+--   [win64] modules-neurocast/mvsep_api.lua
+--   [win64] modules-neurocast/mvsep_api_via_neurocast.lua
+--   [win64] modules-neurocast/mvsep_model_options.lua
+--   [win64] modules-neurocast/mvsep_reaper.lua
+--   [win64] modules-neurocast/mvsep_tool_languages.lua
+--   [win64] modules-neurocast/ReaperX_render_settings_helper.lua
 --   [win64] bin/win/curl.exe
 --   [win64] bin/win/7z.exe
 --   [win64] bin/win/7z.dll
@@ -47,10 +75,17 @@
 --   [win64 extension] native/win64/reaper_cyr_essentials.dll > reaper_cyr_essentials.dll
 --   [darwin64 main] elevenlabs_tool.lua
 --   [darwin64 main] elevenlabs_manager_tool.lua
+--   [darwin64 main] docx_import_tool.lua
+--   [darwin64 main] neurocast_script_aligner_tool.lua
+--   [darwin64 main] mvsep_tool.lua
 --   [darwin64 main] actions-neurocast/action_neurocast_tools_fast_sts_action.lua
 --   [darwin64 main] actions-neurocast/action_neurocast_tools_fast_tts_action.lua
 --   [darwin64 main] actions-neurocast/action_neurocast_tools_audio_tags_insert_action.lua
 --   [darwin64 main] actions-neurocast/action_neurocast_tools_audio_tags_remove_brackets_action.lua
+--   [darwin64 main] utilities-neurocast/utility_neurocast_Merge_selected_items_text_notes.lua
+--   [darwin64 main] utilities-neurocast/utility_neurocast_Search_Text.lua
+--   [darwin64 main] utilities-neurocast/utility_neurocast_set_track_for_toggle_track_vol_and_solo.lua
+--   [darwin64 main] utilities-neurocast/utility_neurocast_toggle_track_vol_and_solo.lua
 --   [darwin64] modules-neurocast/base64_encode_decode.lua
 --   [darwin64] modules-neurocast/Cleanup.lua
 --   [darwin64] modules-neurocast/Curl.lua
@@ -72,14 +107,40 @@
 --   [darwin64] modules-neurocast/Utf8SimpleLowerData.lua
 --   [darwin64] modules-neurocast/Utf8Tools.lua
 --   [darwin64] modules-neurocast/Util.lua
+--   [darwin64] modules-neurocast/docx_dialogue_parser.lua
+--   [darwin64] modules-neurocast/docx_import_tool_languages.lua
+--   [darwin64] modules-neurocast/docx_telemetry_summary.lua
+--   [darwin64] modules-neurocast/docx_xml_extractor.lua
+--   [darwin64] modules-neurocast/docx_xml_parser.lua
+--   [darwin64] modules-neurocast/Parse.lua
+--   [darwin64] modules-neurocast/ReaperX_import_Dialogue.lua
+--   [darwin64] modules-neurocast/track_colors.lua
+--   [darwin64] modules-neurocast/neurocast_script_aligner_helper.lua
+--   [darwin64] modules-neurocast/neurocast_script_aligner_reaper.lua
+--   [darwin64] modules-neurocast/neurocast_script_aligner_result.lua
+--   [darwin64] modules-neurocast/neurocast_script_aligner_settings.lua
+--   [darwin64] modules-neurocast/neurocast_script_aligner_tool_languages.lua
+--   [darwin64] modules-neurocast/mvsep_api.lua
+--   [darwin64] modules-neurocast/mvsep_api_via_neurocast.lua
+--   [darwin64] modules-neurocast/mvsep_model_options.lua
+--   [darwin64] modules-neurocast/mvsep_reaper.lua
+--   [darwin64] modules-neurocast/mvsep_tool_languages.lua
+--   [darwin64] modules-neurocast/ReaperX_render_settings_helper.lua
 --   [darwin64] licenses/Unicode-License.txt
 --   [darwin64 extension] native/darwin64/reaper_cyr_essentials.dylib > reaper_cyr_essentials.dylib
 --   [darwin-arm64 main] elevenlabs_tool.lua
 --   [darwin-arm64 main] elevenlabs_manager_tool.lua
+--   [darwin-arm64 main] docx_import_tool.lua
+--   [darwin-arm64 main] neurocast_script_aligner_tool.lua
+--   [darwin-arm64 main] mvsep_tool.lua
 --   [darwin-arm64 main] actions-neurocast/action_neurocast_tools_fast_sts_action.lua
 --   [darwin-arm64 main] actions-neurocast/action_neurocast_tools_fast_tts_action.lua
 --   [darwin-arm64 main] actions-neurocast/action_neurocast_tools_audio_tags_insert_action.lua
 --   [darwin-arm64 main] actions-neurocast/action_neurocast_tools_audio_tags_remove_brackets_action.lua
+--   [darwin-arm64 main] utilities-neurocast/utility_neurocast_Merge_selected_items_text_notes.lua
+--   [darwin-arm64 main] utilities-neurocast/utility_neurocast_Search_Text.lua
+--   [darwin-arm64 main] utilities-neurocast/utility_neurocast_set_track_for_toggle_track_vol_and_solo.lua
+--   [darwin-arm64 main] utilities-neurocast/utility_neurocast_toggle_track_vol_and_solo.lua
 --   [darwin-arm64] modules-neurocast/base64_encode_decode.lua
 --   [darwin-arm64] modules-neurocast/Cleanup.lua
 --   [darwin-arm64] modules-neurocast/Curl.lua
@@ -101,5 +162,24 @@
 --   [darwin-arm64] modules-neurocast/Utf8SimpleLowerData.lua
 --   [darwin-arm64] modules-neurocast/Utf8Tools.lua
 --   [darwin-arm64] modules-neurocast/Util.lua
+--   [darwin-arm64] modules-neurocast/docx_dialogue_parser.lua
+--   [darwin-arm64] modules-neurocast/docx_import_tool_languages.lua
+--   [darwin-arm64] modules-neurocast/docx_telemetry_summary.lua
+--   [darwin-arm64] modules-neurocast/docx_xml_extractor.lua
+--   [darwin-arm64] modules-neurocast/docx_xml_parser.lua
+--   [darwin-arm64] modules-neurocast/Parse.lua
+--   [darwin-arm64] modules-neurocast/ReaperX_import_Dialogue.lua
+--   [darwin-arm64] modules-neurocast/track_colors.lua
+--   [darwin-arm64] modules-neurocast/neurocast_script_aligner_helper.lua
+--   [darwin-arm64] modules-neurocast/neurocast_script_aligner_reaper.lua
+--   [darwin-arm64] modules-neurocast/neurocast_script_aligner_result.lua
+--   [darwin-arm64] modules-neurocast/neurocast_script_aligner_settings.lua
+--   [darwin-arm64] modules-neurocast/neurocast_script_aligner_tool_languages.lua
+--   [darwin-arm64] modules-neurocast/mvsep_api.lua
+--   [darwin-arm64] modules-neurocast/mvsep_api_via_neurocast.lua
+--   [darwin-arm64] modules-neurocast/mvsep_model_options.lua
+--   [darwin-arm64] modules-neurocast/mvsep_reaper.lua
+--   [darwin-arm64] modules-neurocast/mvsep_tool_languages.lua
+--   [darwin-arm64] modules-neurocast/ReaperX_render_settings_helper.lua
 --   [darwin-arm64] licenses/Unicode-License.txt
 --   [darwin-arm64 extension] native/darwin-arm64/reaper_cyr_essentials.dylib > reaper_cyr_essentials.dylib

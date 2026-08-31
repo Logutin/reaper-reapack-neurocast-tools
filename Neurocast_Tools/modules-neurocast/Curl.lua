@@ -5,6 +5,7 @@
 -- Curl.join_cmd(argv): join command arguments to one shell command string.
 -- Curl.shell_quote(arg): quote one shell argument for current OS shell style.
 -- Curl.curl_cfg_quote(value): quote value for curl config file syntax.
+-- Curl.effective_request_method(req): resolve explicit or body-implied HTTP method for diagnostics.
 -- Curl.make_curl_job_paths(kind, id): build file paths for one curl job.
 -- Curl.write_curl_config(req, job, opts): write curl config file for a request.
 -- Curl.prepare_curl_job(req, on_done, opts): build job table and config file.
@@ -285,6 +286,23 @@ local function normalize_job_bool(value, fallback)
   return fallback
 end
 
+-- Resolves the method curl will use without changing transport configuration.
+-- Payload and form options make curl issue an initial POST even when no
+-- explicit `request` option is present (important for redirect semantics).
+function Curl.effective_request_method(req)
+  local request = type(req) == "table" and req or {}
+  if request.method ~= nil and tostring(request.method) ~= "" then
+    return tostring(request.method):upper()
+  end
+  if request.body_string ~= nil or request.json_payload_tbl ~= nil or request.body_file_path ~= nil then
+    return "POST"
+  end
+  if type(request.form_fields) == "table" and request.form_fields[1] ~= nil then
+    return "POST"
+  end
+  return "GET"
+end
+
 -- Initialize once before any Curl operation:
 --   Curl.init(State, CFG[, launch_policy])
 -- launch_policy signature: function(job, snapshot, cfg) -> boolean
@@ -557,7 +575,8 @@ function Curl.prepare_curl_job(req, on_done, opts)
   local raw_url = tostring(req.url or "")
   local safe_url = raw_url:gsub("^(%w+://)[^/@]+@", "%1")
   safe_url = safe_url:match("^[^?]+") or safe_url
-  local method_txt = req.method or "GET"
+  local method_txt = Curl.effective_request_method(req)
+  job.effective_method = method_txt
   Util.msg(
     "curl job prepared: " ..
     tostring(job.label) ..
@@ -1113,7 +1132,7 @@ function Curl.parse_curl_results(job, meta_tbl)
     meta_effective_url = meta.effective_url or meta.url_effective
     meta_redirect_url = meta.redirect_url
     meta_content_type = meta.content_type
-    meta_total_time = meta.total_time
+    meta_total_time = meta.time_total or meta.total_time
     meta_namelookup_time = meta.namelookup_time
     meta_connect_time = meta.connect_time
     meta_appconnect_time = meta.appconnect_time
@@ -1194,7 +1213,25 @@ function Curl.complete_curl_job(job, result)
   end
   local http_txt = result and result.http_code or ""
   local exit_txt = result and result.exitcode or ""
-  local time_txt = result and result.total_time or ""
+  local function valid_duration(value)
+    local number = tonumber(value)
+    if not number or number ~= number or number == math.huge or number == -math.huge or number < 0 then
+      return nil
+    end
+    return number
+  end
+  local duration_sec = valid_duration(result and result.total_time)
+  if duration_sec == nil and result and type(result.meta) == "table" then
+    duration_sec = valid_duration(result.meta.time_total or result.meta.total_time)
+  end
+  if duration_sec == nil then
+    local started_at = valid_duration(job.launched_at) or valid_duration(job.created_at)
+    local completed_at = valid_duration(job.completed_at)
+    if started_at and completed_at and completed_at >= started_at then
+      duration_sec = completed_at - started_at
+    end
+  end
+  local time_txt = duration_sec and string.format("%.3fs", duration_sec) or "unknown"
   local up_txt = result and result.size_upload or ""
   local down_txt = result and result.size_download or ""
   local msg_txt =

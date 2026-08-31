@@ -7,11 +7,12 @@
 > on 2026-08-29. macOS remains unqualified. This document is not a live backend
 > contract; recheck source and release inputs before future work.
 
-> **Future planning note:** `Neurocast Tools 0.1.1` is now the approved future
-> limited-internal additive target with 13 planned Main actions: five Tools,
-> four Tool Actions, and four Utilities. Package minimum is REAPER 7.72+. It is
-> not assembled or released, and release execution is blocked until the owner
-> provides and explicitly authorizes a disposable isolated REAPER installation.
+> **Current candidate note:** `Neurocast Tools 0.1.1` is the assembled
+> limited-internal additive candidate with 13 Main actions: five Tools, four
+> Tool Actions, and four Utilities. Package minimum is REAPER 7.72+. The owner
+> provided and authorized a disposable isolated REAPER installation, and the
+> pre-assembly DOCX/Utility live gate passed. The candidate is not yet indexed
+> or published; installed-package Windows qualification remains pending.
 > See
 > [`2026-08-31_future_release_0.1.1.md`](2026-08-31_future_release_0.1.1.md).
 > All `0.1.0-pre1` inventory, source, qualification, and publication statements

@@ -1,6 +1,10 @@
-/Neurocast_Tools/elevenlabs_tool.lua -text
-/Neurocast_Tools/elevenlabs_manager_tool.lua -text
-/Neurocast_Tools/actions-neurocast/*.lua -text
+/Neurocast_Tools/elevenlabs_tool.lua -text -whitespace
+/Neurocast_Tools/elevenlabs_manager_tool.lua -text -whitespace
+/Neurocast_Tools/docx_import_tool.lua -text -whitespace
+/Neurocast_Tools/neurocast_script_aligner_tool.lua -text -whitespace
+/Neurocast_Tools/mvsep_tool.lua -text -whitespace
+/Neurocast_Tools/actions-neurocast/*.lua -text -whitespace
+/Neurocast_Tools/utilities-neurocast/*.lua -text -whitespace
 /Neurocast_Tools/modules-neurocast/*.lua -text -whitespace
 /Neurocast_Tools/bin/win/* -text
 /Neurocast_Tools/native/*/* -text

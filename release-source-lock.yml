@@ -3,13 +3,13 @@ schema_version: 1
 package:
   display_name: Neurocast Tools
   slug: Neurocast_Tools
-  version: 0.1.0-pre1
+  version: 0.1.1
   inventory: release-manifest.yml
 
 tracked_lua:
   repository: https://github.com/Logutin/auphonic-mt
-  commit: 238097e631e0cbf6e9c687dab09184649864fc6a
-  count: 27
+  commit: 109e5d138b0f459319caa849b6684e602acfe629
+  count: 53
   policy: All Lua inputs are extracted from commit-qualified Git blobs and copied byte-for-byte.
 
 local_windows_inputs:
