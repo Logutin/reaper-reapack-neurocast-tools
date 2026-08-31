@@ -80,11 +80,28 @@ The transaction reported `Neurocast Tools [new]` version `0.1.1`. CLI readback
 again verified the 61-file receipt, 13 actions, exact package bytes, native
 extension hash, zero generated wrappers, and preserved telemetry identity.
 
+### Final public-feed live check and handoff
+
+The owner removed the temporary package and repository, imported the real
+public ReaPack URL into the empty disposable installation, installed `0.1.1`,
+and reported that installation succeeded and the backend was working. CLI
+readback confirmed the real repository URL, version `0.1.1`, 61 owned files,
+13 registered actions, one native extension, and the preserved telemetry
+identity.
+
+The owner then shipped `0.1.1` to a team member for testing. This records the
+start of selected-team testing; it is not yet another-user qualification.
+
 ## Evidence boundary
 
 No authenticated test account existed for this cycle. Authenticated
 ElevenLabs, Manager, MVSEP, and Script Aligner workflows were not simulated and
 remain explicitly unqualified for `0.1.1`.
+
+The owner's final statement that the backend was working is accepted as live
+connectivity/operation evidence for the performed check. Because no individual
+authenticated workflows were enumerated, it does not upgrade the broader
+workflow-by-workflow deferrals above.
 
 Script Aligner remains the documented `https://studio.neurocast.tech` endpoint
 exception. Its ambiguous-create duplicate risk is accepted technical debt and

@@ -21,6 +21,8 @@ macOS x86_64, and macOS ARM64. ReaImGui remains an external prerequisite.
 [`index.xml`](https://raw.githubusercontent.com/Logutin/reaper-reapack-neurocast-tools/main/index.xml)
 for limited internal testing. Windows x64 passed update from `0.1.0-pre1`, full
 uninstall, clean install, and real-feed delivery qualification on 2026-08-31.
+The owner then repeated a clean install from the public feed, reported that the
+backend was working, and shipped `0.1.1` to a team member for testing.
 macOS x86_64 and ARM64, legacy-install migration, authenticated workflow
 requalification, and another-user or another-machine testing remain unqualified
 or pending. This is not a broadly qualified public production release. No tag,
