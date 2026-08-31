@@ -7,7 +7,8 @@
 --   Self-contained Neurocast-backed REAPER tools for Windows x64, macOS x86_64, and macOS ARM64.
 --   ReaImGui is an external prerequisite and is not bundled.
 --   Package minimum: REAPER 7.72+.
---   Windows x64 release qualification is pending; macOS and authenticated workflow requalification remain unqualified.
+--   Windows x64 update, uninstall, and clean-install qualification passed for limited internal use.
+--   macOS and authenticated workflow requalification remain unqualified.
 --   Script Aligner ambiguous-create retry duplication is accepted technical debt for this limited-internal release.
 --   This is not a broadly qualified public production release.
 -- @link https://github.com/Logutin/reaper-reapack-neurocast-tools

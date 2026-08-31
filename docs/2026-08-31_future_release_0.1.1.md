@@ -7,14 +7,12 @@
 
 ## Status boundary
 
-`Neurocast Tools 0.1.1` is an assembled limited-internal release candidate. It
-is not yet indexed, installed-package qualified, published, tagged, or released.
+`Neurocast Tools 0.1.1` is a published limited-internal release. Windows x64
+update, uninstall, clean-install, and real-feed delivery qualification passed.
 
-The current published package remains the immutable `0.1.0-pre1`
-limited-internal snapshot. The candidate updates `release-manifest.yml`,
-`release-source-lock.yml`, `Neurocast_Tools/`, and metapackage metadata. The
-published `index.xml` remains unchanged until qualification, and no historical
-`0.1.0-pre1` source URL is rebound.
+The generated `index.xml` adds `0.1.1` while retaining the immutable historical
+`0.1.0-pre1` source URLs. The release updates `release-manifest.yml`,
+`release-source-lock.yml`, `Neurocast_Tools/`, and metapackage metadata.
 
 The dependency projection originated from `auphonic-mt` runtime commit
 `c046a69a6f48a81dfab18bb34d6db8182cc63bee` and was rechecked on 2026-08-31
@@ -219,8 +217,8 @@ The owner supplied and explicitly authorized the disposable Windows REAPER at
   bundled curl, and release-local 7-Zip/DOCX checks pass.
 
 Installed-package update, clean-install, uninstall, action-registration, and
-real-feed checks remain pending. The root `index.xml` must not expose `0.1.1`
-until the applicable candidate qualification is accepted.
+real-feed checks passed in the authorized disposable Windows REAPER. The final
+receipt contains 61 owned files and exactly 13 registered Main actions.
 
 Only after a separate release command and the authorization gate above:
 
@@ -243,5 +241,5 @@ Only after a separate release command and the authorization gate above:
    every deferred platform, migration, machine, signing, backend, reliability,
    and technical-debt boundary without implying broad production readiness.
 
-Until those steps are completed, `0.1.1` remains an unpublished candidate and
-`0.1.0-pre1` remains the only published package version.
+Those limited-internal steps are complete for Windows x64. All explicitly
+deferred scopes remain unqualified.

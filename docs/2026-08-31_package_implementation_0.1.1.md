@@ -6,8 +6,9 @@
 
 ## Status
 
-`Neurocast Tools 0.1.1` is assembled but not yet published. The repository's
-root `index.xml` still exposes only the immutable `0.1.0-pre1` release.
+`Neurocast Tools 0.1.1` is assembled, Windows-qualified, and published for
+limited internal use. The repository's root `index.xml` preserves the immutable
+`0.1.0-pre1` sources and adds `0.1.1`.
 
 This release remains limited internal for selected team members. The plain
 version does not claim broad production readiness.
@@ -81,10 +82,13 @@ surface, so an ambiguous response can cause a duplicate alignment. This is an
 accepted non-blocker for the limited-internal release. Operators must inspect
 existing Studio jobs before retrying an ambiguous create failure.
 
-## Remaining gate
+## Publication result
 
-Before `0.1.1` is exposed in the public ReaPack index, qualify the candidate's
-Windows update/clean-install/uninstall behavior in the authorized disposable
-REAPER, verify 13 registered Main actions and package-owned cleanup, then run a
-real raw-GitHub feed delivery check. Record every deferred scope without
-upgrading the claim beyond limited internal.
+The candidate passed Windows update from `0.1.0-pre1`, complete package-owned
+uninstall, and clean install in the authorized disposable REAPER. The clean
+receipt contains 61 owned files, exactly 13 registered Main actions, and no
+extra/generated wrappers. The telemetry identity survived the lifecycle.
+
+The generated index was then published and the raw-GitHub feed was verified to
+serve both immutable `0.1.0-pre1` and current `0.1.1` source sets. Deferred scope
+remains explicit and the claim remains limited internal.

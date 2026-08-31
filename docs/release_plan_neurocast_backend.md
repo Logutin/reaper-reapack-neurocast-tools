@@ -7,12 +7,11 @@
 > on 2026-08-29. macOS remains unqualified. This document is not a live backend
 > contract; recheck source and release inputs before future work.
 
-> **Current candidate note:** `Neurocast Tools 0.1.1` is the assembled
-> limited-internal additive candidate with 13 Main actions: five Tools, four
-> Tool Actions, and four Utilities. Package minimum is REAPER 7.72+. The owner
-> provided and authorized a disposable isolated REAPER installation, and the
-> pre-assembly DOCX/Utility live gate passed. The candidate is not yet indexed
-> or published; installed-package Windows qualification remains pending.
+> **Current release note:** `Neurocast Tools 0.1.1` is the published
+> limited-internal additive package with 13 Main actions: five Tools, four Tool
+> Actions, and four Utilities. Package minimum is REAPER 7.72+. The owner
+> provided and authorized a disposable isolated REAPER installation. Windows
+> update, uninstall, clean-install, DOCX, Utility, and real-feed gates passed.
 > See
 > [`2026-08-31_future_release_0.1.1.md`](2026-08-31_future_release_0.1.1.md).
 > All `0.1.0-pre1` inventory, source, qualification, and publication statements
@@ -254,14 +253,15 @@ files.
    tooling was added. Static and isolated ReaPack checks are the gate for this
    milestone.
 2. **Package qualification — Windows local pass recorded:** the Windows x64
-   fresh-install, live-test, and uninstall gates passed. Prior-version update,
-   legacy-wrapper migration, other-machine testing, both macOS architecture
-   passes, and signing/notarization remain unqualified.
+   update from `0.1.0-pre1`, uninstall, clean-install, and focused live gates
+   passed. Legacy-wrapper migration, authenticated workflow requalification,
+   other-machine testing, both macOS architecture passes, and
+   signing/notarization remain unqualified.
 3. **Limited internal publication — completed:** the generated root
-   `index.xml` is published at the real raw-GitHub repository URL for 1–2
-   trusted internal testers, and the Windows delivery path passed from that
-   feed. This did not change the qualified package payload or version and does
-   not imply a broadly qualified public production release.
+   `index.xml` is published at the real raw-GitHub repository URL for selected
+   internal testers, and the Windows delivery path passed from that feed. This
+   did not change the qualified package payload or version and does not imply a
+   broadly qualified public production release.
 4. **Broader release — outside current policy:** every current release remains
    limited internal. Any future move beyond selected internal testers requires
    an explicit policy decision plus the relevant platform, update, migration,
@@ -269,7 +269,8 @@ files.
    not required for the limited-internal milestone and has not been created.
 
 The package is now `installable: true` for limited internal testing through the
-root `index.xml`. Windows x64 is qualified. macOS x86_64 and ARM64,
-prior-version update, legacy-install migration, and another-user or
-another-machine testing remain unqualified or pending. No tag, GitHub release,
-GitHub Actions workflow, signing, or notarization was added.
+root `index.xml`. Windows x64 update, uninstall, and clean install are qualified.
+macOS x86_64 and ARM64, legacy-install migration, authenticated workflow
+requalification, and another-user or another-machine testing remain unqualified
+or pending. No tag, GitHub release, GitHub Actions workflow, signing, or
+notarization was added.
