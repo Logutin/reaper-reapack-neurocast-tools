@@ -8,8 +8,11 @@
 > contract; recheck source and release inputs before future work.
 
 > **Future planning note:** `Neurocast Tools 0.1.1` is now the approved future
-> additive target with 13 planned Main actions, but it is not assembled or
-> released. See
+> limited-internal additive target with 13 planned Main actions: five Tools,
+> four Tool Actions, and four Utilities. Package minimum is REAPER 7.72+. It is
+> not assembled or released, and release execution is blocked until the owner
+> provides and explicitly authorizes a disposable isolated REAPER installation.
+> See
 > [`2026-08-31_future_release_0.1.1.md`](2026-08-31_future_release_0.1.1.md).
 > All `0.1.0-pre1` inventory, source, qualification, and publication statements
 > below remain historical/current-release facts and must not be rebound.
@@ -19,6 +22,11 @@
 The package display name is **Neurocast Tools**, the repository/package
 directory slug is `Neurocast_Tools`, and the approved first pre-release version
 is `0.1.0-pre1`.
+
+Every Neurocast Tools release is currently limited internal for selected team
+members. Future releases may use plain semantic versions such as `0.1.1`; the
+lack of a `-pre` suffix does not claim broad production qualification. A
+broader release would require a separate policy decision and evidence plan.
 
 The repositories have deliberately separate responsibilities:
 
@@ -111,6 +119,34 @@ breakdown as `darwin64`.
 inventory and is independent of every Lua `SCRIPT_VERSION` or `TOOLSET_VERSION`
 constant. Packaging must not change runtime source constants merely to match a
 ReaPack package version.
+
+For future `0.1.1`, the new Utility copies intentionally carry
+`TOOLSET_VERSION = "v0.1.1"` as their source-level Neurocast package identity.
+That identity reset happens in the runtime source repository before source
+freeze; the distribution repository still copies exact frozen blobs and does
+not rewrite version constants during packaging.
+
+## Future script taxonomy
+
+- **Tool:** substantial user-facing workflow/application, named `*_tool.lua`.
+- **Utility:** standalone focused one-shot operation, named
+  `utility_neurocast_*.lua` and installed under `utilities-neurocast/`.
+- **Tool Action:** thin shortcut into a Tool, named
+  `action_neurocast_tools_*.lua` and installed under `actions-neurocast/`.
+
+The four existing ElevenLabs wrappers are Tool Actions, not Utilities. The
+future four Utilities are module-free; the setter/toggle pair shares an
+isolated persistent ExtState namespace but does not load code from another
+file. See the dated `0.1.1` plan for the exact filenames.
+
+## REAPER authorization gate for future releases
+
+Preparatory source and documentation work may proceed, but no future release
+assembly, indexing, qualification, publication, or REAPER operation may begin
+until the owner prepares a disposable isolated REAPER installation, provides
+its exact path, and explicitly authorizes the agent to use it. Once authorized,
+the agent may operate only that named installation and may recommend specific
+owner-run checks when human workflow judgment is preferable.
 
 ## Release gates
 
@@ -225,10 +261,11 @@ files.
    trusted internal testers, and the Windows delivery path passed from that
    feed. This did not change the qualified package payload or version and does
    not imply a broadly qualified public production release.
-4. **Broader release — pending:** accept the remaining platform, update,
-   migration, and another-user or another-machine evidence before broadening
-   the release. A tag or GitHub release was not required for the limited
-   internal milestone and has not been created.
+4. **Broader release — outside current policy:** every current release remains
+   limited internal. Any future move beyond selected internal testers requires
+   an explicit policy decision plus the relevant platform, update, migration,
+   and another-user or another-machine evidence. A tag or GitHub release was
+   not required for the limited-internal milestone and has not been created.
 
 The package is now `installable: true` for limited internal testing through the
 root `index.xml`. Windows x64 is qualified. macOS x86_64 and ARM64,

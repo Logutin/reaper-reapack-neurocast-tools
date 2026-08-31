@@ -1,8 +1,9 @@
 # Neurocast Tools
 
 This repository is the ReaPack distribution repository for **Neurocast Tools**.
-The approved first pre-release package is `Neurocast_Tools` version
-`0.1.0-pre1`.
+The currently published package is `Neurocast_Tools` version `0.1.0-pre1`.
+All releases are currently limited internal for selected team members; future
+plain versions such as `0.1.1` do not imply broad production qualification.
 
 Runtime Lua source and the Neurocast-backend release workflow are owned and
 documented in
@@ -29,12 +30,27 @@ workflow, signing, or notarization was added for this milestone.
 
 ## Future release: 0.1.1 (planning only)
 
-`Neurocast Tools 0.1.1` is the approved future target, not a current package.
-The additive plan preserves the existing Manager and four fixed ElevenLabs
-actions and targets 13 Main actions total: ElevenLabs, Manager, DOCX Import,
-Script Aligner, MVSEP, four fixed ElevenLabs actions, and the four standalone
-helpers from the Direct API package. No `0.1.1` payload, manifest, source lock,
-metapackage metadata, generated index, tag, or release has been created.
+`Neurocast Tools 0.1.1` is the approved future limited-internal target, not a
+current package. The additive plan preserves the existing Manager and four
+fixed ElevenLabs Tool Actions and targets 13 Main actions total: five Tools,
+four Tool Actions, and four Utilities under `utilities-neurocast/`. Package
+minimum is REAPER 7.72+.
+
+| Concept | Meaning | Naming |
+| --- | --- | --- |
+| Tool | Substantial user-facing workflow/application | `*_tool.lua` |
+| Utility | Standalone, focused, one-shot REAPER operation | `utility_neurocast_*.lua` |
+| Tool Action | Thin shortcut into functionality owned by a Tool | `action_neurocast_tools_*.lua` |
+
+The Script Aligner ambiguous-create duplicate risk is accepted documented
+technical debt and is not a blocker for this limited-internal release. No
+`0.1.1` payload, manifest, source lock, metapackage metadata, generated index,
+tag, or release has been created.
+
+Release operations are blocked until the owner prepares a disposable isolated
+REAPER installation, provides its exact path, and explicitly authorizes the
+agent to use it. Preparatory source and documentation changes do not satisfy or
+bypass that gate.
 
 See the dated
 [`0.1.1` future-release plan](docs/2026-08-31_future_release_0.1.1.md) for the
