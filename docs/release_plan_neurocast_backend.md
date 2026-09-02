@@ -7,25 +7,19 @@
 > on 2026-08-29. macOS remains unqualified. This document is not a live backend
 > contract; recheck source and release inputs before future work.
 
-> **Current release note:** `Neurocast Tools 0.1.1` is the published
-> limited-internal additive package with 13 Main actions: five Tools, four Tool
-> Actions, and four Utilities. Package minimum is REAPER 7.72+. The owner
-> provided and authorized a disposable isolated REAPER installation. Windows
-> update, uninstall, clean-install, DOCX, Utility, and real-feed gates passed.
-> See
-> [`2026-08-31_future_release_0.1.1.md`](2026-08-31_future_release_0.1.1.md).
-> All `0.1.0-pre1` inventory, source, qualification, and publication statements
-> below remain historical/current-release facts and must not be rebound.
-
-> **Pending candidate note:** `Neurocast Tools 0.1.2` is the approved narrow
-> MVSEP update for limited-internal team testing. It keeps the existing 13 Main
-> actions and package minimum, and changes only the packaged MVSEP entrypoint
-> and REAPER adapter behavior. Its authorized Windows gate is deterministic
-> package verification plus an owner-run `0.1.1 -> 0.1.2` update/UI smoke in
-> `C:\extra_Reapers\Reaper_Empty_01`. Clean install, uninstall, deep workflow,
-> authenticated, difficult-network, macOS, and another-machine qualification
-> are explicitly deferred. Publication remains blocked until the owner reports
-> the smoke result.
+> **Current release note:** `Neurocast Tools 0.1.2` is the published
+> limited-internal MVSEP update with 13 Main actions and a REAPER 7.72+ package
+> minimum. Deterministic package checks and the owner-run Windows
+> `0.1.1 -> 0.1.2` update/UI smoke passed on 2026-09-02 in the authorized
+> disposable installation. Only the packaged MVSEP entrypoint and REAPER
+> adapter changed. Clean install, uninstall, deep or remote-job workflows,
+> authenticated operation, difficult-network behavior, macOS, and
+> another-machine qualification remain explicitly deferred. See
+> [`2026-09-02_package_implementation_0.1.2.md`](2026-09-02_package_implementation_0.1.2.md)
+> and
+> [`2026-09-02_windows_local_qualification_0.1.2.md`](2026-09-02_windows_local_qualification_0.1.2.md).
+> All older version-specific inventory, qualification, and publication
+> statements below remain historical facts and must not be rebound to `0.1.2`.
 
 ## Scope and ownership
 

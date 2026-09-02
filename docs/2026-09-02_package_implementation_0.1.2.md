@@ -1,17 +1,18 @@
-# Neurocast Tools 0.1.2 candidate assembly
+# Neurocast Tools 0.1.2 assembly and release record
 
-> **Source snapshot warning:** This record describes the `0.1.2` candidate
-> assembled from the repositories and release decision as of 2026-09-02.
+> **Source snapshot warning:** This record describes the `0.1.2` package
+> assembled, qualified, and published from the repositories and release
+> decision as of 2026-09-02.
 > Re-check current commits, hashes, index contents, installed receipts, and
 > qualification state before using it for a later release.
 
 ## Status
 
-`Neurocast Tools 0.1.2` is an unpublished limited-internal candidate. The
-public `index.xml` must remain at the published `0.1.1` state until the owner
-reports that the minimal disposable-REAPER update/UI smoke passed.
+`Neurocast Tools 0.1.2` is published for limited-internal team testing through
+the repository `index.xml`. The owner reported that the minimal
+disposable-REAPER update/UI smoke passed before publication.
 
-This candidate is intended to start deeper testing by selected team members.
+This release is intended to start deeper testing by selected team members.
 It is not broad public production qualification.
 
 ## Frozen sources
@@ -34,7 +35,7 @@ The MVSEP script identity advances from `v0.1.0` to `v0.2.0`. The ReaPack
 package version is independently `0.1.2`; unchanged scripts do not receive
 artificial implementation-version bumps.
 
-## Candidate shape
+## Package shape
 
 The package remains one metapackage with 13 Main actions: five Tools, four Tool
 Actions, and four Utilities. The Lua closure remains 53 files: 13 Main actions
@@ -51,9 +52,9 @@ was not changed.
 Direct and Neurocast module trees have known intentional drift; detailed parity
 analysis was not performed for this release.
 
-## Required deterministic checks
+## Deterministic checks
 
-Before the owner-run smoke, verify:
+Before the owner-run smoke, the following checks passed:
 
 - the source lock resolves to the clean pushed runtime commit;
 - all 53 selected Lua destinations match their commit-qualified source content
@@ -82,13 +83,32 @@ The supplied Lua helper is not part of the package. It must:
 - open the packaged MVSEP UI without creating, selecting, renaming, moving, or
   modifying tracks, items, time selections, or other project state.
 
-The owner performs the smallest useful visual check and reports the result. No
-remote MVSEP job is required. Clean install, uninstall, authenticated workflow
+The owner performed the smallest useful visual check and reported that it
+passed. The installed ReaPack receipt reported `0.1.2`, 61 owned Windows files,
+and 13 Main actions; both changed installed MVSEP files byte-matched the frozen
+candidate. The helper initially produced a false negative because its static
+marker expected `function M.import_downloads(...)` while the adapter correctly
+declares `function MVSepReaper.import_downloads(...)`; the qualification helper
+was corrected without changing package runtime.
+
+No remote MVSEP job was required. Clean install, uninstall, authenticated workflow
 requalification, difficult-network testing, macOS, another user/machine,
 signing, notarization, tags, GitHub Releases, and CI release automation remain
 unqualified or out of scope.
 
-If the smoke passes, the permitted claim is: Windows `0.1.1 -> 0.1.2` update/UI
-smoke passed for limited-internal team testing. Do not call `0.1.2` broadly
+The permitted claim is: Windows `0.1.1 -> 0.1.2` update/UI smoke passed for
+limited-internal team testing. Do not call `0.1.2` broadly
 Windows-qualified, workflow-qualified, production-ready, or broadly
 public-qualified.
+
+## Publication
+
+- Runtime source commit:
+  `3b5cb2078afbaa5f7f4b2ca15054065faae98416`.
+- Distribution candidate commit pinned by all `0.1.2` source URLs:
+  `7586b148dafb68a0b5231167bc17fd2586fe4fa0`.
+- Index publication commit:
+  `c2cb240e719ef8b192cc92795fe4dae8b7db70fe`.
+- Published feed verification found versions `0.1.0-pre1`, `0.1.1`, and
+  `0.1.2`; the remote index byte-matched the reviewed local index.
+- No tag, GitHub Release, signing, notarization, or release CI was added.

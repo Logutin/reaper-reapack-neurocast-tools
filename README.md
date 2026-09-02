@@ -1,9 +1,9 @@
 # Neurocast Tools
 
 This repository is the ReaPack distribution repository for **Neurocast Tools**.
-The currently published package is `Neurocast_Tools` version `0.1.1`.
-All releases are currently limited internal for selected team members; future
-plain versions such as `0.1.2` do not imply broad production qualification.
+The currently published package is `Neurocast_Tools` version `0.1.2`.
+All releases are currently limited internal for selected team members; a plain
+semantic version does not imply broad production qualification.
 
 Runtime Lua source and the Neurocast-backend release workflow are owned and
 documented in
@@ -17,32 +17,29 @@ Main actions: five Tools, four fixed ElevenLabs Tool Actions, and four
 Utilities under `utilities-neurocast/`. The target matrix is Windows x64,
 macOS x86_64, and macOS ARM64. ReaImGui remains an external prerequisite.
 
-**Current status:** `0.1.1` is published through the repository
+**Current status:** `0.1.2` is published through the repository
 [`index.xml`](https://raw.githubusercontent.com/Logutin/reaper-reapack-neurocast-tools/main/index.xml)
-for limited internal testing. Windows x64 passed update from `0.1.0-pre1`, full
-uninstall, clean install, and real-feed delivery qualification on 2026-08-31.
-The owner then repeated a clean install from the public feed, reported that the
-backend was working, and shipped `0.1.1` to a team member for testing.
-macOS x86_64 and ARM64, legacy-install migration, authenticated workflow
-requalification, and another-user or another-machine testing remain unqualified
-or pending. This is not a broadly qualified public production release. No tag,
-GitHub release, GitHub Actions workflow, signing, or notarization was added for
-this milestone.
+for limited-internal team testing. On 2026-09-02, the owner updated the
+authorized disposable Windows x64 installation from `0.1.1` to `0.1.2` and
+confirmed the packaged MVSEP `script v0.2.0 / toolset v0.2.0` UI, its
+time-selection-only queue presentation, absence of Free/Regions controls, and
+presence of concurrency and result-placement controls. Headless readback
+confirmed the `0.1.2` receipt, 61 owned files, 13 Main actions, and exact bytes
+for both changed MVSEP files.
 
-**Candidate status:** `0.1.2` is assembled but unpublished. It updates only the
-packaged `mvsep_tool.lua` and `modules-neurocast/mvsep_reaper.lua` runtime
-behavior, advances the MVSEP script identity to `v0.2.0`, and keeps the same 13
-Main actions and platform inventory. Publication is blocked until the owner
-runs the supplied non-mutating Lua helper in the authorized disposable REAPER
-and reports that the minimal packaged UI smoke passed. See the dated
-[`0.1.2` assembly record](docs/2026-09-02_package_implementation_0.1.2.md).
+This narrow smoke did not repeat uninstall, clean install, authenticated or
+remote-job workflows, difficult-network testing, macOS qualification, or
+another-user/machine testing. This is not a broadly qualified public production
+release. No tag, GitHub release, GitHub Actions workflow, signing, or
+notarization was added.
 
-## Current release: 0.1.1
+## Current release: 0.1.2
 
-`Neurocast Tools 0.1.1` is a published limited-internal package. It preserves
-the existing Manager and four fixed ElevenLabs Tool Actions and contains 13 Main
-actions total: five Tools, four Tool Actions, and four Utilities under
-`utilities-neurocast/`. Package minimum is REAPER 7.72+.
+`Neurocast Tools 0.1.2` is a published limited-internal package. It changes only
+the packaged `mvsep_tool.lua` and `modules-neurocast/mvsep_reaper.lua` runtime
+behavior relative to `0.1.1`, advances the MVSEP script identity to `v0.2.0`,
+and retains 13 Main actions: five Tools, four Tool Actions, and four Utilities
+under `utilities-neurocast/`. Package minimum remains REAPER 7.72+.
 
 | Concept | Meaning | Naming |
 | --- | --- | --- |
@@ -50,25 +47,22 @@ actions total: five Tools, four Tool Actions, and four Utilities under
 | Utility | Standalone, focused, one-shot REAPER operation | `utility_neurocast_*.lua` |
 | Tool Action | Thin shortcut into functionality owned by a Tool | `action_neurocast_tools_*.lua` |
 
-The Script Aligner ambiguous-create duplicate risk is accepted documented
-technical debt and is not a blocker for this limited-internal release. The
-`0.1.1` payload, manifest, source lock, and metapackage metadata are assembled
-from `auphonic-mt` commit `109e5d138b0f459319caa849b6684e602acfe629`.
-The generated `index.xml` preserves immutable `0.1.0-pre1` source URLs and adds
-the qualified `0.1.1` sources. No tag or GitHub release was created.
+The `0.1.2` runtime is frozen from `auphonic-mt` commit
+`3b5cb2078afbaa5f7f4b2ca15054065faae98416`. Its published sources are pinned
+to distribution candidate commit
+`7586b148dafb68a0b5231167bc17fd2586fe4fa0`; index publication commit
+`c2cb240e719ef8b192cc92795fe4dae8b7db70fe` preserves the immutable historical
+sources and adds `0.1.2`.
 
 The owner supplied and authorized the disposable installation at
-`C:\extra_Reapers\Reaper_Empty_01`. Windows update, uninstall, clean-install,
-DOCX Import, and all four Utility checks passed. Authenticated Tool
-requalification is explicitly deferred because no test account is available;
-macOS and broader reliability, migration, and another-machine scopes remain
-unqualified.
+`C:\extra_Reapers\Reaper_Empty_01`. The narrow `0.1.1 -> 0.1.2` update/UI smoke
+passed there. The broader `0.1.1` lifecycle evidence remains historical and is
+not silently promoted to `0.1.2` qualification.
 
-See the dated
-[`0.1.1` release plan](docs/2026-08-31_future_release_0.1.1.md) and
-[`0.1.1` assembly record](docs/2026-08-31_package_implementation_0.1.1.md) for
-the dependency closure, evidence boundaries, and gates. The published
-`0.1.0-pre1` payload and its immutable historical sources remain unchanged.
+See the dated [`0.1.2` assembly record](docs/2026-09-02_package_implementation_0.1.2.md)
+and [`0.1.2` Windows smoke record](docs/2026-09-02_windows_local_qualification_0.1.2.md)
+for the dependency closure, evidence boundaries, and gate. The published
+`0.1.0-pre1` and `0.1.1` historical sources remain unchanged.
 
 See [the release plan](docs/release_plan_neurocast_backend.md) and the
 [`0.1.0-pre1` runtime inventory](docs/runtime_inventory_0.1.0-pre1.md). The
