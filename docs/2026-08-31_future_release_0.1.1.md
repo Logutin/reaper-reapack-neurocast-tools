@@ -1,9 +1,10 @@
-# Neurocast Tools 0.1.1 future release plan
+# Neurocast Tools 0.1.1 release plan and outcome
 
 > **Source snapshot warning:** This human-facing planning document reflects the
-> runtime and distribution repositories as of 2026-08-31. It is planning
-> support, not a release manifest or source lock; re-check current source and
-> all release inputs before implementation.
+> runtime and distribution repositories as of 2026-08-31. It originated as
+> planning support and now records the completed gate outcome; it is not a
+> release manifest or source lock. Re-check current source and all release
+> inputs before later implementation.
 
 ## Status boundary
 
@@ -27,17 +28,16 @@ selected team members. A plain version such as `0.1.1` is deliberate; absence
 of a `-pre` suffix does not claim broad production qualification or public
 readiness. Faster internal cycles are intended to produce real-world evidence.
 
-All release operations are blocked until the owner:
+At planning time, all release operations were blocked until the owner:
 
 1. prepares a disposable, isolated REAPER installation;
 2. provides its exact path; and
 3. explicitly authorizes the agent to operate that installation.
 
-Preparatory source and documentation work may proceed before that gate. Release
-assembly, manifest/source-lock creation, indexing, qualification, publication,
-and any REAPER operation may not. After authorization, the agent must use only
-the named disposable installation. It may still recommend owner-run tests when
-a check benefits from the owner's workflow judgment.
+Those prerequisites were satisfied for `0.1.1` on 2026-08-31. The rule remains
+the reusable authorization boundary for future releases: before authorization,
+only preparatory source and documentation work may proceed; after
+authorization, the agent must use only the named disposable installation.
 
 ## Package terminology
 
@@ -168,10 +168,10 @@ evidence, and operator guidance. It is **not a blocker for the limited-internal
 must inspect existing Studio jobs first. Safe create retry must not be claimed
 until reconciliation or backend idempotency exists.
 
-## Gates before assembly
+## Historical gates before assembly
 
 1. Satisfy the disposable isolated REAPER path and explicit-authorization gate.
-   Until then, all release execution remains blocked.
+   This was satisfied for `0.1.1` on 2026-08-31.
 2. Obtain fresh API documentation/preflight evidence for the Studio-dependent
    entrypoints and identify the exact backend snapshots. Preserve the Script
    Aligner `studio.neurocast.tech` exception.
