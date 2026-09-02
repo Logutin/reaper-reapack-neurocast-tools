@@ -52,7 +52,7 @@ local candidate_markers_ok = entrypoint_source ~= nil
   and entrypoint_source:find('concurrency = "concurrency"', 1, true) ~= nil
   and entrypoint_source:find('Free mode', 1, true) == nil
   and entrypoint_source:find('Track + project regions', 1, true) == nil
-  and adapter_source:find('function M.import_downloads(record, placement)', 1, true) ~= nil
+  and adapter_source:find('function MVSepReaper.import_downloads(record, placement)', 1, true) ~= nil
   and adapter_source:find('INVALID_DESTINATION_TRACK', 1, true) ~= nil
 
 if not candidate_markers_ok then
