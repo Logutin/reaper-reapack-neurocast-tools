@@ -19,13 +19,18 @@ macOS x86_64, and macOS ARM64. ReaImGui remains an external prerequisite.
 
 **Current status:** `0.1.2` is published through the repository
 [`index.xml`](https://raw.githubusercontent.com/Logutin/reaper-reapack-neurocast-tools/main/index.xml)
-for limited-internal team testing. On 2026-09-02, the owner updated the
+and is now **in live testing by the team**. On 2026-09-02, the owner updated the
 authorized disposable Windows x64 installation from `0.1.1` to `0.1.2` and
 confirmed the packaged MVSEP `script v0.2.0 / toolset v0.2.0` UI, its
 time-selection-only queue presentation, absence of Free/Regions controls, and
 presence of concurrency and result-placement controls. Headless readback
 confirmed the `0.1.2` receipt, 61 owned files, 13 Main actions, and exact bytes
 for both changed MVSEP files.
+
+After publication, the disposable installation was read back using the real
+raw-GitHub feed with the `0.1.2`, 61-file, 13-Main-action receipt. The owner
+then recorded a `0.1.2` demo video for the team and reported that live team
+testing is underway. No additional team test results are recorded yet.
 
 This narrow smoke did not repeat uninstall, clean install, authenticated or
 remote-job workflows, difficult-network testing, macOS qualification, or

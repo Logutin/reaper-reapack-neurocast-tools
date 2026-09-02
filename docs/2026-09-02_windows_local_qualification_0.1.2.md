@@ -62,3 +62,15 @@ The gate did not repeat uninstall, clean install, authenticated workflow,
 remote MVSEP processing, difficult-network, macOS, legacy migration, or
 another-user/machine testing. Signing, notarization, tags, GitHub Releases, and
 release CI remain out of scope.
+
+## Post-publication team status
+
+The disposable installation was read back using the real raw-GitHub ReaPack
+feed with the `0.1.2`, 61-file, 13-Main-action receipt and the expected pinned
+Windows native-extension hash. The temporary localhost candidate feed was no
+longer needed and was stopped.
+
+The owner then recorded a demo video with `0.1.2` for the team and reported the
+current release status as **in live testing by the team**. This confirms active
+distribution/testing status only; no additional team test outcomes or broader
+qualification are inferred.

@@ -11,8 +11,10 @@
 > limited-internal MVSEP update with 13 Main actions and a REAPER 7.72+ package
 > minimum. Deterministic package checks and the owner-run Windows
 > `0.1.1 -> 0.1.2` update/UI smoke passed on 2026-09-02 in the authorized
-> disposable installation. Only the packaged MVSEP entrypoint and REAPER
-> adapter changed. Clean install, uninstall, deep or remote-job workflows,
+> disposable installation. The real-feed receipt was subsequently read back,
+> the owner recorded a demo video for the team, and `0.1.2` is now in live
+> testing by the team. Only the packaged MVSEP entrypoint and REAPER adapter
+> changed. Clean install, uninstall, deep or remote-job workflows,
 > authenticated operation, difficult-network behavior, macOS, and
 > another-machine qualification remain explicitly deferred. See
 > [`2026-09-02_package_implementation_0.1.2.md`](2026-09-02_package_implementation_0.1.2.md)

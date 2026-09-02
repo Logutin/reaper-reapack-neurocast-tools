@@ -12,8 +12,9 @@
 the repository `index.xml`. The owner reported that the minimal
 disposable-REAPER update/UI smoke passed before publication.
 
-This release is intended to start deeper testing by selected team members.
-It is not broad public production qualification.
+This release is now in live testing by the team. The owner recorded a demo
+video for the team after publication. No additional team test results are
+recorded yet, and this status is not broad public production qualification.
 
 ## Frozen sources
 
@@ -111,4 +112,9 @@ public-qualified.
   `c2cb240e719ef8b192cc92795fe4dae8b7db70fe`.
 - Published feed verification found versions `0.1.0-pre1`, `0.1.1`, and
   `0.1.2`; the remote index byte-matched the reviewed local index.
+- Post-publication readback found the disposable installation using the real
+  raw-GitHub feed with the `0.1.2`, 61-file, 13-Main-action receipt. The
+  temporary localhost feed was then stopped.
+- The owner recorded a `0.1.2` demo video for the team and reported the release
+  is in live testing by the team.
 - No tag, GitHub Release, signing, notarization, or release CI was added.
