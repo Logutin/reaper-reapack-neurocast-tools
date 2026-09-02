@@ -3,7 +3,7 @@
 This repository is the ReaPack distribution repository for **Neurocast Tools**.
 The currently published package is `Neurocast_Tools` version `0.1.1`.
 All releases are currently limited internal for selected team members; future
-plain versions such as `0.1.1` do not imply broad production qualification.
+plain versions such as `0.1.2` do not imply broad production qualification.
 
 Runtime Lua source and the Neurocast-backend release workflow are owned and
 documented in
@@ -28,6 +28,14 @@ requalification, and another-user or another-machine testing remain unqualified
 or pending. This is not a broadly qualified public production release. No tag,
 GitHub release, GitHub Actions workflow, signing, or notarization was added for
 this milestone.
+
+**Candidate status:** `0.1.2` is assembled but unpublished. It updates only the
+packaged `mvsep_tool.lua` and `modules-neurocast/mvsep_reaper.lua` runtime
+behavior, advances the MVSEP script identity to `v0.2.0`, and keeps the same 13
+Main actions and platform inventory. Publication is blocked until the owner
+runs the supplied non-mutating Lua helper in the authorized disposable REAPER
+and reports that the minimal packaged UI smoke passed. See the dated
+[`0.1.2` assembly record](docs/2026-09-02_package_implementation_0.1.2.md).
 
 ## Current release: 0.1.1
 

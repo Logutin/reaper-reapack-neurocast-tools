@@ -1,14 +1,14 @@
 -- @description Neurocast Tools
--- @version 0.1.1
+-- @version 0.1.2
 -- @author Slava Logutin
 -- @metapackage
--- @changelog Add DOCX Import, Script Aligner, MVSEP, and four Utilities; refresh the existing Neurocast-backed runtime.
+-- @changelog Update MVSEP time-selection queueing, concurrency, and result placement.
 -- @about
 --   Self-contained Neurocast-backed REAPER tools for Windows x64, macOS x86_64, and macOS ARM64.
 --   ReaImGui is an external prerequisite and is not bundled.
 --   Package minimum: REAPER 7.72+.
---   Windows x64 update, uninstall, and clean-install qualification passed for limited internal use.
---   macOS and authenticated workflow requalification remain unqualified.
+--   The authorized Windows gate is a 0.1.1 to 0.1.2 update and minimal packaged MVSEP UI smoke for limited internal use.
+--   Clean install, uninstall, macOS, and authenticated workflow requalification remain unqualified for 0.1.2.
 --   Script Aligner ambiguous-create retry duplication is accepted technical debt for this limited-internal release.
 --   This is not a broadly qualified public production release.
 -- @link https://github.com/Logutin/reaper-reapack-neurocast-tools

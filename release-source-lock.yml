@@ -3,14 +3,31 @@ schema_version: 1
 package:
   display_name: Neurocast Tools
   slug: Neurocast_Tools
-  version: 0.1.1
+  version: 0.1.2
   inventory: release-manifest.yml
 
 tracked_lua:
   repository: https://github.com/Logutin/auphonic-mt
-  commit: 109e5d138b0f459319caa849b6684e602acfe629
+  commit: 3b5cb2078afbaa5f7f4b2ca15054065faae98416
   count: 53
-  policy: All Lua inputs are extracted from commit-qualified Git blobs and copied byte-for-byte.
+  policy: All Lua inputs match commit-qualified source content after the source repository Git clean filter. The two changed MVSEP runtime files are byte-exact source blobs; historical CRLF bytes are preserved in 13 unchanged distribution files so the approved runtime delta is not widened.
+  byte_exact_changed_files:
+    - scr/mvsep_tool.lua
+    - scr/modules-neurocast/mvsep_reaper.lua
+  historical_crlf_preserved_distribution_files:
+    - Neurocast_Tools/elevenlabs_tool.lua
+    - Neurocast_Tools/elevenlabs_manager_tool.lua
+    - Neurocast_Tools/modules-neurocast/elevenlabs_api_via_neurocast.lua
+    - Neurocast_Tools/modules-neurocast/elevenlabs_tool_languages.lua
+    - Neurocast_Tools/modules-neurocast/json.lua
+    - Neurocast_Tools/modules-neurocast/neurocast_auth.lua
+    - Neurocast_Tools/modules-neurocast/prompts.lua
+    - Neurocast_Tools/modules-neurocast/reaper_manager_elevenlabs_api.lua
+    - Neurocast_Tools/modules-neurocast/Util.lua
+    - Neurocast_Tools/modules-neurocast/docx_dialogue_parser.lua
+    - Neurocast_Tools/modules-neurocast/docx_import_tool_languages.lua
+    - Neurocast_Tools/modules-neurocast/neurocast_script_aligner_tool_languages.lua
+    - Neurocast_Tools/modules-neurocast/mvsep_tool_languages.lua
 
 local_windows_inputs:
   repository: https://github.com/Logutin/auphonic-mt

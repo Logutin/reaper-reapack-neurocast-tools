@@ -1,18 +1,18 @@
-status: published_limited_internal_windows_qualified
+status: candidate_unpublished_limited_internal
 schema_version: 1
 
 package:
   display_name: Neurocast Tools
   slug: Neurocast_Tools
-  version: 0.1.1
+  version: 0.1.2
   architecture: one_metapackage
   installable: true
 
 source:
   repository: https://github.com/Logutin/auphonic-mt
-  commit: 109e5d138b0f459319caa849b6684e602acfe629
+  commit: 3b5cb2078afbaa5f7f4b2ca15054065faae98416
   tracked_lua_count: 53
-  tracked_lua_policy: commit_pinned_byte_exact
+  tracked_lua_policy: commit_pinned_content_exact_after_source_clean_filter_with_two_changed_mvsep_blobs_byte_exact
 
 local_windows_release_inputs:
   repository: https://github.com/Logutin/auphonic-mt

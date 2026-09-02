@@ -17,6 +17,16 @@
 > All `0.1.0-pre1` inventory, source, qualification, and publication statements
 > below remain historical/current-release facts and must not be rebound.
 
+> **Pending candidate note:** `Neurocast Tools 0.1.2` is the approved narrow
+> MVSEP update for limited-internal team testing. It keeps the existing 13 Main
+> actions and package minimum, and changes only the packaged MVSEP entrypoint
+> and REAPER adapter behavior. Its authorized Windows gate is deterministic
+> package verification plus an owner-run `0.1.1 -> 0.1.2` update/UI smoke in
+> `C:\extra_Reapers\Reaper_Empty_01`. Clean install, uninstall, deep workflow,
+> authenticated, difficult-network, macOS, and another-machine qualification
+> are explicitly deferred. Publication remains blocked until the owner reports
+> the smoke result.
+
 ## Scope and ownership
 
 The package display name is **Neurocast Tools**, the repository/package

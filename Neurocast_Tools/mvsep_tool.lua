@@ -79,7 +79,7 @@ local function require_project_module(name)
   return mod_or_err
 end
 
-local SCRIPT_VERSION = "v0.1.0"
+local SCRIPT_VERSION = "v0.2.0"
 local TOOLSET_VERSION = SCRIPT_VERSION
 
 local Util = require_project_module("modules-neurocast.Util")
@@ -88,63 +88,6 @@ Util.messaging_level = 3
 Util.msg_to_log_file = false
 Util.log_level_override = nil
 Util.configure_diagnostics("mvsep_tool")
-
-local MODERN_REGION_API_NAMES = {
-  "GetNumRegionsOrMarkers",
-  "GetRegionOrMarker",
-  "GetRegionOrMarkerInfo_Value",
-  "SetRegionOrMarkerInfo_Value",
-  "GetSetRegionOrMarkerInfo_String"
-}
-
-local function check_modern_region_api()
-  local missing = {}
-  for _, name in ipairs(MODERN_REGION_API_NAMES) do
-    if type(r[name]) ~= "function" then
-      missing[#missing + 1] = name
-    end
-  end
-  if #missing > 0 then
-    return false, string.format(t("missing functions: %s"), table.concat(missing, ", "))
-  end
-
-  local ok_count, count_value = pcall(r.GetNumRegionsOrMarkers, 0)
-  local marker_count = ok_count and tonumber(count_value) or nil
-  if marker_count == nil or marker_count < 0 or marker_count % 1 ~= 0 then
-    return false, t("GetNumRegionsOrMarkers returned an invalid result")
-  end
-  return true, nil
-end
-
-local ok_region_api, region_api_err = check_modern_region_api()
-if not ok_region_api then
-  local installed_version = t("unknown")
-  if type(r.GetAppVersion) == "function" then
-    local ok_version, version_value = pcall(r.GetAppVersion)
-    if ok_version and tostring(version_value or "") ~= "" then
-      installed_version = tostring(version_value)
-    end
-  end
-
-  Util.msg(
-    "MVSEP startup aborted: modern REAPER ProjectMarker API check failed; " ..
-      tostring(region_api_err or t("unknown compatibility error")) ..
-      "; installed_version=" .. installed_version,
-    3
-  )
-
-  local message = string.format(
-    t("MVSEP requires REAPER 7.62 or newer.\n\nThis REAPER installation does not provide the modern project-region APIs required by MVSEP.\nInstalled REAPER version: %s\n\nPlease update REAPER and run the script again. MVSEP did not start."),
-    installed_version
-  )
-  if type(r.MB) == "function" then
-    r.MB(message, t("MVSEP requires a newer REAPER version"), 0)
-  elseif type(r.ShowMessageBox) == "function" then
-    r.ShowMessageBox(message, t("MVSEP requires a newer REAPER version"), 0)
-  end
-  package.path = old_package_path
-  return
-end
 
 do
   local ok_languages, languages_or_err = pcall(require, "modules-neurocast.mvsep_tool_languages")
@@ -243,14 +186,12 @@ local EXTSTATE = {
   auth_refresh = "rams2Page",
   auth_email = "brue33",
   auth_backend = "er",
-  input_mode = "input_mode",
-  free_mode = "free_mode",
-  region_concurrency = "region_concurrency",
   favorites_json = "favorites_json",
   selected_model_sep_type = "selected_model_sep_type",
   filter_text = "filter_text",
   favorites_only = "favorites_only",
-  output_format_name = "output_format_name"
+  output_format_name = "output_format_name",
+  concurrency = "concurrency"
 }
 
 local function resolve_curl_path()
@@ -294,10 +235,20 @@ local CFG = {
   tmp_dir = "",
   poll_interval_sec = 15.0,
   initial_poll_delay_sec = 5.0,
-  button_cooldown_sec = 1.1,
-  free_max_duration_sec = 600,
-  max_paid_concurrency = 4
+  button_cooldown_sec = 1.1
 }
+
+local ADD_TO_PROJECT_MODE_BELOW_SOURCE = "below_source"
+local ADD_TO_PROJECT_MODE_STARTING_AT_TRACK = "starting_at_track"
+local MIN_CONCURRENCY = 1
+local MAX_CONCURRENCY = 4
+
+local function normalize_concurrency(value)
+  local normalized = math.floor(tonumber(value) or MIN_CONCURRENCY)
+  if normalized < MIN_CONCURRENCY then return MIN_CONCURRENCY end
+  if normalized > MAX_CONCURRENCY then return MAX_CONCURRENCY end
+  return normalized
+end
 
 local S = {
   status_text = "",
@@ -322,14 +273,14 @@ local S = {
   auth_request_inflight = false,
   auth_status = t("Signed out"),
   backend_base_url_override = "",
-  input_mode = "time_selection",
-  free_mode = false,
-  region_concurrency = 1,
   output_format_name = MVSepAPI.DEFAULT_OUTPUT_FORMAT_NAME,
+  concurrency = MIN_CONCURRENCY,
   favorites = {},
   selected_model_sep_type = "56",
   filter_text = "",
   favorites_only = false,
+  add_to_project_mode = ADD_TO_PROJECT_MODE_BELOW_SOURCE,
+  add_to_project_target_track = nil,
   model_field_values = {},
   remembered_model_field_values = {},
   paths = nil,
@@ -469,10 +420,9 @@ function TelemetryBridge.base_payload(data)
     results_dir = tostring(paths.results_dir or ""),
     cache_file = tostring(paths.cache_file or ""),
     curl_path = tostring(CFG.curl or ""),
-    input_mode = tostring(S.input_mode or ""),
-    free_mode = S.free_mode == true,
-    region_concurrency = tonumber(S.region_concurrency) or 1,
+    input_mode = "time_selection",
     output_format_name = tostring(S.output_format_name or ""),
+    concurrency = normalize_concurrency(S.concurrency),
     selected_model = TelemetryBridge.selected_model_summary(),
     catalog_loaded_from_cache = S.catalog_loaded_from_cache == true,
     catalog_algorithm_count = #(catalog.algorithms or {}),
@@ -548,7 +498,6 @@ function TelemetryBridge.operation_from_stage(stage)
   local key = tostring(stage or "")
   if key == "catalog" then return "mvsep_refresh_catalog" end
   if key == "render" then return "mvsep_render_input" end
-  if key == "region_render" then return "mvsep_render_regions" end
   if key == "create" then return "mvsep_create_upload" end
   if key == "poll" then return "mvsep_poll_status" end
   if key == "download" then return "mvsep_download_result" end
@@ -595,8 +544,6 @@ function TelemetryBridge.record_payload(rec, extra)
     payload.start_time = rec.start_time
     payload.end_time = rec.end_time
     payload.duration_sec = rec.duration
-    payload.region_name = tostring(rec.region_name or "")
-    payload.region_number = rec.region_number
     payload.model_sep_type = tostring(rec.model_sep_type or "")
     payload.model_name = tostring(rec.model_name or "")
     payload.field_values = rec.field_values
@@ -1178,10 +1125,8 @@ local function copy_favorites_map(source)
 end
 
 local function load_ui_state_on_startup()
-  S.input_mode = load_plain(EXTSTATE.input_mode) or S.input_mode
-  S.free_mode = load_boolean(EXTSTATE.free_mode, S.free_mode)
-  S.region_concurrency = tonumber(load_plain(EXTSTATE.region_concurrency) or S.region_concurrency) or 1
   S.output_format_name = load_plain(EXTSTATE.output_format_name) or S.output_format_name
+  S.concurrency = normalize_concurrency(load_plain(EXTSTATE.concurrency) or S.concurrency)
   S.filter_text = load_plain(EXTSTATE.filter_text) or ""
   S.favorites_only = load_boolean(EXTSTATE.favorites_only, false)
   S.selected_model_sep_type = load_plain(EXTSTATE.selected_model_sep_type) or S.selected_model_sep_type
@@ -1193,13 +1138,6 @@ local function load_ui_state_on_startup()
     S.favorites = copy_favorites_map(MVSepAPI.DEFAULT_FAVORITES)
   end
 
-  if S.region_concurrency < 1 then S.region_concurrency = 1 end
-  if S.region_concurrency > CFG.max_paid_concurrency then
-    S.region_concurrency = CFG.max_paid_concurrency
-  end
-  if S.free_mode then
-    S.region_concurrency = 1
-  end
 end
 
 local function save_remembered_model_options()
@@ -1865,16 +1803,7 @@ local function active_pipeline_count()
 end
 
 local function desired_concurrency()
-  if S.free_mode then return 1 end
-  for _, rec in ipairs(S.records) do
-    if rec and not is_terminal_state(rec) and rec.input_mode == "time_selection" then
-      return 1
-    end
-  end
-  local value = tonumber(S.region_concurrency) or 1
-  if value < 1 then value = 1 end
-  if value > CFG.max_paid_concurrency then value = CFG.max_paid_concurrency end
-  return value
+  return normalize_concurrency(S.concurrency)
 end
 
 local function can_start_more_records()
@@ -1918,8 +1847,6 @@ local function new_record_from_spec(spec, display_batch_id, display_batch_order)
     start_time = spec.start_time,
     end_time = spec.end_time,
     duration = spec.duration,
-    region_name = spec.region_name,
-    region_number = spec.region_number,
     model_sep_type = model and model.sep_type or nil,
     model_name = model and model.name or "",
     field_values = {},
@@ -2064,13 +1991,7 @@ local function download_target_for_record(rec, entry, allocation_ctx)
   local model_label = Util.sanitize_filename(rec.model_name or rec.model_sep_type or "model", "model", 48)
   local source_label = Util.sanitize_filename(rec.track_name or "track", "track", 48)
 
-  local parts = { source_label }
-  if rec.input_mode == "regions" then
-    parts[#parts + 1] = "r" .. tostring(rec.region_number or "")
-    parts[#parts + 1] = Util.sanitize_filename(rec.region_name or "region", "region", 48)
-  else
-    parts[#parts + 1] = "selection"
-  end
+  local parts = { source_label, "selection" }
   parts[#parts + 1] = model_label
   parts[#parts + 1] = stem_label
 
@@ -2503,6 +2424,7 @@ local function submit_create_for_record(rec, auth_retry)
     rec.model_sep_type,
     rec.field_values,
     rec.output_format_name,
+    -- Client audio must never be published on the provider demo page.
     false,
     safe_record_callback("create", rec, function(payload)
       update_record_http(rec, payload)
@@ -3349,6 +3271,12 @@ local function ensure_runtime_ready_for_actions()
   return true
 end
 
+local function track_is_muted(track)
+  if not track or type(r.GetMediaTrackInfo_Value) ~= "function" then return false end
+  local ok_mute, mute_value = pcall(r.GetMediaTrackInfo_Value, track, "B_MUTE")
+  return ok_mute and (tonumber(mute_value) or 0) > 0.5
+end
+
 local function enqueue_time_selection()
   local queue_started_at = TelemetryBridge.now()
   TelemetryBridge.operation_started("mvsep_queue_time_selection", {
@@ -3369,180 +3297,62 @@ local function enqueue_time_selection()
     }, queue_started_at)
     return
   end
-  if S.free_mode and spec.duration > CFG.free_max_duration_sec then
-    local msg = string.format(t("Free mode blocks jobs longer than %d minutes."), math.floor(CFG.free_max_duration_sec / 60))
+  if track_is_muted(spec.track) then
+    local msg = t("unmute track")
     set_last_error(msg)
     push_warning_once(msg)
     TelemetryBridge.operation_failed("mvsep_queue_time_selection", {
-      safe_message = msg,
-      duration_sec = spec.duration
+      safe_message = msg
     }, queue_started_at)
     return
   end
+  S.status_text = t("Rendering input...")
+  debug_log(
+    "time selection immediate render start" ..
+    " start=" .. tostring(spec.start_time or "") ..
+    " end=" .. tostring(spec.end_time or ""),
+    0
+  )
+  local render_started_at = TelemetryBridge.now()
+  TelemetryBridge.operation_started("mvsep_render_input", {
+    render_mode = "time_selection",
+    duration_sec = spec.duration
+  })
+  local ok_render, render_err, render_info = MVSepReaper.render_spec_to_temp(S.paths, spec)
+  if not ok_render then
+    local msg = render_err or t("Render failed.")
+    set_last_error(msg)
+    push_warning_once(msg)
+    debug_log("time selection immediate render failed err=" .. tostring(msg), 2)
+    TelemetryBridge.operation_failed("mvsep_render_input", {
+      safe_message = msg,
+      render_mode = "time_selection",
+      duration_sec = spec.duration
+    }, render_started_at, "render_failed")
+    TelemetryBridge.operation_failed("mvsep_queue_time_selection", {
+      safe_message = msg,
+      duration_sec = spec.duration
+    }, queue_started_at, "render_failed")
+    return
+  end
+
+  spec.input_path = render_info.input_path
+  spec.render_file_stem = render_info.render_file_stem
+  debug_log(
+    "time selection immediate render complete" ..
+    " input_path=" .. tostring(spec.input_path or ""),
+    0
+  )
+  TelemetryBridge.operation_completed("mvsep_render_input", {
+    render_mode = "time_selection",
+    duration_sec = spec.duration,
+    input_path = spec.input_path,
+    input_size = spec.input_path and Files.file_size(spec.input_path) or nil
+  }, render_started_at)
+
   local rec = new_record_from_spec(spec, allocate_display_batch_id(), 1)
   add_record(rec)
   TelemetryBridge.operation_completed("mvsep_queue_time_selection", TelemetryBridge.record_payload(rec), queue_started_at)
-end
-
-local function enqueue_regions()
-  local queue_started_at = TelemetryBridge.now()
-  TelemetryBridge.operation_started("mvsep_queue_regions", {
-    input_mode = "regions"
-  })
-  if not ensure_runtime_ready_for_actions() then
-    TelemetryBridge.operation_failed("mvsep_queue_regions", {
-      safe_message = S.last_api_error
-    }, queue_started_at)
-    return
-  end
-  local specs, specs_err = MVSepReaper.prepare_region_jobs()
-  if not specs then
-    set_last_error(specs_err)
-    push_warning_once(specs_err)
-    TelemetryBridge.operation_failed("mvsep_queue_regions", {
-      safe_message = specs_err
-    }, queue_started_at)
-    return
-  end
-
-  local render_specs = {}
-  for _, spec in ipairs(specs) do
-    if S.free_mode and spec.duration > CFG.free_max_duration_sec then
-      push_warning_once(string.format(t("Skipped region over free-mode limit: %s"), tostring(spec.region_name or spec.record_label)))
-    else
-      render_specs[#render_specs + 1] = spec
-    end
-  end
-
-  if #render_specs == 0 then
-    set_last_error(t("No valid regions were queued."))
-    TelemetryBridge.operation_failed("mvsep_queue_regions", {
-      safe_message = S.last_api_error,
-      source_region_count = #specs,
-      queued_region_count = 0
-    }, queue_started_at)
-    return
-  end
-
-  S.status_text = t("Rendering region inputs...")
-  debug_log("region bulk render start count=" .. tostring(#render_specs), 0)
-  local render_started_at = TelemetryBridge.now()
-  TelemetryBridge.operation_started("mvsep_render_regions", {
-    source_region_count = #specs,
-    render_region_count = #render_specs
-  })
-  local ok_render, render_msg, rendered_specs = MVSepReaper.render_region_specs_to_temp(S.paths, render_specs)
-  if not ok_render then
-    set_last_error(render_msg or t("Region render failed."))
-    push_warning_once(S.last_api_error)
-    debug_log("region bulk render failed err=" .. tostring(render_msg or ""), 2)
-    TelemetryBridge.operation_failed("mvsep_render_regions", {
-      safe_message = render_msg or t("Region render failed."),
-      source_region_count = #specs,
-      render_region_count = #render_specs
-    }, render_started_at, "render_failed")
-    TelemetryBridge.operation_failed("mvsep_queue_regions", {
-      safe_message = render_msg or t("Region render failed."),
-      source_region_count = #specs,
-      render_region_count = #render_specs
-    }, queue_started_at, "render_failed")
-    return
-  end
-
-  for _, spec in ipairs(rendered_specs or {}) do
-    debug_log(
-      "region render artifact region=" .. tostring(spec.region_number or "") ..
-        " guid=" .. tostring(spec.marker_guid or "") ..
-        " name=" .. tostring(spec.region_name or "") ..
-        " path=" .. tostring(spec.input_path or "") ..
-        " exists=" .. tostring(spec.input_path and r.file_exists(spec.input_path) == true) ..
-        " size=" .. tostring(spec.input_path and Files.file_size(spec.input_path) or "") ..
-        " non_ascii=" .. tostring(Util.has_non_ascii(spec.input_path or "")) ..
-        " path_bytes=" .. tostring(#tostring(spec.input_path or "")),
-      0
-    )
-  end
-
-  local ok_stage, stage_msg, staged_specs =
-    MVSepReaper.stage_region_inputs_for_upload(S.paths, rendered_specs)
-  if not ok_stage then
-    set_last_error(stage_msg or t("Region render failed."))
-    push_warning_once(S.last_api_error)
-    debug_log("region upload staging failed err=" .. tostring(stage_msg or ""), 2)
-    TelemetryBridge.operation_failed("mvsep_render_regions", {
-      safe_message = stage_msg or "Region upload staging failed.",
-      source_region_count = #specs,
-      render_region_count = #render_specs,
-      rendered_region_count = #(rendered_specs or {}),
-      staging_failed = true
-    }, render_started_at, "render_failed")
-    TelemetryBridge.operation_failed("mvsep_queue_regions", {
-      safe_message = stage_msg or "Region upload staging failed.",
-      source_region_count = #specs,
-      render_region_count = #render_specs,
-      staging_failed = true
-    }, queue_started_at, "render_failed")
-    return
-  end
-  rendered_specs = staged_specs
-
-  local queued_records = {}
-  local display_batch_id = allocate_display_batch_id()
-  for display_batch_order, spec in ipairs(rendered_specs or {}) do
-    local staging = type(spec.upload_staging) == "table" and spec.upload_staging or {}
-    debug_log(
-      "region rendered input region=" .. tostring(spec.region_number or spec.region_index or "") ..
-      " guid=" .. tostring(spec.marker_guid or "") ..
-      " name=" .. tostring(spec.region_name or "") ..
-      " source_path=" .. tostring(spec.render_source_path or "") ..
-      " source_size=" .. tostring(staging.source_size or "") ..
-      " source_non_ascii=" .. tostring(staging.source_non_ascii == true) ..
-      " staged_path=" .. tostring(spec.input_path or "") ..
-      " staged_size=" .. tostring(staging.staged_size or "") ..
-      " staged_non_ascii=" .. tostring(Util.has_non_ascii(spec.input_path or "")) ..
-      " staged_path_bytes=" .. tostring(#tostring(spec.input_path or "")),
-      0
-    )
-    local rec = new_record_from_spec(spec, display_batch_id, display_batch_order)
-    queued_records[#queued_records + 1] = {
-      record_id = rec.id,
-      record_label = rec.label,
-      region_name = rec.region_name,
-      region_number = rec.region_number,
-      input_path = rec.input_path,
-      input_size = rec.input_path and Files.file_size(rec.input_path) or nil
-    }
-    add_record(rec)
-  end
-  debug_log("region bulk render complete count=" .. tostring(#(rendered_specs or {})), 0)
-  if #(rendered_specs or {}) == 0 then
-    set_last_error(t("No valid regions were queued."))
-    TelemetryBridge.operation_failed("mvsep_render_regions", {
-      safe_message = S.last_api_error,
-      source_region_count = #specs,
-      render_region_count = #render_specs,
-      rendered_region_count = 0
-    }, render_started_at, "render_failed")
-    TelemetryBridge.operation_failed("mvsep_queue_regions", {
-      safe_message = S.last_api_error,
-      source_region_count = #specs,
-      render_region_count = #render_specs,
-      queued_record_count = 0
-    }, queue_started_at, "render_failed")
-    return
-  end
-  TelemetryBridge.operation_completed("mvsep_render_regions", {
-    source_region_count = #specs,
-    render_region_count = #render_specs,
-    rendered_region_count = #(rendered_specs or {}),
-    queued_records = queued_records
-  }, render_started_at)
-  TelemetryBridge.operation_completed("mvsep_queue_regions", {
-    source_region_count = #specs,
-    render_region_count = #render_specs,
-    queued_record_count = #queued_records,
-    queued_records = queued_records
-  }, queue_started_at)
 end
 
 local function filtered_algorithms()
@@ -3672,55 +3482,6 @@ end
 local function render_run_controls_section()
   ImGui.Spacing(ctx)
 
-  local changed_free, new_free = ImGui.Checkbox(ctx, t("Free mode"), S.free_mode)
-  if changed_free then
-    S.free_mode = new_free
-    if S.free_mode then S.region_concurrency = 1 end
-    persist_boolean(EXTSTATE.free_mode, S.free_mode)
-    persist_plain(EXTSTATE.region_concurrency, tostring(S.region_concurrency))
-  end
-
-  ImGui.Text(ctx, t("Input mode") .. ":")
-  ImGui.SameLine(ctx)
-  ImGui.SetNextItemWidth(ctx, 220)
-  local mode_label = S.input_mode == "regions" and t("Track + project regions") or t("Track + time selection")
-  if ImGui.BeginCombo(ctx, "##mvsep_input_mode", mode_label, ImGui.ComboFlags_HeightRegular) then
-    local modes = {
-      { id = "time_selection", label = t("Track + time selection") },
-      { id = "regions", label = t("Track + project regions") }
-    }
-    for _, mode in ipairs(modes) do
-      local is_selected = (S.input_mode == mode.id)
-      if ImGui.Selectable(ctx, mode.label, is_selected) then
-        S.input_mode = mode.id
-        persist_plain(EXTSTATE.input_mode, mode.id)
-      end
-      if is_selected then ImGui.SetItemDefaultFocus(ctx) end
-    end
-    ImGui.EndCombo(ctx)
-  end
-
-  ImGui.Text(ctx, t("Region concurrency") .. ":")
-  ImGui.SameLine(ctx)
-  local avail_w = 800
-  if ImGui.GetContentRegionAvail then
-    avail_w = select(1, ImGui.GetContentRegionAvail(ctx)) or avail_w
-  end
-  local concurrency_w = math.max(80, math.min(160, avail_w * 0.15))
-  ImGui.SetNextItemWidth(ctx, concurrency_w)
-  local concurrency_disabled = (S.free_mode == true) or (S.input_mode ~= "regions")
-  if concurrency_disabled then ImGui.BeginDisabled(ctx, true) end
-  local changed_concurrency, new_concurrency = ImGui.InputInt(ctx, "##mvsep_concurrency", S.region_concurrency, 1, 1)
-  if concurrency_disabled then ImGui.EndDisabled(ctx) end
-  if changed_concurrency then
-    local normalized = math.floor(tonumber(new_concurrency) or 1)
-    if normalized < 1 then normalized = 1 end
-    if normalized > CFG.max_paid_concurrency then normalized = CFG.max_paid_concurrency end
-    if S.free_mode then normalized = 1 end
-    S.region_concurrency = normalized
-    persist_plain(EXTSTATE.region_concurrency, tostring(normalized))
-  end
-
   ImGui.Text(ctx, t("Output format") .. ":")
   ImGui.SameLine(ctx)
   ImGui.SetNextItemWidth(ctx, 180)
@@ -3736,6 +3497,22 @@ local function render_run_controls_section()
       if is_selected then ImGui.SetItemDefaultFocus(ctx) end
     end
     ImGui.EndCombo(ctx)
+  end
+
+  ImGui.SameLine(ctx)
+  ImGui.Text(ctx, t("Concurrency") .. ":")
+  ImGui.SameLine(ctx)
+  ImGui.SetNextItemWidth(ctx, 70)
+  local changed_concurrency, new_concurrency = ImGui.InputInt(
+    ctx,
+    "##mvsep_concurrency",
+    normalize_concurrency(S.concurrency),
+    1,
+    1
+  )
+  if changed_concurrency then
+    S.concurrency = normalize_concurrency(new_concurrency)
+    persist_plain(EXTSTATE.concurrency, S.concurrency)
   end
 end
 
@@ -4140,20 +3917,151 @@ local function log_queue_table_layout(rows, hidden_utility_rows, height_mode)
   )
 end
 
-local function render_queue_section()
-  ImGui.SeparatorText(ctx, t("Queue"))
+local function first_utf8_chars(value, max_chars)
+  local text = tostring(value or "")
+  local limit = math.max(0, math.floor(tonumber(max_chars) or 0))
+  if limit == 0 or text == "" then return "" end
 
-  local queue_disabled = not selected_model()
-  if queue_disabled then ImGui.BeginDisabled(ctx, true) end
-  if UI_button_clicked("queue_action_btn", S.input_mode == "regions" and t("Queue all project regions") or t("Queue track + time selection")) then
-    TelemetryBridge.button_clicked("queue_action_btn", S.input_mode == "regions" and t("Queue all project regions") or t("Queue track + time selection"))
-    if S.input_mode == "regions" then
-      enqueue_regions()
-    else
-      enqueue_time_selection()
+  if type(utf8) == "table" and type(utf8.offset) == "function" then
+    local ok_offset, cutoff = pcall(utf8.offset, text, limit + 1)
+    if ok_offset then
+      return cutoff and text:sub(1, cutoff - 1) or text
     end
   end
+
+  return text:sub(1, limit)
+end
+
+local function format_selection_duration(duration)
+  local total_milliseconds = math.max(0, math.floor((tonumber(duration) or 0) * 1000 + 0.5))
+  local milliseconds = total_milliseconds % 1000
+  local total_seconds = math.floor(total_milliseconds / 1000)
+  local seconds = total_seconds % 60
+  local total_minutes = math.floor(total_seconds / 60)
+  local minutes = total_minutes % 60
+  local hours = math.floor(total_minutes / 60)
+  return string.format("%02d:%02d:%02d.%03d", hours, minutes, seconds, milliseconds)
+end
+
+local function project_track_descriptor(track)
+  if not track then return nil end
+  if type(r.ValidatePtr2) == "function" then
+    local ok_valid, is_valid = pcall(r.ValidatePtr2, 0, track, "MediaTrack*")
+    if not ok_valid or is_valid ~= true then return nil end
+  end
+
+  local ok_number, track_number_value = pcall(r.GetMediaTrackInfo_Value, track, "IP_TRACKNUMBER")
+  local track_number = ok_number and tonumber(track_number_value) or nil
+  if not track_number or track_number < 1 then return nil end
+
+  local ok_name, _, track_name_value = pcall(r.GetSetMediaTrackInfo_String, track, "P_NAME", "", false)
+  local track_name = ok_name and first_utf8_chars(track_name_value, 15) or ""
+  if track_name == "" then track_name = "Track" end
+
+  return string.format("%d: %s", math.floor(track_number + 0.0001), track_name)
+end
+
+local function selected_add_to_project_target()
+  local ok_count, selected_count = pcall(r.CountSelectedTracks, 0)
+  if not ok_count or tonumber(selected_count) ~= 1 then return nil, nil end
+
+  local ok_track, track = pcall(r.GetSelectedTrack, 0, 0)
+  if not ok_track then return nil, nil end
+  local descriptor = project_track_descriptor(track)
+  if not descriptor then return nil, nil end
+  return track, descriptor
+end
+
+local function add_to_project_mode_preview()
+  if S.add_to_project_mode ~= ADD_TO_PROJECT_MODE_STARTING_AT_TRACK then
+    return t("New tracks below source")
+  end
+
+  local descriptor = project_track_descriptor(S.add_to_project_target_track)
+  if not descriptor then return t("Starting track is unavailable") end
+  return t("Starting at track") .. " " .. descriptor
+end
+
+local function render_add_to_project_mode_control()
+  ImGui.Text(ctx, t("Add results to") .. ":")
+  ImGui.SameLine(ctx)
+  ImGui.SetNextItemWidth(ctx, 360)
+  if ImGui.BeginCombo(ctx, "##mvsep_add_to_project_mode", add_to_project_mode_preview(), ImGui.ComboFlags_HeightRegular) then
+    local mode_one_selected = S.add_to_project_mode == ADD_TO_PROJECT_MODE_BELOW_SOURCE
+    if ImGui.Selectable(ctx, t("New tracks below source") .. "##add_mode_below_source", mode_one_selected) then
+      S.add_to_project_mode = ADD_TO_PROJECT_MODE_BELOW_SOURCE
+      S.add_to_project_target_track = nil
+    end
+    if mode_one_selected then ImGui.SetItemDefaultFocus(ctx) end
+
+    local selected_track, selected_descriptor = selected_add_to_project_target()
+    local mode_two_label = selected_descriptor
+      and (t("Starting at track") .. " " .. selected_descriptor)
+      or t("Starting at track (select exactly one track)")
+    local mode_two_selected = S.add_to_project_mode == ADD_TO_PROJECT_MODE_STARTING_AT_TRACK
+      and selected_track == S.add_to_project_target_track
+    if not selected_track then ImGui.BeginDisabled(ctx, true) end
+    if ImGui.Selectable(ctx, mode_two_label .. "##add_mode_starting_at_track", mode_two_selected) then
+      S.add_to_project_mode = ADD_TO_PROJECT_MODE_STARTING_AT_TRACK
+      S.add_to_project_target_track = selected_track
+    end
+    if not selected_track then ImGui.EndDisabled(ctx) end
+    if mode_two_selected then ImGui.SetItemDefaultFocus(ctx) end
+    ImGui.EndCombo(ctx)
+  end
+
+  if S.add_to_project_mode == ADD_TO_PROJECT_MODE_STARTING_AT_TRACK
+      and not project_track_descriptor(S.add_to_project_target_track) then
+    ImGui.TextWrapped(ctx, t("Captured destination track is unavailable. Select Mode 1, or select exactly one valid track and choose Mode 2 again."))
+  end
+end
+
+local function queue_time_selection_button_state()
+  local default_label = t("Add to que!")
+  local ok_count, selected_count = pcall(r.CountSelectedTracks, 0)
+  if ok_count and tonumber(selected_count) == 1 then
+    local ok_track, selected_track = pcall(r.GetSelectedTrack, 0, 0)
+    if ok_track and track_is_muted(selected_track) then
+      return t("unmute track"), false
+    end
+  end
+
+  local spec = MVSepReaper.validate_time_selection_input()
+  local duration = spec and tonumber(spec.duration) or nil
+  if not spec or not duration or duration <= 0.001 then
+    return default_label, false
+  end
+
+  local ok_number, track_number_value = pcall(r.GetMediaTrackInfo_Value, spec.track, "IP_TRACKNUMBER")
+  local track_number = ok_number and tonumber(track_number_value) or nil
+  if not track_number or track_number < 1 then return default_label, false end
+
+  local track_name = first_utf8_chars(spec.track_name, 15)
+  if track_name == "" then track_name = "Track" end
+
+  return string.format(
+    "%s %d:%s,%s",
+    default_label,
+    math.floor(track_number + 0.0001),
+    track_name,
+    format_selection_duration(duration)
+  ), true
+end
+
+local function render_queue_section()
+  ImGui.SeparatorText(ctx, t("Queue"))
+  ImGui.TextWrapped(ctx, t("Select exactly one track, make time selection"))
+
+  local queue_label, input_valid = queue_time_selection_button_state()
+  local queue_disabled = not selected_model() or not input_valid
+  if queue_disabled then ImGui.BeginDisabled(ctx, true) end
+  if UI_button_clicked("queue_action_btn", queue_label) then
+    TelemetryBridge.button_clicked("queue_action_btn", t("Add to que!"))
+    enqueue_time_selection()
+  end
   if queue_disabled then ImGui.EndDisabled(ctx) end
+
+  render_add_to_project_mode_control()
 
   if not ImGui.BeginTable then
     ImGui.TextWrapped(ctx, t("Table rendering not available in this ImGui build."))
@@ -4247,20 +4155,41 @@ local function render_queue_section()
           if add_disabled then ImGui.BeginDisabled(ctx, true) end
           if UI_button_clicked("add_to_project_" .. tostring(rec.id), t("Add to project"), nil, ctx) then
             TelemetryBridge.button_clicked("add_to_project_" .. tostring(rec.id), t("Add to project"))
+            local placement = {
+              mode = S.add_to_project_mode,
+              start_track = S.add_to_project_target_track
+            }
             TelemetryBridge.begin_record_stage(rec, "import", {
-              request_label = "mvsep_add_to_project"
+              request_label = "mvsep_add_to_project",
+              placement_mode = placement.mode
             })
-            local ok_add, add_err = MVSepReaper.import_downloads_to_bottom(rec)
+            local ok_add, add_err, inserted_count, add_info = MVSepReaper.import_downloads(rec, placement)
             if not ok_add then
-              TelemetryBridge.finish_record_stage_failed(rec, add_err, "import", {
-                request_label = "mvsep_add_to_project"
+              local invalid_destination = type(add_info) == "table"
+                and add_info.error_code == "INVALID_DESTINATION_TRACK"
+              local add_message = invalid_destination
+                and t("Starting track is unavailable. Select Mode 1, or select exactly one valid track and choose Mode 2 again.")
+                or tostring(add_err or t("Failed to add results to project."))
+              TelemetryBridge.finish_record_stage_failed(rec, add_message, "import", {
+                request_label = "mvsep_add_to_project",
+                placement_mode = placement.mode,
+                inserted_count = tonumber(inserted_count) or 0,
+                destination_error_code = type(add_info) == "table" and add_info.error_code or nil
               })
-              mark_record_failed(rec, add_err)
+              if invalid_destination then
+                rec.last_message = add_message
+                set_last_error(add_message)
+                push_warning_once(add_message)
+              else
+                mark_record_failed(rec, add_message, nil, "import")
+              end
             else
               rec.imported = true
               rec.last_message = t("Added to project.")
               TelemetryBridge.finish_record_stage_ok(rec, "import", {
-                request_label = "mvsep_add_to_project"
+                request_label = "mvsep_add_to_project",
+                placement_mode = placement.mode,
+                inserted_count = tonumber(inserted_count) or 0
               })
             end
           end

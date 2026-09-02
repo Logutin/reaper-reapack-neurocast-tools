@@ -1016,26 +1016,52 @@ local function create_track_at_index(index, track_title)
   return track, nil
 end
 
-local function resolve_source_insert_index(record)
-  local source_track = type(record) == "table" and record.track or nil
-  if not validate_track_ptr(source_track) then
-    return nil
-  end
-  local track_number = tonumber(r.GetMediaTrackInfo_Value(source_track, "IP_TRACKNUMBER"))
-  if not track_number or track_number <= 0 then
-    return nil
-  end
-  -- IP_TRACKNUMBER is 1-based; inserting at that value places the new track
-  -- immediately below the source track (0-based index = track_number).
-  return math.floor(track_number + 0.0001)
+local IMPORT_MODE_BELOW_SOURCE = "below_source"
+local IMPORT_MODE_STARTING_AT_TRACK = "starting_at_track"
+
+local function resolve_existing_track_index(track)
+  if not validate_track_ptr(track) then return nil end
+  local track_number = tonumber(r.GetMediaTrackInfo_Value(track, "IP_TRACKNUMBER"))
+  if not track_number or track_number <= 0 then return nil end
+
+  local index = math.floor(track_number + 0.0001) - 1
+  local count = tonumber(r.CountTracks(0)) or 0
+  if index < 0 or index >= count then return nil end
+  if r.GetTrack(0, index) ~= track then return nil end
+  return index
 end
 
-function MVSepReaper.import_downloads_to_bottom(record)
+local function resolve_source_insert_index(record)
+  local source_track = type(record) == "table" and record.track or nil
+  local source_index = resolve_existing_track_index(source_track)
+  if source_index == nil then return nil end
+  return source_index + 1
+end
+
+local function import_failure_info(error_code, placement_mode, mutation_started)
+  return {
+    error_code = tostring(error_code or "IMPORT_FAILED"),
+    placement_mode = tostring(placement_mode or ""),
+    mutation_started = mutation_started == true
+  }
+end
+
+function MVSepReaper.import_downloads(record, placement)
   if type(record) ~= "table" then
-    return false, "record is required", 0
+    return false, "record is required", 0,
+      import_failure_info("INVALID_RECORD", nil, false)
   end
   if type(record.downloads) ~= "table" or #record.downloads == 0 then
-    return false, "No downloaded files are available.", 0
+    return false, "No downloaded files are available.", 0,
+      import_failure_info("NO_DOWNLOADS", nil, false)
+  end
+
+  local requested_placement = type(placement) == "table" and placement or {}
+  local placement_mode = tostring(requested_placement.mode or IMPORT_MODE_BELOW_SOURCE)
+  if placement_mode ~= IMPORT_MODE_BELOW_SOURCE
+      and placement_mode ~= IMPORT_MODE_STARTING_AT_TRACK then
+    return false, "Unknown add-to-project placement mode.", 0,
+      import_failure_info("INVALID_PLACEMENT_MODE", placement_mode, false)
   end
 
   local valid_downloads = {}
@@ -1045,26 +1071,66 @@ function MVSepReaper.import_downloads_to_bottom(record)
     end
   end
   if #valid_downloads == 0 then
-    return false, "Downloaded files are missing on disk.", 0
+    return false, "Downloaded files are missing on disk.", 0,
+      import_failure_info("DOWNLOADS_MISSING", placement_mode, false)
+  end
+
+  local starting_track_index = nil
+  local initial_track_count = tonumber(r.CountTracks(0)) or 0
+  local starting_track_plan = {}
+  if placement_mode == IMPORT_MODE_STARTING_AT_TRACK then
+    starting_track_index = resolve_existing_track_index(requested_placement.start_track)
+    if starting_track_index == nil then
+      return false, "Starting destination track is missing or invalid.", 0,
+        import_failure_info("INVALID_DESTINATION_TRACK", placement_mode, false)
+    end
+    for download_index = 1, #valid_downloads do
+      local destination_index = starting_track_index + download_index - 1
+      if destination_index < initial_track_count then
+        local destination_track = r.GetTrack(0, destination_index)
+        if resolve_existing_track_index(destination_track) ~= destination_index then
+          return false, "An existing destination track is missing or invalid.", 0,
+            import_failure_info("INVALID_DESTINATION_TRACK", placement_mode, false)
+        end
+        starting_track_plan[download_index] = { track = destination_track }
+      else
+        starting_track_plan[download_index] = { create_at_bottom = true }
+      end
+    end
   end
 
   local old_cursor = r.GetCursorPosition()
   local old_selected_tracks = snapshot_selected_tracks()
   local inserted_count = 0
+  local undo_started = false
+  local refresh_started = false
 
   local ok_import, import_err = xpcall(function()
     r.Undo_BeginBlock2(0)
+    undo_started = true
     r.PreventUIRefresh(1)
+    refresh_started = true
 
-    local insert_index = resolve_source_insert_index(record)
+    local insert_index = placement_mode == IMPORT_MODE_BELOW_SOURCE
+      and resolve_source_insert_index(record)
+      or nil
 
-    for _, download in ipairs(valid_downloads) do
+    for download_index, download in ipairs(valid_downloads) do
       local destination_track, create_err
-      if insert_index then
-        destination_track, create_err = create_track_at_index(insert_index, cleaned_track_title(download))
-        insert_index = insert_index + 1
+      if placement_mode == IMPORT_MODE_STARTING_AT_TRACK then
+        local planned_destination = starting_track_plan[download_index] or {}
+        if planned_destination.track then
+          destination_track = planned_destination.track
+        else
+          destination_track, create_err = create_track_at_bottom(cleaned_track_title(download))
+        end
       else
-        destination_track, create_err = create_track_at_bottom(cleaned_track_title(download))
+        if insert_index then
+          destination_track, create_err = create_track_at_index(insert_index, cleaned_track_title(download))
+          insert_index = insert_index + 1
+        else
+          destination_track, create_err = create_track_at_bottom(cleaned_track_title(download))
+        end
       end
       if not destination_track then
         error(create_err or "Failed to create destination track.")
@@ -1076,23 +1142,31 @@ function MVSepReaper.import_downloads_to_bottom(record)
       download.imported = true
       inserted_count = inserted_count + 1
     end
-
-    r.PreventUIRefresh(-1)
-    r.Undo_EndBlock2(0, "MVSEP add results to project", 4)
-    r.UpdateArrange()
   end, function(err)
     return debug.traceback(err, 2)
   end)
 
+  if refresh_started then r.PreventUIRefresh(-1) end
+  if undo_started then r.Undo_EndBlock2(0, "MVSEP add results to project", 4) end
   restore_selected_tracks(old_selected_tracks)
   r.SetEditCurPos(old_cursor, false, false)
+  r.UpdateArrange()
 
   if not ok_import then
-    r.PreventUIRefresh(-1)
-    return false, tostring(import_err), inserted_count
+    return false, tostring(import_err), inserted_count,
+      import_failure_info("IMPORT_FAILED", placement_mode, undo_started)
   end
 
-  return true, "ok", inserted_count
+  return true, "ok", inserted_count, {
+    placement_mode = placement_mode,
+    mutation_started = undo_started
+  }
+end
+
+function MVSepReaper.import_downloads_to_bottom(record)
+  return MVSepReaper.import_downloads(record, {
+    mode = IMPORT_MODE_BELOW_SOURCE
+  })
 end
 
 return MVSepReaper
