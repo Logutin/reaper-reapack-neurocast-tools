@@ -116,11 +116,14 @@ def validate_index(path, candidate, manifest, candidate_only):
     check(len(versions) == (1 if candidate_only else 4), "version count")
     if not candidate_only:
         for version in old.findall(".//version"):
-            check(ET.tostring(version) == ET.tostring(versions[version.attrib["name"]]),
+            preserved = versions[version.attrib["name"]]
+            # Tail is indentation outside the version, not historical content.
+            version.tail = preserved.tail = None
+            check(ET.tostring(version) == ET.tostring(preserved),
                   "immutable historical version " + version.attrib["name"])
     sources = versions["0.1.3"].findall("source")
     check(len(sources) == 174, "174 indexed sources")
-    prefix = f"https://raw.githubusercontent.com/Logutin/reaper-reapack-neurocast-tools/{candidate}/"
+    prefix = f"https://github.com/Logutin/reaper-reapack-neurocast-tools/raw/{candidate}/"
     expected = set()
     for item in manifest["payload"]:
         source = item.get("package_source", item["destination"])
