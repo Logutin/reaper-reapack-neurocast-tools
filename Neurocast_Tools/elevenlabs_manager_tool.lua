@@ -2,7 +2,7 @@
 -- English-only maintained ReaImGui entrypoint.
 
 local r = assert(reaper, "REAPER API not found. This script must run inside REAPER.")
-local SCRIPT_VERSION = "v0.1.2"
+local SCRIPT_VERSION = "v0.1.3"
 local APP_NAME = "ElevenLabs Manager"
 local ENTRYPOINT = "elevenlabs_manager_tool"
 local PRODUCTION_BACKEND_URL = "https://reaper.neurocast.tech"
@@ -41,8 +41,8 @@ local Curl = require_module("modules-neurocast.Curl")
 local Jobs = require_module("modules-neurocast.Jobs")
 local NeurocastAuth = require_module("modules-neurocast.neurocast_auth")
 local ManagerApi = require_module("modules-neurocast.reaper_manager_elevenlabs_api")
+local ManagerUserView = require_module("modules-neurocast.elevenlabs_manager_user_view")
 local Telemetry = require_module("modules-neurocast.Telemetry")
-local Utf8Tools = require_module("modules-neurocast.Utf8Tools")
 
 if not Telemetry.require_identity_or_abort({
   app_name = "CirilicaTools",
@@ -156,6 +156,8 @@ local S = {
   accounts = {},
   accounts_by_id = {},
   users = {},
+  users_loaded = false,
+  user_filter = "",
   status_text = "Studio Neurocast login is required.",
   last_api_error = "",
   warnings = {},
@@ -734,6 +736,8 @@ function Auth.forget_login()
   S.accounts = {}
   S.accounts_by_id = {}
   S.users = {}
+  S.users_loaded = false
+  S.user_filter = ""
   S.status_text = "Stored Studio login cleared."
   S.last_api_error = ""
 end
@@ -748,6 +752,7 @@ end
 
 local function replace_users(users)
   S.users = users
+  S.users_loaded = true
 end
 
 function Manager.fetch_accounts(on_done)
@@ -899,6 +904,8 @@ local function set_backend(base_url)
   S.accounts = {}
   S.accounts_by_id = {}
   S.users = {}
+  S.users_loaded = false
+  S.user_filter = ""
   rebuild_clients()
   local stored_base = load_auth_backend()
   if stored_base == normalized then
@@ -1073,49 +1080,7 @@ local function draw_settings()
   draw_telemetry_setting()
 end
 
-local function account_display(account_id)
-  if account_id == nil or trim(account_id) == "" then return "Blocked" end
-  if account_id == "elevenlabs_1" then return "el_1" end
-  if account_id == "elevenlabs_2" then return "el_2" end
-  return tostring(account_id)
-end
-
-local function sort_text(value)
-  local lowered = Utf8Tools.lower(trim(value))
-  if type(lowered) == "string" then return lowered end
-  return trim(value):lower()
-end
-
-local function user_sort_source(user, column)
-  if column == 1 then return trim(user.fullname) end
-  if column == 2 then return trim(user.username) end
-  if column == 3 then return trim(user.email) end
-  if column == 4 then return account_display(user.accountId) end
-  return trim(user.fullname)
-end
-
-local function sorted_users()
-  local rows = {}
-  for index, user in ipairs(S.users) do
-    rows[index] = user
-  end
-  table.sort(rows, function(a, b)
-    local a_source = user_sort_source(a, S.sort_column)
-    local b_source = user_sort_source(b, S.sort_column)
-    local a_missing = trim(a_source) == ""
-    local b_missing = trim(b_source) == ""
-    if a_missing ~= b_missing then return not a_missing end
-    local av = sort_text(a_source)
-    local bv = sort_text(b_source)
-    if av == bv then
-      av = trim(a.userId)
-      bv = trim(b.userId)
-    end
-    if S.sort_ascending then return av < bv end
-    return av > bv
-  end)
-  return rows
-end
+local account_display = ManagerUserView.account_display
 
 local function table_buttons_locked()
   return S.action_active or Jobs.network_busy() or trim(S.access_token) == ""
@@ -1165,8 +1130,14 @@ local function update_table_sort()
 end
 
 local function draw_users_table()
+  local visible_users, filter_active = ManagerUserView.build_rows(
+    S.users,
+    S.user_filter,
+    S.sort_column,
+    S.sort_ascending
+  )
   ImGui.SeparatorText(ctx, "User assignments")
-  ImGui.Text(ctx, string.format("Users: %d", #S.users))
+  ImGui.Text(ctx, string.format("Users: %d / %d", #visible_users, #S.users))
   ImGui.SameLine(ctx)
   local refresh_disabled = S.action_active or Jobs.network_busy() or trim(S.access_token) == ""
   if refresh_disabled then ImGui.BeginDisabled(ctx, true) end
@@ -1176,6 +1147,21 @@ local function draw_users_table()
     end)
   end
   if refresh_disabled then ImGui.EndDisabled(ctx) end
+
+  ImGui.AlignTextToFramePadding(ctx)
+  ImGui.Text(ctx, "Filter")
+  ImGui.SameLine(ctx)
+  ImGui.SetNextItemWidth(ctx, -1)
+  local filter_disabled = trim(S.access_token) == ""
+  if filter_disabled then ImGui.BeginDisabled(ctx, true) end
+  local filter_changed, filter_value = ImGui.InputText(
+    ctx,
+    "##manager_user_filter",
+    S.user_filter,
+    ImGui.InputTextFlags_EscapeClearsAll
+  )
+  if filter_disabled then ImGui.EndDisabled(ctx) end
+  if filter_changed then S.user_filter = filter_value end
 
   local flags =
     ImGui.TableFlags_Borders |
@@ -1211,22 +1197,34 @@ local function draw_users_table()
     local account_1_available = account_1 ~= nil and account_1.available ~= false
     local account_2_available = account_2 ~= nil and account_2.available ~= false
 
-    for _, user in ipairs(sorted_users()) do
+    if #visible_users == 0 then
+      local empty_message = "No users available."
+      if not S.users_loaded then
+        empty_message = "User directory not loaded."
+      elseif #S.users > 0 and filter_active then
+        empty_message = "No users match the filter."
+      end
       ImGui.TableNextRow(ctx)
       ImGui.TableSetColumnIndex(ctx, 0)
-      ImGui.Text(ctx, trim(user.fullname) ~= "" and user.fullname or "-")
-      ImGui.TableSetColumnIndex(ctx, 1)
-      ImGui.Text(ctx, trim(user.username) ~= "" and user.username or "-")
-      ImGui.TableSetColumnIndex(ctx, 2)
-      ImGui.Text(ctx, user.email)
-      ImGui.TableSetColumnIndex(ctx, 3)
-      ImGui.Text(ctx, account_display(user.accountId))
-      ImGui.TableSetColumnIndex(ctx, 4)
-      draw_assignment_button(user, "el_1", "elevenlabs_1", account_1_available)
-      ImGui.SameLine(ctx)
-      draw_assignment_button(user, "el_2", "elevenlabs_2", account_2_available)
-      ImGui.SameLine(ctx)
-      draw_assignment_button(user, "Block", "blocked", true)
+      ImGui.TextDisabled(ctx, empty_message)
+    else
+      for _, user in ipairs(visible_users) do
+        ImGui.TableNextRow(ctx)
+        ImGui.TableSetColumnIndex(ctx, 0)
+        ImGui.Text(ctx, trim(user.fullname) ~= "" and user.fullname or "-")
+        ImGui.TableSetColumnIndex(ctx, 1)
+        ImGui.Text(ctx, trim(user.username) ~= "" and user.username or "-")
+        ImGui.TableSetColumnIndex(ctx, 2)
+        ImGui.Text(ctx, user.email)
+        ImGui.TableSetColumnIndex(ctx, 3)
+        ImGui.Text(ctx, account_display(user.accountId))
+        ImGui.TableSetColumnIndex(ctx, 4)
+        draw_assignment_button(user, "el_1", "elevenlabs_1", account_1_available)
+        ImGui.SameLine(ctx)
+        draw_assignment_button(user, "el_2", "elevenlabs_2", account_2_available)
+        ImGui.SameLine(ctx)
+        draw_assignment_button(user, "Block", "blocked", true)
+      end
     end
     ImGui.EndTable(ctx)
   end

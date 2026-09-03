@@ -1,18 +1,18 @@
-status: published_limited_internal_in_live_team_testing
+status: candidate_awaiting_owner_windows_update_ui_smoke
 schema_version: 1
 
 package:
   display_name: Neurocast Tools
   slug: Neurocast_Tools
-  version: 0.1.2
+  version: 0.1.3
   architecture: one_metapackage
-  installable: true
+  installable: false
 
 source:
   repository: https://github.com/Logutin/auphonic-mt
-  commit: 3b5cb2078afbaa5f7f4b2ca15054065faae98416
-  tracked_lua_count: 53
-  tracked_lua_policy: commit_pinned_content_exact_after_source_clean_filter_with_two_changed_mvsep_blobs_byte_exact
+  commit: 7c7def2d31526fa6cd0f9fd387c246ed44a34e21
+  tracked_lua_count: 54
+  tracked_lua_policy: commit_pinned_content_exact_after_source_clean_filter_with_four_changed_elevenlabs_blobs_byte_exact
 
 local_windows_release_inputs:
   repository: https://github.com/Logutin/auphonic-mt
@@ -124,6 +124,10 @@ payload:
     role: support_file
   - source: auphonic-mt:scr/modules-neurocast/elevenlabs_api_via_neurocast.lua
     destination: Neurocast_Tools/modules-neurocast/elevenlabs_api_via_neurocast.lua
+    platforms: [win64, darwin64, darwin-arm64]
+    role: support_file
+  - source: auphonic-mt:scr/modules-neurocast/elevenlabs_manager_user_view.lua
+    destination: Neurocast_Tools/modules-neurocast/elevenlabs_manager_user_view.lua
     platforms: [win64, darwin64, darwin-arm64]
     role: support_file
   - source: auphonic-mt:scr/modules-neurocast/elevenlabs_shared_voices_api.lua

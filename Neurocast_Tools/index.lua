@@ -1,14 +1,15 @@
 -- @description Neurocast Tools
--- @version 0.1.2
+-- @version 0.1.3
 -- @author Slava Logutin
 -- @metapackage
--- @changelog Update MVSEP time-selection queueing, concurrency, and result placement.
+-- @changelog Add local name/username/email filtering to ElevenLabs Manager; remove permanent voice deletion from the ElevenLabs client. Backend enforcement against older clients is separate.
 -- @about
 --   Self-contained Neurocast-backed REAPER tools for Windows x64, macOS x86_64, and macOS ARM64.
 --   ReaImGui is an external prerequisite and is not bundled.
 --   Package minimum: REAPER 7.72+.
---   The authorized Windows gate is a 0.1.1 to 0.1.2 update and minimal packaged MVSEP UI smoke for limited internal use.
---   Clean install, uninstall, macOS, and authenticated workflow requalification remain unqualified for 0.1.2.
+--   The authorized Windows gate is a 0.1.2 to 0.1.3 update and minimal packaged ElevenLabs/Manager UI smoke for limited internal use.
+--   Clean install, uninstall, macOS, and broad authenticated workflow requalification are outside this update gate.
+--   Voice deletion is removed from this client; backend enforcement against older clients is separate. Manager Block still removes only an account assignment.
 --   Script Aligner ambiguous-create retry duplication is accepted technical debt for this limited-internal release.
 --   This is not a broadly qualified public production release.
 -- @link https://github.com/Logutin/reaper-reapack-neurocast-tools
@@ -30,6 +31,7 @@
 --   [win64] modules-neurocast/Cleanup.lua
 --   [win64] modules-neurocast/Curl.lua
 --   [win64] modules-neurocast/elevenlabs_api_via_neurocast.lua
+--   [win64] modules-neurocast/elevenlabs_manager_user_view.lua
 --   [win64] modules-neurocast/elevenlabs_shared_voices_api.lua
 --   [win64] modules-neurocast/elevenlabs_tool_languages.lua
 --   [win64] modules-neurocast/elevenlabs_voice_catalog.lua
@@ -91,6 +93,7 @@
 --   [darwin64] modules-neurocast/Cleanup.lua
 --   [darwin64] modules-neurocast/Curl.lua
 --   [darwin64] modules-neurocast/elevenlabs_api_via_neurocast.lua
+--   [darwin64] modules-neurocast/elevenlabs_manager_user_view.lua
 --   [darwin64] modules-neurocast/elevenlabs_shared_voices_api.lua
 --   [darwin64] modules-neurocast/elevenlabs_tool_languages.lua
 --   [darwin64] modules-neurocast/elevenlabs_voice_catalog.lua
@@ -146,6 +149,7 @@
 --   [darwin-arm64] modules-neurocast/Cleanup.lua
 --   [darwin-arm64] modules-neurocast/Curl.lua
 --   [darwin-arm64] modules-neurocast/elevenlabs_api_via_neurocast.lua
+--   [darwin-arm64] modules-neurocast/elevenlabs_manager_user_view.lua
 --   [darwin-arm64] modules-neurocast/elevenlabs_shared_voices_api.lua
 --   [darwin-arm64] modules-neurocast/elevenlabs_tool_languages.lua
 --   [darwin-arm64] modules-neurocast/elevenlabs_voice_catalog.lua

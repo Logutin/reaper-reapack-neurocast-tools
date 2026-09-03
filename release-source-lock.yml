@@ -3,21 +3,20 @@ schema_version: 1
 package:
   display_name: Neurocast Tools
   slug: Neurocast_Tools
-  version: 0.1.2
+  version: 0.1.3
   inventory: release-manifest.yml
 
 tracked_lua:
   repository: https://github.com/Logutin/auphonic-mt
-  commit: 3b5cb2078afbaa5f7f4b2ca15054065faae98416
-  count: 53
-  policy: All Lua inputs match commit-qualified source content after the source repository Git clean filter. The two changed MVSEP runtime files are byte-exact source blobs; historical CRLF bytes are preserved in 13 unchanged distribution files so the approved runtime delta is not widened.
+  commit: 7c7def2d31526fa6cd0f9fd387c246ed44a34e21
+  count: 54
+  policy: All Lua inputs match commit-qualified source content after the source repository Git clean filter. The four changed or added ElevenLabs runtime files are byte-exact source blobs; historical CRLF bytes are preserved in ten unchanged distribution files so the approved runtime delta is not widened.
   byte_exact_changed_files:
-    - scr/mvsep_tool.lua
-    - scr/modules-neurocast/mvsep_reaper.lua
+    - scr/elevenlabs_tool.lua
+    - scr/elevenlabs_manager_tool.lua
+    - scr/modules-neurocast/elevenlabs_api_via_neurocast.lua
+    - scr/modules-neurocast/elevenlabs_manager_user_view.lua
   historical_crlf_preserved_distribution_files:
-    - Neurocast_Tools/elevenlabs_tool.lua
-    - Neurocast_Tools/elevenlabs_manager_tool.lua
-    - Neurocast_Tools/modules-neurocast/elevenlabs_api_via_neurocast.lua
     - Neurocast_Tools/modules-neurocast/elevenlabs_tool_languages.lua
     - Neurocast_Tools/modules-neurocast/json.lua
     - Neurocast_Tools/modules-neurocast/neurocast_auth.lua

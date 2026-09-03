@@ -5,6 +5,11 @@ The currently published package is `Neurocast_Tools` version `0.1.2`.
 All releases are currently limited internal for selected team members; a plain
 semantic version does not imply broad production qualification.
 
+Candidate `0.1.3` adds the ElevenLabs Manager local filter and removes permanent
+voice deletion from the ElevenLabs client. Its source lock and manifest describe
+the candidate; the public `index.xml` remains on `0.1.2` until the owner approves
+the packaged-copy Windows smoke. See the [candidate record](docs/2026-09-03_package_implementation_0.1.3.md).
+
 Runtime Lua source and the Neurocast-backend release workflow are owned and
 documented in
 [Logutin/auphonic-mt](https://github.com/Logutin/auphonic-mt). Native preview

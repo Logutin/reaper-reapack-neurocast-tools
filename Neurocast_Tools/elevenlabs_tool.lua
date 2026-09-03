@@ -1,5 +1,5 @@
 --========================================================
--- Elevenlabs Studio Neurocast tool script v2.1.0
+-- Elevenlabs Studio Neurocast tool script v2.1.1
 --========================================================
 
 -- Entrypoint-owned orchestration between the shared Voice Library API/state/
@@ -1208,7 +1208,7 @@ if ... == "__voice_library_add_controller_headless" then
 end
 
 local r = assert(reaper, "Reaper API not found. This script must be run within Reaper.")
-local SCRIPT_VERSION = "v2.1.0"
+local SCRIPT_VERSION = "v2.1.1"
 local TOOLSET_VERSION = SCRIPT_VERSION
 
 local active_locale = "eng"
@@ -1623,7 +1623,6 @@ local CFG = {
   retry_max_attempts_sts = 5,
   retry_max_attempts_tts = 5,
   retry_max_attempts_openai = 5,
-  retry_max_attempts_voice_delete = 5,
   retry_max_attempts_misc = 4,
   el_catalog_body_max_bytes = 16 * 1024 * 1024,
   el_voice_page_size = 100,
@@ -1738,8 +1737,6 @@ local S = {
   voice_design_was_expanded = false,
   el_voice_library_ever_opened = false,
   el_voice_library_last_committed_page = nil,
-  el_delete_records = nil,
-  el_delete_queue = nil,
   el_voice_selected_id = "",
   el_voice_selection_cleared_by_filter = false,
   el_voice_combo_open = false,
@@ -1835,11 +1832,7 @@ Jobs.init(S, CFG)
 local telemetry_button_ids = {
   empty_temp_folder = true,
   render_regions_btn = true,
-  queue_filtered_voice_delete_btn = true,
   reset_account_voice_filters = true,
-  queue_voice_delete_btn = true,
-  proceed_delete_queue_btn = true,
-  clear_delete_queue_btn = true,
   login_btn = true,
   refresh_login_btn = true,
   forget_login_btn = true,
@@ -2150,7 +2143,6 @@ function TelemetryBridge.operation_from_kind(req, ctx_info, rec)
   if kind == "el_shared_voices" then return "elevenlabs_voice_library" end
   if kind == "el_reconcile_shared_voice" then return "elevenlabs_voice_library_reconcile" end
   if kind == "el_add_shared_voice" then return "elevenlabs_voice_library_add" end
-  if kind == "el_voice_delete" then return "elevenlabs_voice_delete" end
   if kind == "el_voice_preview" then return "elevenlabs_voice_preview" end
   if kind == "el_account_voice_preview" then return "elevenlabs_account_voice_preview" end
   if kind == "el_shared_voice_preview" then return "elevenlabs_voice_library_preview" end
@@ -2200,12 +2192,11 @@ function TelemetryBridge.record_payload(rec, req, result, job, ctx_info, respons
   payload.track_number = rec and rec.track_number or rec and rec.track_position or nil
   payload.region_name = tostring(rec and rec.region_name or "")
   payload.item_position = rec and rec.item_position or rec and rec.track_position or nil
-  payload.voice_id = tostring((ctx_info and ctx_info.voice_id) or (rec and (rec.voice_id or rec.deletion_voice_id)) or "")
-  payload.voice_name = tostring((ctx_info and ctx_info.voice_name) or (rec and (rec.voice_name or rec.deletion_voice_name)) or payload.voice_name or "")
+  payload.voice_id = tostring((ctx_info and ctx_info.voice_id) or (rec and rec.voice_id) or "")
+  payload.voice_name = tostring((ctx_info and ctx_info.voice_name) or (rec and rec.voice_name) or payload.voice_name or "")
   payload.model_id = tostring((ctx_info and ctx_info.model_id) or payload.model_id or "")
   payload.generated_voice_id = tostring((ctx_info and ctx_info.generated_voice_id) or (rec and rec.generated_voice_id) or payload.generated_voice_id or "")
   payload.preview_index = rec and rec.preview_index or nil
-  payload.delete_voice_count = ctx_info and ctx_info.delete_voice_count or nil
 
   TelemetryBridge.put_content(payload, "record_text", rec and rec.text)
   TelemetryBridge.put_content(payload, "input_payload_text", rec and rec.input_payload_text)
@@ -6100,243 +6091,6 @@ do --some API helpers (ElevenLabs, OpenAI) and curl somehow
   end
 end --end of "do --some API helpers (ElevenLabs, OpenAI) and curl somehow"
 
---=================== ElevenLabs voice deletion =================
-do --ElevenLabs voice deletion
-  -- Sanitizes a voice name for record_name so IDs stay readable and safe.
-  local function sanitize_voice_name_for_record_name(voice_name)
-    local name = tostring(voice_name or "")
-    name = name:gsub("[%c]", " ")
-    name = name:gsub("%s+", "_")
-    name = name:gsub("^_+", ""):gsub("_+$", "")
-    if #name > 32 then
-      name = name:sub(1, 32)
-    end
-    return name
-  end
-
-  -- Sanitizes a voice name for table display so we don't break rows.
-  local function sanitize_voice_name_for_display(voice_name)
-    local name = tostring(voice_name or "")
-    name = name:gsub("[%c]", " ")
-    return name
-  end
-
-  local function build_voice_delete_record(voice_id, voice_name)
-    local id_txt = tostring(voice_id or "")
-    local name_txt = tostring(voice_name or "")
-    if id_txt == "" then
-      return nil, t("Missing voice_id for delete.")
-    end
-    if name_txt == "" then
-      return nil, t("Missing voice_name for delete.")
-    end
-    local safe_name = sanitize_voice_name_for_record_name(name_txt)
-    if safe_name == "" then
-      safe_name = "voice"
-    end
-    local display_name = sanitize_voice_name_for_display(name_txt)
-    local stamp = Util.date_time_stamp_with_time_precise()
-    local record_name = stamp .. "_VOICE_DELETE_" .. id_txt .. safe_name
-    return {
-      deletion_voice_id = id_txt,
-      deletion_voice_name = display_name,
-      record_name = record_name
-    }, nil
-  end
-
-  -- Submits ElevenLabs voice delete jobs as part of the workflow.
-  -- Called by `Eleven.delete_voice` and `Eleven.delete_voices`; caller passes `records`.
-  function Eleven.submit_el_voice_delete_jobs(records)
-    if not records or #records < 1 then
-      return false, t("No voices to delete.")
-    end
-    local ok_auth, auth_msg = Auth.ensure_access_token()
-    if not ok_auth then
-      return false, auth_msg
-    end
-
-    local total = #records
-    local submitted = 0
-    local max_attempts = tonumber(CFG.retry_max_attempts_voice_delete) or 3
-    for i, rec in ipairs(records) do
-      local rec_ref = rec
-      local voice_id = rec_ref.deletion_voice_id or ""
-      local voice_name = rec_ref.deletion_voice_name or ""
-      if voice_id == "" then
-        return false, string.format(t("Missing voice_id for delete record %s"), tostring(i))
-      end
-      if voice_name == "" then
-        return false, string.format(t("Missing voice_name for delete record %s"), tostring(i))
-      end
-
-      rec_ref._attempt = 1
-      rec_ref._max_attempts = max_attempts
-      rec_ref._auth_refresh_used_once = false
-      rec_ref._retry_generation = S.retry_generation
-      local base_label = string.format(t("Voice delete %s/%s"), tostring(i), tostring(total))
-      rec_ref._retry_label = rec_ref.record_name or base_label
-
-      local function submit_once()
-        if rec_ref._state == "canceled" then
-          return false, "canceled"
-        end
-        rec_ref._state = "running"
-        rec_ref._next_retry_at = nil
-        local attempt = rec_ref._attempt or 1
-
-        local req, req_err = Backend.client():delete_voice_request(
-          voice_id,
-          Jobs.format_attempt_label(base_label, attempt, max_attempts),
-          120
-        )
-        if not req then
-          return Backend.request_build_failed(rec_ref, req_err)
-        end
-
-        local opts = {
-          read_body = true,
-          keep_output = false,
-          body_max_bytes = 512 * 1024
-        }
-
-        local function on_done(result, job)
-          if rec_ref._state == "canceled" then return end
-          local body_txt = result.body or ""
-          if body_txt == "" and job and job.out_path then
-            local body_data = Files.slurp_with_cap(job.out_path, 128 * 1024)
-            if body_data and body_data ~= "" then
-              body_txt = body_data
-              result.body = body_txt
-            end
-          end
-
-          if result.ok then
-            local ok_dec, decoded = pcall(json.decode, body_txt)
-            if ok_dec and type(decoded) == "table" then
-              local status_txt = decoded.status or ""
-              if status_txt == "ok" then
-                Curl.update_last_curl_state(result, job, "Voice delete")
-                S.status_text = string.format(t("Voice delete ok: %s"), tostring(voice_name))
-                S.last_api_error = ""
-                rec_ref._state = "ok"
-                rec_ref._next_retry_at = nil
-                return
-              end
-              local err_txt = string.format(t("Voice delete status: %s"), tostring(status_txt))
-              result.ok = false
-              result.err = err_txt
-            else
-              local err_txt = string.format(t("Voice delete response decode failed: %s"), tostring(decoded))
-              result.ok = false
-              result.err = err_txt
-            end
-          end
-
-          local err_txt = result.err or Eleven.summarize_el_error(result)
-          result.err = err_txt
-          Curl.update_last_curl_state(result, job, "Voice delete")
-          local snippet = Util.clip_body_text(body_txt or result.err_txt or err_txt, 512)
-          Jobs.update_record_retry_state(rec_ref, err_txt, result, snippet)
-          local retryable = Jobs.is_retryable_result(result)
-          if rec_ref._retry_generation ~= S.retry_generation then retryable = false end
-          local attempt_now = rec_ref._attempt or 1
-          if retryable and attempt_now < max_attempts then
-            local next_attempt = attempt_now + 1
-            rec_ref._attempt = next_attempt
-            Jobs.enqueue_retry(rec_ref._retry_label or base_label, submit_once, next_attempt, max_attempts, err_txt, rec_ref)
-            if snippet and snippet ~= "" then
-              Util.msg("Retry scheduled (Voice delete): " .. snippet, 1)
-            end
-            S.last_api_error = err_txt
-            S.status_text = string.format(t("Voice delete failed (retrying): %s"), err_txt)
-          else
-            rec_ref._state = "failed_final"
-            rec_ref._next_retry_at = nil
-            S.last_api_error = err_txt
-            S.status_text = string.format(t("Voice delete failed: %s"), err_txt)
-          end
-        end
-
-        local job, err = TelemetryBridge.submit_curl(req, on_done, opts, {
-          rec = rec_ref,
-          operation = "elevenlabs_voice_delete",
-          capture_response_body = true
-        })
-        if not job then
-          local err_txt = string.format(t("Voice delete request failed to start: %s"), tostring(err))
-          rec_ref._state = "failed_final"
-          rec_ref._next_retry_at = nil
-          rec_ref._last_error_summary = err_txt
-          S.status_text = err_txt
-          S.last_api_error = err_txt
-          return false, err_txt
-        end
-        job.keep_in_list = true
-        rec_ref.delete_job_id = job.id
-        return true
-      end
-
-      rec_ref._retry_submit = submit_once
-      local ok_submit, submit_err = submit_once()
-      if not ok_submit then
-        return false, submit_err
-      end
-      submitted = submitted + 1
-    end
-
-    S.status_text = string.format(t("Voice delete jobs submitted (%s)."), tostring(submitted))
-    S.last_api_error = ""
-    return true
-  end
-
-  -- Deletes a single voice (requires both id and name).
-  function Eleven.delete_voice(voice_id, voice_name)
-    return Eleven.delete_voices({ { voice_id = voice_id, voice_name = voice_name } })
-  end
-
-  -- Deletes multiple voices given a list of {voice_id, voice_name}.
-  function Eleven.delete_voices(voice_items)
-    S.ui_lock_network_buttons = true
-    Jobs.bump_retry_generation()
-    S.el_delete_records = nil
-
-    local function fail(msg_to_show)
-      S.status_text = msg_to_show
-      S.last_api_error = msg_to_show
-      S.ui_lock_network_buttons = false
-      return false, msg_to_show
-    end
-
-    local ok_auth, auth_msg = Auth.ensure_access_token()
-    if not ok_auth then
-      return fail(auth_msg)
-    end
-    if not voice_items or #voice_items < 1 then
-      return fail(t("No voices to delete."))
-    end
-
-    local records = {}
-    for _, item in ipairs(voice_items) do
-      local voice_id = item and item.voice_id or nil
-      local voice_name = item and item.voice_name or nil
-      local rec, err = build_voice_delete_record(voice_id, voice_name)
-      if not rec then
-        return fail(err)
-      end
-      table.insert(records, rec)
-    end
-
-    S.el_delete_records = records
-    local ok_submit, submit_err = Eleven.submit_el_voice_delete_jobs(S.el_delete_records)
-    if not ok_submit then
-      return fail(submit_err)
-    end
-
-    S.ui_lock_network_buttons = false
-    return true
-  end
-end --ElevenLabs voice deletion
-
 --=================== Scheduler and button helpers =================
 math.randomseed(os.time())
 
@@ -6369,8 +6123,6 @@ function Jobs.full_reset_state(reason)
   S.ivc_create_records = nil
   S.ivc_batch_ui = nil
   S.openai_records = nil
-  S.el_delete_records = nil
-  S.el_delete_queue = nil
   S.misc_records = nil
   S.curl_jobs_selected_id = nil
   S.pending_job = nil
@@ -6815,9 +6567,6 @@ function UI.start_label_for_record(rec)
   if rec and rec.misc_start_time_override ~= nil then
     return tostring(rec.misc_start_time_override)
   end
-  if rec and rec.deletion_voice_name and rec.deletion_voice_name ~= "" then
-    return tostring(rec.deletion_voice_name)
-  end
   return UI.fmt_time((rec and rec.item_position) or (rec and rec.track_position))
 end
 
@@ -6864,7 +6613,6 @@ function UI.build_record_rows()
   UI.add_record_rows(rows, S.voice_create_records, t("Voice Create"), "voice_create_job_id")
   UI.add_record_rows(rows, S.ivc_create_records, t("IVC Create"), "ivc_create_job_id")
   UI.add_record_rows(rows, S.openai_records, t("OpenAI"), "openai_job_id")
-  UI.add_record_rows(rows, S.el_delete_records, t("Voice DELETE"), "delete_job_id")
   UI.add_record_rows(rows, S.misc_records, t("Fetch"), "misc_job_id")
   return rows
 end
@@ -13327,70 +13075,6 @@ local function GuiLoop()
         end
       end
       S.el_voice_combo_open = combo_open
-      local function ensure_delete_queue_rows()
-        if type(S.el_delete_queue) ~= "table" then
-          S.el_delete_queue = {}
-        end
-        return S.el_delete_queue
-      end
-
-      local function delete_queue_row_is_queued(item)
-        return item and item.queued ~= false
-      end
-
-      local function count_delete_queue_rows(rows)
-        local count = 0
-        if type(rows) == "table" then
-          for _, item in ipairs(rows) do
-            if delete_queue_row_is_queued(item) then
-              count = count + 1
-            end
-          end
-        end
-        return count
-      end
-
-      local function queue_delete_voice_row(voice_id, voice_name, voice_display_label)
-        local rows = ensure_delete_queue_rows()
-        local id_txt = tostring(voice_id or "")
-        local name_txt = tostring(voice_name or "")
-        local display_txt = tostring(voice_display_label or name_txt)
-        if name_txt == "" then name_txt = display_txt end
-        for _, item in ipairs(rows) do
-          if tostring(item.voice_id or "") == id_txt then
-            item.voice_name = name_txt
-            item.voice_display_label = display_txt
-            if delete_queue_row_is_queued(item) then
-              return "already"
-            end
-            item.queued = true
-            return "requeued"
-          end
-        end
-        table.insert(rows, {
-          voice_id = id_txt,
-          voice_name = name_txt,
-          voice_display_label = display_txt,
-          queued = true
-        })
-        return "added"
-      end
-
-      local function build_delete_submission_rows(rows)
-        local submit_rows = {}
-        if type(rows) == "table" then
-          for _, item in ipairs(rows) do
-            if delete_queue_row_is_queued(item) then
-              table.insert(submit_rows, {
-                voice_id = item.voice_id,
-                voice_name = item.voice_name,
-                voice_display_label = item.voice_display_label
-              })
-            end
-          end
-        end
-        return submit_rows
-      end
       if combo_open then
         local text_filter_changed = ImGui.TextFilter_Draw(filter, ctx, t("Filter..."), 0)
         if text_filter_changed then
@@ -13398,41 +13082,7 @@ local function GuiLoop()
           matched = account_voice_filtered_rows(voices)
         end
         if has_voice_catalog then
-          local total_count = #voices
           local matched_count = #matched
-          if matched_count > 0 and matched_count < total_count then
-            local queue_filtered_label = string.format(
-              t("Add %d filtered voices to the deletion queue"),
-              matched_count
-            )
-            if UI.button_clicked("queue_filtered_voice_delete_btn", queue_filtered_label) then
-              local added = 0
-              local requeued = 0
-              local skipped = 0
-              for _, entry in ipairs(matched) do
-                local queue_result = queue_delete_voice_row(entry.id, entry.name, entry.display_label)
-                if queue_result == "added" then
-                  added = added + 1
-                elseif queue_result == "requeued" then
-                  requeued = requeued + 1
-                else
-                  skipped = skipped + 1
-                end
-              end
-              if requeued > 0 or skipped > 0 then
-                S.status_text = string.format(
-                  t("Queued %d voices. Re-queued %d. Skipped %d."),
-                  added,
-                  requeued,
-                  skipped
-                )
-              else
-                S.status_text = string.format(t("Queued %d voices."), added)
-              end
-              S.last_api_error = ""
-            end
-            ImGui.Separator(ctx)
-          end
           if matched_count > 0 then
             ImGui.ListClipper_Begin(account_voice_clipper, matched_count)
             while ImGui.ListClipper_Step(account_voice_clipper) do
@@ -13469,12 +13119,7 @@ local function GuiLoop()
         voice_catalog and voice_catalog.by_id and voice_catalog.by_id[S.el_voice_selected_id] or nil
       local selected_voice_name = selected_voice and selected_voice.name or ""
       local selected_voice_id = selected_voice and selected_voice.id or ""
-      local selected_voice_display_label =
-        selected_voice and selected_voice.display_label or selected_voice_name
-      local selected_voice_status_name =
-        selected_voice_name ~= "" and selected_voice_name or selected_voice_display_label
       local can_copy_voice = selected_voice_name ~= ""
-      local can_queue_voice = selected_voice_id ~= ""
       local can_preview_voice = account_voice_preview_available(selected_voice)
       if UI.voice_preview_play_button(
         "account_voice_play_btn",
@@ -13499,183 +13144,8 @@ local function GuiLoop()
         ImGui.SetClipboardText(ctx, selected_voice_name)
       end
       if not can_copy_voice then ImGui.EndDisabled(ctx) end
-      ImGui.SameLine(ctx)
-      if not can_queue_voice then ImGui.BeginDisabled(ctx, true) end
-      if UI.button_clicked("queue_voice_delete_btn", t("Queue for deletion!")) then
-        local queue_result =
-          queue_delete_voice_row(selected_voice_id, selected_voice_name, selected_voice_display_label)
-        if queue_result == "already" then
-          S.status_text = string.format(t("Voice already queued for deletion: %s"), selected_voice_status_name)
-          S.last_api_error = ""
-        elseif queue_result == "requeued" then
-          S.status_text = string.format(t("Voice re-queued for deletion: %s"), selected_voice_status_name)
-          S.last_api_error = ""
-        else
-          S.status_text = string.format(t("Voice queued for deletion: %s"), selected_voice_status_name)
-          S.last_api_error = ""
-        end
-      end
-      if not can_queue_voice then ImGui.EndDisabled(ctx) end
 
       account_voice_render_selected_details(selected_voice)
-
-      local listed_count = (S.el_delete_queue and #S.el_delete_queue) or 0
-      local queued_count = count_delete_queue_rows(S.el_delete_queue)
-      local total_voice_count = voice_catalog and voice_catalog.count or 0
-      if listed_count > 0 then
-        ImGui.Text(ctx, string.format(t("Voices: %d; queued for deletion: %d."), total_voice_count, queued_count))
-
-        local table_flags =
-          ImGui.TableFlags_Borders |
-          ImGui.TableFlags_RowBg |
-          ImGui.TableFlags_Resizable
-        local line_h = ImGui.GetTextLineHeightWithSpacing(ctx)
-        local visible_rows = listed_count
-        if visible_rows < 3 then visible_rows = 3 end
-        if visible_rows > 8 then visible_rows = 8 end
-        local table_height = line_h * (visible_rows + 1.6)
-        local all_rows_queued = listed_count > 0 and queued_count == listed_count
-        local header_changed = false
-        local header_value = all_rows_queued
-        local row_changed_voice_name = nil
-        local row_changed_to_queued = nil
-
-        if ImGui.BeginTable(ctx, "##el_delete_queue_table", 4, table_flags, -1, table_height) then
-          ImGui.TableSetupColumn(ctx, t("#"), ImGui.TableColumnFlags_WidthFixed, 45)
-          ImGui.TableSetupColumn(ctx, t("Voice name"), ImGui.TableColumnFlags_WidthFixed, 220)
-          ImGui.TableSetupColumn(ctx, t("Voice ID"), ImGui.TableColumnFlags_WidthStretch)
-          ImGui.TableSetupColumn(ctx, t("Queued"), ImGui.TableColumnFlags_WidthFixed, 100)
-
-          ImGui.TableNextRow(ctx, ImGui.TableRowFlags_Headers)
-          ImGui.TableSetColumnIndex(ctx, 0)
-          ImGui.TableHeader(ctx, t("#"))
-          ImGui.TableSetColumnIndex(ctx, 1)
-          ImGui.TableHeader(ctx, t("Voice name"))
-          ImGui.TableSetColumnIndex(ctx, 2)
-          ImGui.TableHeader(ctx, t("Voice ID"))
-          ImGui.TableSetColumnIndex(ctx, 3)
-          header_changed, header_value = ImGui.Checkbox(ctx, "##el_delete_queue_all", all_rows_queued)
-          ImGui.SameLine(ctx)
-          ImGui.Text(ctx, t("Queued"))
-
-          for idx, item in ipairs(S.el_delete_queue) do
-            local name = tostring(item.voice_display_label or item.voice_name or "")
-            local id = tostring(item.voice_id or "")
-            local row_queued = delete_queue_row_is_queued(item)
-
-            ImGui.TableNextRow(ctx)
-            ImGui.TableSetColumnIndex(ctx, 0)
-            ImGui.Text(ctx, tostring(idx))
-            ImGui.TableSetColumnIndex(ctx, 1)
-            ImGui.Text(ctx, name ~= "" and name or t("-"))
-            ImGui.TableSetColumnIndex(ctx, 2)
-            ImGui.Text(ctx, id ~= "" and id or t("-"))
-            ImGui.TableSetColumnIndex(ctx, 3)
-            local row_changed, row_value = ImGui.Checkbox(
-              ctx,
-              "##el_delete_queue_row_" .. tostring(idx),
-              row_queued
-            )
-            if row_changed then
-              item.queued = row_value == true
-              row_changed_voice_name = name
-              row_changed_to_queued = item.queued == true
-            end
-          end
-
-          ImGui.EndTable(ctx)
-        end
-
-        if header_changed then
-          local target_state = header_value == true
-          for _, item in ipairs(S.el_delete_queue) do
-            item.queued = target_state
-          end
-          if target_state then
-            S.status_text = t("All listed voices queued for deletion.")
-          else
-            S.status_text = t("All listed voices removed from deletion queue.")
-          end
-          S.last_api_error = ""
-        elseif row_changed_voice_name ~= nil then
-          if row_changed_to_queued then
-            S.status_text = string.format(t("Voice queued for deletion: %s"), tostring(row_changed_voice_name))
-          else
-            S.status_text = string.format(
-              t("Voice removed from deletion queue but kept in table: %s"),
-              tostring(row_changed_voice_name)
-            )
-          end
-          S.last_api_error = ""
-        end
-
-        queued_count = count_delete_queue_rows(S.el_delete_queue)
-        ImGui.Text(ctx, string.format(t("Queued voices count: %d"), queued_count))
-      else
-        ImGui.Text(ctx, string.format(t("Total number of voices: %d."), total_voice_count))
-      end --if listed_count > 0
-      local rows_to_delete = build_delete_submission_rows(S.el_delete_queue)
-      local can_proceed_delete = queued_count > 0 and not Jobs.network_busy()
-      if not can_proceed_delete then ImGui.BeginDisabled(ctx, true) end
-      if can_proceed_delete then
-        ImGui.PushStyleColor(ctx, ImGui.Col_Button, 0xC00000FF)
-        ImGui.PushStyleColor(ctx, ImGui.Col_ButtonHovered, 0xE00000FF)
-        ImGui.PushStyleColor(ctx, ImGui.Col_ButtonActive, 0xA00000FF)
-      end
-      if UI.button_clicked("proceed_delete_queue_btn", t("Proceed to delete!")) then
-        local function sanitize_name_for_delete_msg(name)
-          local s = tostring(name or "")
-          s = s:gsub("[%c]", " ")
-          s = s:gsub("%s+", " ")
-          s = s:gsub("^%s+", ""):gsub("%s+$", "")
-          if #s > 64 then
-            s = s:sub(1, 64)
-          end
-          return s
-        end
-        local lines = { string.format(t("Do you really want to DELETE %s voices _FOREVER_?"), queued_count) }
-        table.insert(lines, t("First 16 voices in the queue:"))
-        if rows_to_delete then
-          for voice_number, item in ipairs(rows_to_delete) do
-            local voice_name =
-              sanitize_name_for_delete_msg(item.voice_display_label or item.voice_name)
-            local voice_id = tostring(item.voice_id or "")
-            if voice_name ~= "" then
-              local detail = voice_name
-              if voice_id ~= "" and not detail:find(voice_id, 1, true) then
-                detail = detail .. " [" .. voice_id .. "]"
-              end
-              table.insert(lines, voice_number .. ". " .. detail)
-              if #lines >= 18 then
-                table.insert(lines, t("(... and more!)"))
-                break
-              end
-            end
-          end
-        end
-        local msg = table.concat(lines, "\n")
-        local ret = r.ShowMessageBox(msg, t("ATTENTION!!"), 1)
-        if ret == 1 then
-          table.insert(
-            S.warnings,
-            t("You need to refetch voices after deletion! Use _Fetch voices_ button in _ElevenLabs API_ section!")
-          )
-          Eleven.delete_voices(rows_to_delete)
-        else
-          S.status_text = t("Deletion canceled. Queue kept.")
-          S.last_api_error = ""
-        end
-      end
-      if can_proceed_delete then ImGui.PopStyleColor(ctx, 3) end
-      if not can_proceed_delete then ImGui.EndDisabled(ctx) end
-      if listed_count > 0 then
-        ImGui.SameLine(ctx)
-        if UI.button_clicked("clear_delete_queue_btn", t("Clear table")) then
-          S.el_delete_queue = nil
-          S.status_text = t("Deletion table cleared.")
-          S.last_api_error = ""
-        end
-      end
 
       local catalog_fetch_disabled = Jobs.network_busy()
       if catalog_fetch_disabled then ImGui.BeginDisabled(ctx, true) end
@@ -13686,7 +13156,6 @@ local function GuiLoop()
       ImGui.SameLine(ctx)
 
       if UI.button_clicked("fetch_el_voices_btn", t("Refetch voices")) then
-        S.el_delete_queue = nil
         Eleven.fetch_el_voices()
       end
       if catalog_fetch_disabled then ImGui.EndDisabled(ctx) end

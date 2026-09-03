@@ -260,17 +260,6 @@ function ElevenLabsViaNeurocast.create_client(opts)
     })
   end
 
-  function client:delete_voice_request(voice_id, label, timeout_sec)
-    return make_req(self, {
-      method = "DELETE",
-      path = "/api/elevenlabs/voices/" .. url_encode(voice_id),
-      accept = "application/json",
-      kind = "el_voice_delete",
-      label = label,
-      timeout_sec = timeout_sec
-    })
-  end
-
   function client:voice_design_request(payload, output_format, label, timeout_sec)
     return make_req(self, {
       method = "POST",
