@@ -1,4 +1,4 @@
-status: candidate_awaiting_owner_windows_update_ui_smoke
+status: published_limited_internal_owner_windows_smoke_passed_feed_restore_pending
 schema_version: 1
 
 package:
@@ -6,7 +6,7 @@ package:
   slug: Neurocast_Tools
   version: 0.1.3
   architecture: one_metapackage
-  installable: false
+  installable: true
 
 source:
   repository: https://github.com/Logutin/auphonic-mt

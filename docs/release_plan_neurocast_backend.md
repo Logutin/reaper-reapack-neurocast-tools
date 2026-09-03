@@ -7,21 +7,17 @@
 > on 2026-08-29. macOS remains unqualified. This document is not a live backend
 > contract; recheck source and release inputs before future work.
 
-> **Current release note:** `Neurocast Tools 0.1.2` is the published
-> limited-internal MVSEP update with 13 Main actions and a REAPER 7.72+ package
-> minimum. Deterministic package checks and the owner-run Windows
-> `0.1.1 -> 0.1.2` update/UI smoke passed on 2026-09-02 in the authorized
-> disposable installation. The real-feed receipt was subsequently read back,
-> the owner recorded a demo video for the team, and `0.1.2` is now in live
-> testing by the team. Only the packaged MVSEP entrypoint and REAPER adapter
-> changed. Clean install, uninstall, deep or remote-job workflows,
-> authenticated operation, difficult-network behavior, macOS, and
-> another-machine qualification remain explicitly deferred. See
-> [`2026-09-02_package_implementation_0.1.2.md`](2026-09-02_package_implementation_0.1.2.md)
-> and
-> [`2026-09-02_windows_local_qualification_0.1.2.md`](2026-09-02_windows_local_qualification_0.1.2.md).
-> All older version-specific inventory, qualification, and publication
-> statements below remain historical facts and must not be rebound to `0.1.2`.
+> **Current release note:** `Neurocast Tools 0.1.3` is the published
+> limited-internal ElevenLabs update: local manager filtering and client-side
+> voice-deletion removal. It retains 13 Main actions and REAPER 7.72+; Windows
+> ownership is 62 files. Deterministic checks and the owner-run Windows
+> `0.1.2 -> 0.1.3` update/UI smoke passed on 2026-09-03. Public-feed restoration
+> and final disposable readback remain pending. See the
+> [0.1.3 release record](2026-09-03_package_implementation_0.1.3.md).
+> The version-specific design, inventories, and qualification below are
+> historical; do not promote them to current-release evidence. Broad workflow,
+> difficult-network, clean-install/uninstall, macOS, and other-machine testing
+> were not repeated for this update.
 
 ## Scope and ownership
 
@@ -47,10 +43,10 @@ The repositories have deliberately separate responsibilities:
   for limited internal testing; tags and GitHub releases remain later-milestone
   work.
 
-The existing Google Drive ZIP workflow in `auphonic-mt` remains the **Direct API release track**. It is not renamed, edited, or replaced by this plan. The
-new **Neurocast-backend release track** is likewise owned and documented in
-`auphonic-mt`; this repository serves only as that track's ReaPack distribution
-repository.
+The direct-era Google Drive ZIP release line in `auphonic-mt` is now frozen
+and superseded by Neurocast Tools. Its historical records remain valid, but it
+must not receive a new release. Current release policy is owned by `auphonic-mt`;
+this repository serves as the Neurocast Tools ReaPack distribution surface.
 
 ## One-package architecture
 
