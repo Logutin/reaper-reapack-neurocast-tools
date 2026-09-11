@@ -84,6 +84,12 @@ commit, and all four historical version records remain unchanged. The guarded
 Lua helper passed eight mocked path/API/feed/installed cases without operating
 REAPER. The source secret-message audit passed too.
 
+After pushing the candidate, read-only GitHub downloads verified the separate
+candidate feed byte-for-byte, all 68 Windows payload files through their exact
+commit-pinned URLs, and the helper download. The public root feed remained
+byte-identical to the previous `0.1.3` feed. This verifies candidate delivery;
+the disposable installation has not yet been updated in this task.
+
 Reproduce the candidate checks:
 
 ```powershell
