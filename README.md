@@ -2,7 +2,8 @@
 
 This is the ReaPack distribution repository for **Neurocast Tools**.
 The current published package is **`Neurocast_Tools 0.1.4`**, a limited-internal
-release for selected team members.
+release for selected team members, now in team testing (owner report on
+2026-09-11).
 
 Install/update through the repository
 [`index.xml`](https://raw.githubusercontent.com/Logutin/reaper-reapack-neurocast-tools/main/index.xml).
@@ -24,8 +25,10 @@ On 2026-09-11 the owner reported all requested live checks passed in
 update and packaged startup/DOCX/AutoMix/MVSEP checks. The screenshot confirmed
 only the helper's source-marker and local 7-Zip checks. Independent readback
 verified version `0.1.4`, all 68 installed files byte-for-byte, and exactly 14
-Main actions. The disposable installation's return from the candidate feed to
-the public feed and final synchronization readback remain pending.
+Main actions. The owner restored the disposable installation to the public
+feed. Final readback verified its cached index against the published feed,
+all 68 installed files, and 14 exactly-once Main actions. Manual installation
+and the existing global install settings were preserved. Release delivery is complete.
 
 This is owner-reported GUI/workflow acceptance plus agent-run mechanical
 verification. It does not establish broad production, difficult-network,

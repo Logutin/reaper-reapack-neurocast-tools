@@ -15,8 +15,9 @@ performed by the agent.
 The root `index.xml` publishes limited-internal `0.1.4` after owner acceptance
 and installed byte/action readback. Its bytes equal the qualified separate
 `qualification/Neurocast_Tools_0.1.4_candidate.xml` index. The disposable
-installation's return to the public feed and final synchronization/readback
-remain pending; package publication and that cleanup are separate states.
+installation's public-feed restoration and final synchronization/readback
+are complete. The owner reported on 2026-09-11 that `0.1.4` is in team testing.
+This is an operating-status report, not completed qualification of team machines.
 
 Publication commit: `3c077e3dd8d22d2d7d587c745cfbad4a91baf422`.
 Read-only retrieval of the real public root feed matched that commit's
@@ -122,18 +123,35 @@ the qualified payload, and all four historical version records are unchanged.
 No payload changed after the owner test. Project/media behavior is credited
 to the owner; it was not re-audited from workflow logs during this release gate.
 
-For delivery cleanup, the owner loads and runs
+For delivery cleanup, the owner ran
 `qualification/Neurocast_Tools_restore_public_feed.lua` in the same disposable
-REAPER, confirms the public-feed switch, and waits for synchronization. The
-helper preserves manual installation and changes no project state. Codex then
-checks the feed setting/cache and repeats the receipt/byte/action readback.
+REAPER, confirmed synchronization was done, and reported that team testing had
+started. The helper preserves manual installation and changes no project state.
 The restore helper passed Lua syntax and six mocked path/API/decline/failure/
 success cases; these checks did not operate REAPER or change its settings.
 
-## Disposable baseline and what to check in REAPER live
+Final read-only delivery verification passed on 2026-09-11:
+
+- The saved Neurocast repository uses the public root `index.xml`, enabled,
+  with manual installation (`autoInstall=0`). Global `autoinstall=0` and
+  `prereleases=0` remain unchanged.
+- `ReaPack/cache/Neurocast Tools.xml` matches both the fetched public index and
+  committed index byte-for-byte. SHA-256:
+  `7e057b5d55ec1d783fc1444f6edd9516450f5114448dc106702bed86afa2d072`.
+- The cached feed contains five versions, including `0.1.4` with 192 sources
+  pinned to the qualified payload; all four historical versions are unchanged.
+- The installed receipt remains `0.1.4`, with 68 byte-exact owned files and
+  14 exactly-once Main actions.
+
+Publication and delivery cleanup are complete. Further team testing does not
+change the limited-internal evidence boundary recorded below.
+
+## Disposable baseline and completed owner-run REAPER checklist
 
 Read-only preflight found REAPER 7.79, public-feed `0.1.3`, 62 byte-exact owned
 files, 13 Main action roles, and a telemetry identity. REAPER was not running.
+
+The following checklist records the completed owner gate, not pending work.
 
 1. Open `C:\extra_Reapers\Reaper_Empty_01\reaper.exe`. Through Actions, load
    `qualification/Neurocast_Tools_0_1_4_candidate_and_smoke.lua`.
