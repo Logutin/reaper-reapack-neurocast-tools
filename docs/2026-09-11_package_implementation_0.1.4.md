@@ -1,20 +1,22 @@
-# Neurocast Tools 0.1.4 candidate record
+# Neurocast Tools 0.1.4 release record
 
-> **Source snapshot warning:** This record describes the candidate as of
+> **Source snapshot warning:** This record describes the release as of
 > 2026-09-11. Recheck commits, hashes, receipts, and live acceptance before
 > relying on it for publication or another release.
 
 ## Status and scope
 
 The owner approved `0.1.4`, replacement of the matching Windows 7-Zip pair,
-and `C:\extra_Reapers\Reaper_Empty_01\reaper.exe`. The owner will open REAPER,
-load the supplied Lua helper, apply the update, and witness behavior manually.
-No Computer Use or automatic GUI operation is needed.
+and `C:\extra_Reapers\Reaper_Empty_01\reaper.exe`. The owner opened REAPER,
+loaded the supplied Lua helper, applied the update, and reported that all
+requested live checks passed. No Computer Use or automated GUI operation was
+performed by the agent.
 
-The root `index.xml` still publishes limited-internal `0.1.3`. The separate
-`qualification/Neurocast_Tools_0.1.4_candidate.xml` feed exposes the candidate.
-Owner live acceptance, installed byte/action readback, root-feed promotion,
-and final public-feed restoration/readback are pending.
+The root `index.xml` publishes limited-internal `0.1.4` after owner acceptance
+and installed byte/action readback. Its bytes equal the qualified separate
+`qualification/Neurocast_Tools_0.1.4_candidate.xml` index. The disposable
+installation's return to the public feed and final synchronization/readback
+remain pending; package publication and that cleanup are separate states.
 
 Runtime source pin: `auphonic-mt` commit
 `9d734e197bea078e112c85eebbe7dd5283b0bf39`.
@@ -86,9 +88,8 @@ REAPER. The source secret-message audit passed too.
 
 After pushing the candidate, read-only GitHub downloads verified the separate
 candidate feed byte-for-byte, all 68 Windows payload files through their exact
-commit-pinned URLs, and the helper download. The public root feed remained
-byte-identical to the previous `0.1.3` feed. This verifies candidate delivery;
-the disposable installation has not yet been updated in this task.
+commit-pinned URLs, and the helper download. At that preparation checkpoint,
+the public root feed remained byte-identical to the previous `0.1.3` feed.
 
 Reproduce the candidate checks:
 
@@ -97,8 +98,32 @@ python qualification/verify_0_1_4.py --index qualification/Neurocast_Tools_0.1.4
 reapack-index --check --strict --warnings .
 ```
 
-After the owner applies the update, add `--installed` to the Python command
-for the read-only disposable receipt/bytes/Main-action check.
+Add `--installed` to the Python command for the read-only disposable
+receipt/bytes/Main-action check, or use `--index index.xml` for the public index.
+
+## Owner acceptance and installed readback
+
+On 2026-09-11, after receiving the packaged live checklist, the owner supplied
+the ReaPack `0.1.3 -> 0.1.4` changelog and the helper success screenshot, and
+reported: "All passed! Please proceed." This is owner-reported acceptance of
+startup, DOCX import/Undo, AutoMix stem collision/insertion behavior, and MVSEP
+repeat download with manual import. The screenshot directly establishes only
+the helper's new-source-marker and package-local 7-Zip 26.03 checks.
+
+Independent read-only verification then passed: installed version `0.1.4`,
+68 exact owned paths with byte-for-byte candidate fidelity, and 14 exactly-once
+Main actions. The strict index check passed, all 192 sources remain pinned to
+the qualified payload, and all four historical version records are unchanged.
+No payload changed after the owner test. Project/media behavior is credited
+to the owner; it was not re-audited from workflow logs during this release gate.
+
+For delivery cleanup, the owner loads and runs
+`qualification/Neurocast_Tools_restore_public_feed.lua` in the same disposable
+REAPER, confirms the public-feed switch, and waits for synchronization. The
+helper preserves manual installation and changes no project state. Codex then
+checks the feed setting/cache and repeats the receipt/byte/action readback.
+The restore helper passed Lua syntax and six mocked path/API/decline/failure/
+success cases; these checks did not operate REAPER or change its settings.
 
 ## Disposable baseline and what to check in REAPER live
 
@@ -128,8 +153,8 @@ workflow actions; the agent does not launch new paid operations.
 ## Evidence limits
 
 Source happy paths were owner-accepted on September 10 (AutoMix, local backend)
-and September 11 (MVSEP, production). Those results do not replace this package
-gate. AutoMix production-host/large-upload qualification, difficult-network,
+and September 11 (MVSEP, production). The packaged live gate now has owner
+acceptance. AutoMix production-host/large-upload qualification, difficult-network,
 macOS, other-machine testing, and broader lifecycle qualification remain open.
 MVSEP telemetry delivery errors remain unresolved; permanent event loss was
 not established. Script Aligner ambiguous-create retry duplication remains

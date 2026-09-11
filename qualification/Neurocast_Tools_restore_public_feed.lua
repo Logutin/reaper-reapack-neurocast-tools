@@ -11,11 +11,14 @@ local function normalize_windows_path(value)
 end
 
 local actual_resource_path = tostring(r.GetResourcePath and r.GetResourcePath() or "")
-if normalize_windows_path(actual_resource_path) ~= normalize_windows_path(EXPECTED_RESOURCE_PATH) then
+local actual_exe_path = tostring(r.GetExePath and r.GetExePath() or "")
+if normalize_windows_path(actual_resource_path) ~= normalize_windows_path(EXPECTED_RESOURCE_PATH)
+  or normalize_windows_path(actual_exe_path) ~= normalize_windows_path(EXPECTED_RESOURCE_PATH) then
   r.ShowMessageBox(
     "STOP: this helper may run only in the authorized disposable REAPER.\n\n" ..
     "Expected resource path:\n" .. EXPECTED_RESOURCE_PATH .. "\n\n" ..
     "Actual resource path:\n" .. actual_resource_path .. "\n\n" ..
+    "Actual executable directory:\n" .. actual_exe_path .. "\n\n" ..
     "No repository or project state was changed.",
     TITLE,
     0
@@ -37,7 +40,8 @@ local answer = r.ShowMessageBox(
 )
 if answer ~= 6 then return end
 
-local ok_feed, feed_err = r.ReaPack_AddSetRepository(REPOSITORY_NAME, PUBLIC_FEED_URL, true, 2)
+-- Preserve the manual-install setting used for the 0.1.4 candidate.
+local ok_feed, feed_err = r.ReaPack_AddSetRepository(REPOSITORY_NAME, PUBLIC_FEED_URL, true, 0)
 if not ok_feed then
   r.ShowMessageBox(
     "Failed to restore the published feed:\n\n" .. tostring(feed_err or "Unknown error"),
@@ -49,7 +53,8 @@ end
 
 r.ReaPack_ProcessQueue(true)
 r.ShowMessageBox(
-  "The Neurocast Tools repository now uses the published feed.\n\n" ..
+  "The Neurocast Tools repository now uses the published feed with manual installation.\n\n" ..
+  "Wait for synchronization, then report done to Codex for final readback.\n\n" ..
   "No REAPER project state was changed.",
   TITLE,
   0
