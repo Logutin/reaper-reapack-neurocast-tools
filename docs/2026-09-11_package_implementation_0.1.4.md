@@ -18,6 +18,11 @@ and installed byte/action readback. Its bytes equal the qualified separate
 installation's return to the public feed and final synchronization/readback
 remain pending; package publication and that cleanup are separate states.
 
+Publication commit: `3c077e3dd8d22d2d7d587c745cfbad4a91baf422`.
+Read-only retrieval of the real public root feed matched that commit's
+`index.xml` byte-for-byte and retained all five versions. Its 192 `0.1.4`
+source records still reference the owner-qualified payload commit below.
+
 Runtime source pin: `auphonic-mt` commit
 `9d734e197bea078e112c85eebbe7dd5283b0bf39`.
 
