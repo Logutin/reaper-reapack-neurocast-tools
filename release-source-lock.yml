@@ -3,19 +3,24 @@ schema_version: 1
 package:
   display_name: Neurocast Tools
   slug: Neurocast_Tools
-  version: 0.1.3
+  version: 0.1.4
   inventory: release-manifest.yml
 
 tracked_lua:
   repository: https://github.com/Logutin/auphonic-mt
-  commit: 7c7def2d31526fa6cd0f9fd387c246ed44a34e21
-  count: 54
-  policy: All Lua inputs match commit-qualified source content after the source repository Git clean filter. The four changed or added ElevenLabs runtime files are byte-exact source blobs; historical CRLF bytes are preserved in ten unchanged distribution files so the approved runtime delta is not widened.
+  commit: 9d734e197bea078e112c85eebbe7dd5283b0bf39
+  count: 60
+  policy: All Lua inputs match the pinned source commit after its Git clean filter. Nine changed or added runtime files are byte-exact source blobs; nine unchanged files retain historical CRLF bytes. The source TOOLSET_VERSION values remain independent of ReaPack version 0.1.4.
   byte_exact_changed_files:
-    - scr/elevenlabs_tool.lua
-    - scr/elevenlabs_manager_tool.lua
-    - scr/modules-neurocast/elevenlabs_api_via_neurocast.lua
-    - scr/modules-neurocast/elevenlabs_manager_user_view.lua
+    - scr/automix_tool.lua
+    - scr/modules-neurocast/Curl.lua
+    - scr/modules-neurocast/ReaperX_Import_Media_Manually.lua
+    - scr/modules-neurocast/auphonic_api_via_neurocast.lua
+    - scr/modules-neurocast/automix_tool_languages.lua
+    - scr/modules-neurocast/mvsep_tool_languages.lua
+    - scr/modules-neurocast/zip_archive.lua
+    - scr/modules-neurocast/zip_extract_writer.lua
+    - scr/mvsep_tool.lua
   historical_crlf_preserved_distribution_files:
     - Neurocast_Tools/modules-neurocast/elevenlabs_tool_languages.lua
     - Neurocast_Tools/modules-neurocast/json.lua
@@ -26,7 +31,6 @@ tracked_lua:
     - Neurocast_Tools/modules-neurocast/docx_dialogue_parser.lua
     - Neurocast_Tools/modules-neurocast/docx_import_tool_languages.lua
     - Neurocast_Tools/modules-neurocast/neurocast_script_aligner_tool_languages.lua
-    - Neurocast_Tools/modules-neurocast/mvsep_tool_languages.lua
 
 local_windows_inputs:
   repository: https://github.com/Logutin/auphonic-mt
@@ -38,12 +42,12 @@ local_windows_inputs:
       sha256: 3345339164cf384eff527b6c3160fea8d849a4231ec6ca80513e3a739e505168
     - source_path: scr/bin/win/7z.exe
       destination: Neurocast_Tools/bin/win/7z.exe
-      size_bytes: 575488
-      sha256: 4a41aa37786c7eae7451e81c2c97458d5d1ae5a3a8154637a0d5f77adc05e619
+      size_bytes: 577536
+      sha256: 6ee3c0ed0b27663c1b948ae85a7c0bb073aed1498983182f3f0df1f6a8c30b2f
     - source_path: scr/bin/win/7z.dll
       destination: Neurocast_Tools/bin/win/7z.dll
-      size_bytes: 1908736
-      sha256: bbd705e3b58ca7677c1e9e67473f166a6712da034dcb567d571fbb67507a443f
+      size_bytes: 1906688
+      sha256: 65e4c1f855f9ef6e8f0f5df8e3f27d9eb5f07311408639da0a1ca0b8f4871b0d
 
 component_notices:
   repository: https://github.com/Logutin/slava-reaper-reapack-test-curl-jobs-imgui
@@ -106,3 +110,18 @@ validated_toolchain:
   reapack_index: 1.2.6
   pandoc: 3.10.2
   git: 2.55.0.windows.3
+
+status: candidate_prepared_owner_windows_gate_pending
+
+seven_zip_upstream:
+  version: "26.03"
+  release_date: 2026-09-03
+  repository: https://github.com/ip7z/7zip
+  release_url: https://github.com/ip7z/7zip/releases/tag/26.03
+  asset_url: https://github.com/ip7z/7zip/releases/download/26.03/7z2603-x64.exe
+  asset_size_bytes: 1661239
+  asset_sha256: 0859c524b8a63551848f0c246abddcb1d0b7b656b0fbfe879f8d85e61a9e6edd
+  digest_verified_against: GitHub release asset API
+  extraction_policy: Extract matching x64 7z.exe and 7z.dll from the same verified installer without running the installer.
+  license_policy: Existing curated 7-Zip notice is text-identical to the official 26.03 License.txt after newline normalization; retain its existing bytes and source pin.
+  official_license_sha256: 519ac0a4bded9c18ea02e0afb71f663d8c47373bd9facd3ac96a79f51d77765d

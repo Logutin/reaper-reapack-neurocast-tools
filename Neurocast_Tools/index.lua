@@ -1,19 +1,23 @@
 -- @description Neurocast Tools
--- @version 0.1.3
+-- @version 0.1.4
 -- @author Slava Logutin
 -- @metapackage
--- @changelog Add local name/username/email filtering to ElevenLabs Manager; remove permanent voice deletion from the ElevenLabs client. Backend enforcement against older clients is separate.
+-- @changelog Add AutoMix v0.1.2 with collision-safe stem extraction and saved insertion position; update MVSEP to v0.2.1 with repeat result downloads and manual import; upgrade the matching Windows 7-Zip pair to 26.03.
 -- @about
---   Self-contained Neurocast-backed REAPER tools for Windows x64, macOS x86_64, and macOS ARM64.
---   ReaImGui is an external prerequisite and is not bundled.
---   Package minimum: REAPER 7.72+.
---   The authorized Windows gate is a 0.1.2 to 0.1.3 update and minimal packaged ElevenLabs/Manager UI smoke for limited internal use.
---   Clean install, uninstall, macOS, and broad authenticated workflow requalification are outside this update gate.
---   Voice deletion is removed from this client; backend enforcement against older clients is separate. Manager Block still removes only an account assignment.
---   Script Aligner ambiguous-create retry duplication is accepted technical debt for this limited-internal release.
---   This is not a broadly qualified public production release.
+--   Neurocast Tools for Windows x64, macOS x86_64, and macOS ARM64, including the local DOCX importer.
+--   ReaImGui is an external prerequisite and is not bundled. Package minimum: REAPER 7.72+.
+--   Limited-internal delivery for selected team members. The Windows release gate covers the 0.1.3 to 0.1.4 update and owner-run package startup/archive smoke.
+--   AutoMix v0.1.2 and MVSEP v0.2.1 have owner-accepted source happy paths. AutoMix production-host, difficult-network, and macOS qualification remain open.
+--   MVSEP telemetry delivery errors and Script Aligner ambiguous-create retry duplication remain documented limitations.
+--   Script TOOLSET_VERSION values identify their source line; ReaPack 0.1.4 identifies this package.
 -- @link https://github.com/Logutin/reaper-reapack-neurocast-tools
 -- @provides
+--   [win64 main] automix_tool.lua
+--   [win64] modules-neurocast/ReaperX_Import_Media_Manually.lua
+--   [win64] modules-neurocast/auphonic_api_via_neurocast.lua
+--   [win64] modules-neurocast/automix_tool_languages.lua
+--   [win64] modules-neurocast/zip_archive.lua
+--   [win64] modules-neurocast/zip_extract_writer.lua
 --   [win64 main] elevenlabs_tool.lua
 --   [win64 main] elevenlabs_manager_tool.lua
 --   [win64 main] docx_import_tool.lua
@@ -71,11 +75,17 @@
 --   [win64] bin/win/curl.exe
 --   [win64] bin/win/7z.exe
 --   [win64] bin/win/7z.dll
+--   [win64 extension] native/win64/reaper_cyr_essentials.dll > reaper_cyr_essentials.dll
 --   [win64] licenses/curl-COPYING.txt
 --   [win64] licenses/zlib-LICENSE.txt
 --   [win64] licenses/7-Zip-License.txt
 --   [win64] licenses/Unicode-License.txt
---   [win64 extension] native/win64/reaper_cyr_essentials.dll > reaper_cyr_essentials.dll
+--   [darwin64 main] automix_tool.lua
+--   [darwin64] modules-neurocast/ReaperX_Import_Media_Manually.lua
+--   [darwin64] modules-neurocast/auphonic_api_via_neurocast.lua
+--   [darwin64] modules-neurocast/automix_tool_languages.lua
+--   [darwin64] modules-neurocast/zip_archive.lua
+--   [darwin64] modules-neurocast/zip_extract_writer.lua
 --   [darwin64 main] elevenlabs_tool.lua
 --   [darwin64 main] elevenlabs_manager_tool.lua
 --   [darwin64 main] docx_import_tool.lua
@@ -130,8 +140,14 @@
 --   [darwin64] modules-neurocast/mvsep_reaper.lua
 --   [darwin64] modules-neurocast/mvsep_tool_languages.lua
 --   [darwin64] modules-neurocast/ReaperX_render_settings_helper.lua
---   [darwin64] licenses/Unicode-License.txt
 --   [darwin64 extension] native/darwin64/reaper_cyr_essentials.dylib > reaper_cyr_essentials.dylib
+--   [darwin64] licenses/Unicode-License.txt
+--   [darwin-arm64 main] automix_tool.lua
+--   [darwin-arm64] modules-neurocast/ReaperX_Import_Media_Manually.lua
+--   [darwin-arm64] modules-neurocast/auphonic_api_via_neurocast.lua
+--   [darwin-arm64] modules-neurocast/automix_tool_languages.lua
+--   [darwin-arm64] modules-neurocast/zip_archive.lua
+--   [darwin-arm64] modules-neurocast/zip_extract_writer.lua
 --   [darwin-arm64 main] elevenlabs_tool.lua
 --   [darwin-arm64 main] elevenlabs_manager_tool.lua
 --   [darwin-arm64 main] docx_import_tool.lua
@@ -186,5 +202,5 @@
 --   [darwin-arm64] modules-neurocast/mvsep_reaper.lua
 --   [darwin-arm64] modules-neurocast/mvsep_tool_languages.lua
 --   [darwin-arm64] modules-neurocast/ReaperX_render_settings_helper.lua
---   [darwin-arm64] licenses/Unicode-License.txt
 --   [darwin-arm64 extension] native/darwin-arm64/reaper_cyr_essentials.dylib > reaper_cyr_essentials.dylib
+--   [darwin-arm64] licenses/Unicode-License.txt

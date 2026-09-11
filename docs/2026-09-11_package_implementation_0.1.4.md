@@ -1,0 +1,113 @@
+# Neurocast Tools 0.1.4 candidate record
+
+> **Source snapshot warning:** This record describes the candidate as of
+> 2026-09-11. Recheck commits, hashes, receipts, and live acceptance before
+> relying on it for publication or another release.
+
+## Status and scope
+
+The owner approved `0.1.4`, replacement of the matching Windows 7-Zip pair,
+and `C:\extra_Reapers\Reaper_Empty_01\reaper.exe`. The owner will open REAPER,
+load the supplied Lua helper, apply the update, and witness behavior manually.
+No Computer Use or automatic GUI operation is needed.
+
+The root `index.xml` still publishes limited-internal `0.1.3`. The separate
+`qualification/Neurocast_Tools_0.1.4_candidate.xml` feed exposes the candidate.
+Owner live acceptance, installed byte/action readback, root-feed promotion,
+and final public-feed restoration/readback are pending.
+
+Runtime source pin: `auphonic-mt` commit
+`9d734e197bea078e112c85eebbe7dd5283b0bf39`.
+
+- AutoMix `v0.1.2` is added to ReaPack, including saved insertion position and
+  exclusive-create stem extraction with collision-safe filenames. Its five
+  added package dependencies are `ReaperX_Import_Media_Manually.lua`,
+  `auphonic_api_via_neurocast.lua`, `automix_tool_languages.lua`,
+  `zip_archive.lua`, and `zip_extract_writer.lua`.
+- Existing payload updates: `mvsep_tool.lua v0.2.1`, its localization, and
+  shared `Curl.lua` literal multipart support required by AutoMix.
+- 60 Lua files: nine added/updated exact source blobs and 51 unchanged files.
+  Nine unchanged files retain their historical CRLF bytes, listed in the lock.
+- 14 Main actions: six Tools, four Tool Actions, and four Utilities.
+- 192 platform records: 68 Windows x64 files, 62 macOS x86_64 files, and 62
+  macOS ARM64 files. Metadata is not live platform qualification.
+- Native extensions, curl, other tools, component notices, REAPER 7.72+
+  minimum, and external ReaImGui prerequisite remain unchanged.
+- Script `TOOLSET_VERSION` values retain their independent source identities.
+- Legacy sources, tests, credentials, identities, logs, caches, and helpers
+  are excluded from the installed payload.
+
+## Windows 7-Zip provenance
+
+Both binaries were extracted from the same
+[official 26.03 x64 release](https://github.com/ip7z/7zip/releases/tag/26.03)
+without running its installer. `7z2603-x64.exe` is 1,661,239 bytes; SHA-256
+`0859c524b8a63551848f0c246abddcb1d0b7b656b0fbfe879f8d85e61a9e6edd`
+matches the GitHub asset API digest.
+
+| File | Bytes | SHA-256 |
+|---|---:|---|
+| `7z.exe` | 577536 | `6ee3c0ed0b27663c1b948ae85a7c0bb073aed1498983182f3f0df1f6a8c30b2f` |
+| `7z.dll` | 1906688 | `65e4c1f855f9ef6e8f0f5df8e3f27d9eb5f07311408639da0a1ca0b8f4871b0d` |
+
+The [upstream changelog](https://www.7-zip.org/history.txt) lists security fixes
+since 26.00. Existing curated license text matches official 26.03 License.txt
+after newline normalization, so its existing bytes/source pin are retained.
+The ignored runtime pair under `auphonic-mt/scr/bin/win` was updated too;
+the distribution commit and lock pin binaries independently of Lua source.
+
+## Deterministic evidence
+
+Fresh Windows checks passed:
+
+- Real 7-Zip archive tests: 56 assertions, including binary content, locked
+  originals, repeated suffix allocation, late collisions, CRC failure, empty
+  output, and failed-attempt cleanup. Git for Windows `sh`/`unzip` also passed
+  the POSIX writer test; this is not macOS REAPER evidence.
+- AutoMix entrypoint: 125 assertions; mocked backend adapter: 110 assertions.
+- MVSEP re-download: 76 assertions; MVSEP static/security/isolation checks.
+- Active Curl diagnostics, authentication, and telemetry headless suites.
+- Active DOCX extraction success/failure/diagnostics and Cyrillic path tests
+  through `dev/run_docx_neurocast_test.lua`, using real 7-Zip 26.03.
+- `python qualification/verify_0_1_4.py`: Lua syntax, source fidelity, complete
+  dependency closure, exact exclusions, binary/notice hashes, local DLL,
+  metadata rows, platform counts, and actions.
+- `reapack-index --check --strict --warnings .`: one package, zero failures.
+
+Candidate-index validation requires all 192 new URLs to use the frozen payload
+commit and all four historical version records to remain unchanged.
+
+## Disposable baseline and what to check in REAPER live
+
+Read-only preflight found REAPER 7.79, public-feed `0.1.3`, 62 byte-exact owned
+files, 13 Main action roles, and a telemetry identity. REAPER was not running.
+
+1. Open `C:\extra_Reapers\Reaper_Empty_01\reaper.exe`. Through Actions, load
+   `qualification/Neurocast_Tools_0_1_4_candidate_and_smoke.lua`.
+   It refuses other executable/resource paths and keeps installation manual.
+2. Apply only the Neurocast Tools `0.1.3 -> 0.1.4` update and run the helper
+   again to check source markers and package-local 7-Zip 26.03.
+3. Open the six installed Tools. Confirm no missing-module/startup errors;
+   AutoMix shows script `v0.1.2`, MVSEP shows `v0.2.1`. Script/toolset labels
+   need not show ReaPack `0.1.4`.
+4. In a disposable project, import one known-good DOCX and check content/Undo.
+   For AutoMix, use the usual stem download/import with an existing filename:
+   the original stays intact, the new file receives a suffix, and insertion
+   follows the selected position option.
+5. For MVSEP, re-download a completed result and use manual Add to project.
+   Confirm new filenames, preserved originals, and no automatic import.
+6. Report observations. Codex verifies the receipt, all 68 installed bytes,
+   and 14 exactly-once Main actions before root-feed promotion.
+
+The helper does not start tools or submit remote jobs. The owner controls live
+workflow actions; the agent does not launch new paid operations.
+
+## Evidence limits
+
+Source happy paths were owner-accepted on September 10 (AutoMix, local backend)
+and September 11 (MVSEP, production). Those results do not replace this package
+gate. AutoMix production-host/large-upload qualification, difficult-network,
+macOS, other-machine testing, and broader lifecycle qualification remain open.
+MVSEP telemetry delivery errors remain unresolved; permanent event loss was
+not established. Script Aligner ambiguous-create retry duplication remains
+documented accepted debt. This is a limited-internal release only.

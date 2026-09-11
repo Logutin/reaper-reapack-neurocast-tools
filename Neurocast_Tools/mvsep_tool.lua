@@ -79,7 +79,7 @@ local function require_project_module(name)
   return mod_or_err
 end
 
-local SCRIPT_VERSION = "v0.2.0"
+local SCRIPT_VERSION = "v0.2.1"
 local TOOLSET_VERSION = SCRIPT_VERSION
 
 local Util = require_project_module("modules-neurocast.Util")
@@ -289,6 +289,7 @@ local S = {
   catalog_fetch_inflight = false,
   network_records = {},
   records = {},
+  result_path_reservations = {},
   next_record_id = 1,
   next_display_batch_id = 1,
   telemetry_ui_status = ""
@@ -564,6 +565,7 @@ function TelemetryBridge.record_payload(rec, extra)
     payload.all_chunks = rec.all_chunks
     payload.download_index = rec.download_index
     payload.download_count = #(rec.downloads or {})
+    payload.download_generation = tonumber(rec.download_generation) or 0
     payload.downloaded_count = downloaded_count
     payload.downloads = TelemetryBridge.downloads_payload(rec)
     payload.last_http_code = rec.last_http_code
@@ -1892,7 +1894,7 @@ local function new_record_from_spec(spec, display_batch_id, display_batch_order)
 end
 
 local function normalize_result_alloc_key(name)
-  local key = tostring(name or "")
+  local key = tostring(name or ""):gsub("\\", "/"):gsub("/+$", "")
   if Util.is_windows() then
     key = key:lower()
   end
@@ -1915,6 +1917,15 @@ local function make_result_allocation_context(results_dir)
     existing_count = 0,
     allocated_count = 0
   }
+
+  -- Reserve queued and earlier result sets even before files exist on disk.
+  local directory_key = normalize_result_alloc_key(ctx_alloc.results_dir)
+  for path_key in pairs(S.result_path_reservations) do
+    local parent, file_name = path_key:match("^(.*)/([^/]+)$")
+    if parent == directory_key then
+      ctx_alloc.name_set[file_name] = true
+    end
+  end
 
   if ctx_alloc.results_dir == "" or type(r.EnumerateFiles) ~= "function" then
     return ctx_alloc
@@ -1942,15 +1953,16 @@ local function make_result_allocation_context(results_dir)
   return ctx_alloc
 end
 
-local function allocate_unique_result_path(allocation_ctx, file_name)
+local function allocate_unique_result_path(allocation_ctx, file_name, minimum_suffix)
   local ctx_alloc = allocation_ctx or make_result_allocation_context(S.paths and S.paths.results_dir or "")
   local safe_name = tostring(file_name or "")
   if safe_name == "" then safe_name = "mvsep_result.bin" end
 
   local stem, ext = split_file_extension(safe_name)
-  local candidate_name = safe_name
-  local suffix = 0
-  while ctx_alloc.name_set[normalize_result_alloc_key(candidate_name)] do
+  local suffix = math.max(0, tonumber(minimum_suffix) or 0)
+  local candidate_name = suffix > 0 and (stem .. "_" .. tostring(suffix) .. ext) or safe_name
+  while ctx_alloc.name_set[normalize_result_alloc_key(candidate_name)]
+      or r.file_exists(Util.path_join(ctx_alloc.results_dir, candidate_name)) do
     suffix = suffix + 1
     candidate_name = stem .. "_" .. tostring(suffix) .. ext
     if suffix > 100000 then
@@ -1961,7 +1973,9 @@ local function allocate_unique_result_path(allocation_ctx, file_name)
 
   ctx_alloc.name_set[normalize_result_alloc_key(candidate_name)] = true
   ctx_alloc.allocated_count = (ctx_alloc.allocated_count or 0) + 1
-  return Util.path_join(ctx_alloc.results_dir, candidate_name), candidate_name, suffix
+  local full_path = Util.path_join(ctx_alloc.results_dir, candidate_name)
+  S.result_path_reservations[normalize_result_alloc_key(full_path)] = true
+  return full_path, candidate_name, suffix
 end
 
 local function download_target_for_record(rec, entry, allocation_ctx)
@@ -2861,6 +2875,8 @@ local function retry_record(rec)
       end
     end
     item.downloaded = false
+    item.validated_audio = false
+    item.audio_format = nil
     item.imported = false
     rec.failed_stage = nil
     rec.state = "queued_download"
@@ -2893,6 +2909,68 @@ local function all_downloads_complete(rec)
     end
   end
   return true
+end
+
+local function can_redownload_record(rec)
+  if type(rec) ~= "table" or rec.created_by_this_tool ~= true
+      or (rec.state ~= "ready" and not (rec.state == "failed" and rec.failed_stage == "import"))
+      or rec.server_status ~= "done" or Util.trim(rec.job_hash or "") == ""
+      or rec.remote_removed == true or rec.remote_delete_uncertain == true
+      or rec._delete_operation_id ~= nil or rec.network_job_id ~= nil then
+    return false
+  end
+  if type(rec.downloads) ~= "table" or #rec.downloads == 0 then return false end
+  for _, item in ipairs(rec.downloads) do
+    if type(item) ~= "table" or Util.trim(item.url or "") == ""
+        or Util.trim(item.local_path or "") == "" then return false end
+  end
+  return true
+end
+
+local function redownload_record(rec)
+  if not can_redownload_record(rec) then
+    return false, t("Re-download is available only for completed jobs whose remote files have not been deleted.")
+  end
+  local results_dir = Files.read_project_path() or ""
+  if results_dir == "" then
+    return false, t("The project recording path is unavailable.")
+  end
+  local ok_dir, dir_err = Files.ensure_output_dir(results_dir)
+  if not ok_dir then return false, tostring(dir_err or t("Cannot write to the project recording path.")) end
+
+  -- Prepare the entire new set before replacing the row's current references.
+  -- Old files and imported items are never removed, overwritten, or relinked.
+  local allocation_ctx = make_result_allocation_context(results_dir)
+  local downloads = {}
+  for _, item in ipairs(rec.downloads) do
+    local original_name = item.original_file_name or item.local_path:match("([^/\\]+)$")
+    local local_path, chosen_name = allocate_unique_result_path(allocation_ctx, original_name, 1)
+    downloads[#downloads + 1] = {
+      label = item.label,
+      url = item.url,
+      original_file_name = original_name,
+      local_path = local_path,
+      track_name = chosen_name:gsub("%.[^%.]+$", ""):gsub("__", " - "):gsub("_+", " "),
+      downloaded = false,
+      validated_audio = false,
+      imported = false
+    }
+  end
+  rec.downloads = downloads
+  rec.download_index = 1
+  rec.download_generation = (tonumber(rec.download_generation) or 0) + 1
+  rec.imported = false
+  rec.failed_stage = nil
+  rec.error_text = ""
+  rec.last_http_code = nil
+  rec.next_poll_at = nil
+  rec._retry_submit = nil
+  rec.state = "queued_download"
+  rec.last_message = t("Re-download queued: all stems will be saved with new filenames. Add them to the project when ready.")
+  S.status_text = rec.last_message
+  S.last_api_error = ""
+  TelemetryBridge.operation_completed("mvsep_redownload_queued", TelemetryBridge.record_payload(rec))
+  return true, rec.last_message
 end
 
 local function can_request_cancel(rec)
@@ -4151,7 +4229,7 @@ local function render_queue_section()
             end
             ImGui.SameLine(ctx)
           end
-          local add_disabled = rec.state ~= "ready" or rec.imported == true
+          local add_disabled = rec.state ~= "ready" or rec.imported == true or not all_downloads_complete(rec)
           if add_disabled then ImGui.BeginDisabled(ctx, true) end
           if UI_button_clicked("add_to_project_" .. tostring(rec.id), t("Add to project"), nil, ctx) then
             TelemetryBridge.button_clicked("add_to_project_" .. tostring(rec.id), t("Add to project"))
@@ -4195,9 +4273,22 @@ local function render_queue_section()
           end
           if add_disabled then ImGui.EndDisabled(ctx) end
 
-          if rec.job_hash and rec.state == "ready" then
-            ImGui.SameLine(ctx)
-            local delete_disabled = rec.remote_removed == true
+          -- Stack these actions so all three remain visible in the narrow column.
+          local redownload_disabled = not can_redownload_record(rec)
+          if redownload_disabled then ImGui.BeginDisabled(ctx, true) end
+          if UI_button_clicked("redownload_" .. tostring(rec.id), t("Re-download results"), nil, ctx) then
+            TelemetryBridge.button_clicked("redownload_" .. tostring(rec.id), t("Re-download results"))
+            local ok_redownload, redownload_err = redownload_record(rec)
+            if not ok_redownload then
+              set_last_error(redownload_err)
+              push_warning_once(redownload_err)
+            end
+          end
+          if redownload_disabled then ImGui.EndDisabled(ctx) end
+
+          if rec.job_hash and #(rec.downloads or {}) > 0 then
+            local delete_disabled = rec.state ~= "ready"
+              or rec.remote_removed == true
               or rec._delete_operation_id ~= nil
               or rec.remote_delete_uncertain == true
               or not all_downloads_complete(rec)

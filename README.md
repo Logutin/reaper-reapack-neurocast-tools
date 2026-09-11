@@ -4,6 +4,12 @@ This is the ReaPack distribution repository for **Neurocast Tools**.
 The current published package is `Neurocast_Tools 0.1.3`, a limited-internal
 update for selected team members, not a broadly qualified production release.
 
+The next candidate is **0.1.4**: first ReaPack delivery of AutoMix `v0.1.2`,
+MVSEP `v0.2.1` repeat downloads, and matching Windows 7-Zip `26.03` binaries.
+Its manifest and source lock describe the candidate; the root feed remains
+at `0.1.3` until the owner-run disposable Windows gate passes. See the
+[candidate record and live checklist](docs/2026-09-11_package_implementation_0.1.4.md).
+
 Install/update through the repository
 [`index.xml`](https://raw.githubusercontent.com/Logutin/reaper-reapack-neurocast-tools/main/index.xml).
 ReaImGui remains an external prerequisite; package minimum remains REAPER 7.72+.
@@ -31,7 +37,7 @@ testing. The prior `0.1.2` release was reported in live team testing; no wider
 team outcome is inferred for `0.1.3`. No tag, GitHub Release, signing,
 notarization, or release CI is added.
 
-Runtime source is frozen at `auphonic-mt` commit
+Published `0.1.3` runtime source is frozen at `auphonic-mt` commit
 `7c7def2d31526fa6cd0f9fd387c246ed44a34e21`. Every `0.1.3` source URL is pinned
 to distribution candidate `04be44ea863067e0b7f645899404fb4bdb9497e8`.
 The historical `0.1.0-pre1`, `0.1.1`, and `0.1.2` version records and source
@@ -49,7 +55,7 @@ Native extension source/build evidence belongs to
 This repository owns the selected payload copies, metadata, source lock, and
 generated ReaPack index. Frozen direct-era sources are not package inputs.
 
-One metapackage exposes 13 Main actions: five Tools (`*_tool.lua`), four
+The published `0.1.3` metapackage exposes 13 Main actions: five Tools (`*_tool.lua`), four
 ElevenLabs Tool Actions (`action_neurocast_tools_*`), and four standalone
 Utilities (`utility_neurocast_*`). The target matrix is Windows x64, macOS
 x86_64, and macOS ARM64; target support does not imply live qualification.

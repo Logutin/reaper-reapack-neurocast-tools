@@ -9,3 +9,4 @@
 /Neurocast_Tools/bin/win/* -text
 /Neurocast_Tools/native/*/* -text
 /Neurocast_Tools/licenses/*.txt -text
+/Neurocast_Tools/automix_tool.lua -text -whitespace

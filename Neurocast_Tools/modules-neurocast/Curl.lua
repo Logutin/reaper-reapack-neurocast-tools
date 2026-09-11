@@ -438,14 +438,15 @@ function Curl.write_curl_config(req, job, opts)
         table.insert(lines, "form = " .. Curl.curl_cfg_quote(part))
       elseif f.value ~= nil and f.name then
         local val = tostring(f.value)
-        if val:find(";", 1, true) then
+        if f.literal ~= true and val:find(";", 1, true) then
           return false, ("write_curl_config: form value contains ';' (unsupported in form value): %s"):format(val)
         end
         local part = f.name .. [[=]] .. val
-        if f.content_type and f.content_type ~= "" then
+        if f.literal ~= true and f.content_type and f.content_type ~= "" then
           part = part .. [[;type=]] .. f.content_type
         end
-        table.insert(lines, "form = " .. Curl.curl_cfg_quote(part))
+        -- Literal text must not interpret @, <, or ; as curl multipart syntax.
+        table.insert(lines, (f.literal == true and "form-string = " or "form = ") .. Curl.curl_cfg_quote(part))
       else
         return false, ("write_curl_config: check form_fields keys at index %d"):format(i)
       end
