@@ -3,9 +3,11 @@
 > Source snapshot: 2026-08-29. Lua inventory is pinned to `auphonic-mt` commit
 > `238097e631e0cbf6e9c687dab09184649864fc6a`. The named local binaries and
 > pinned notice/native inputs were reverified during assembly. This is the
-> immutable source record for the package now published for limited internal
+> immutable source record for historical `0.1.0-pre1`, published for limited internal
 > testing; Windows x64 is qualified, macOS remains unqualified, and this is not
 > a current backend-contract review.
+
+For the current package, use the [0.1.4 release record](2026-09-11_package_implementation_0.1.4.md).
 
 ## Inventory result
 

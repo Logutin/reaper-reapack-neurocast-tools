@@ -7,13 +7,14 @@
 > on 2026-08-29. macOS remains unqualified. This document is not a live backend
 > contract; recheck source and release inputs before future work.
 
-> **Current release note:** `Neurocast Tools 0.1.3` is the published
-> limited-internal ElevenLabs update: local manager filtering and client-side
-> voice-deletion removal. It retains 13 Main actions and REAPER 7.72+; Windows
-> ownership is 62 files. Deterministic checks and the owner-run Windows
-> `0.1.2 -> 0.1.3` update/UI smoke passed on 2026-09-03. Public-feed restoration
-> and final disposable readback remain pending. See the
-> [0.1.3 release record](2026-09-03_package_implementation_0.1.3.md).
+> **Current release note (2026-09-11):** `Neurocast Tools 0.1.4` is published
+> for limited-internal use and is in owner-reported team testing. It adds
+> AutoMix `v0.1.2`, updates MVSEP to `v0.2.1`, and replaces the matching Windows
+> 7-Zip pair with `26.03`. It has 14 Main actions, 68 Windows owned files, and
+> the unchanged REAPER 7.72+ minimum. Deterministic checks and the owner-run
+> Windows `0.1.3 -> 0.1.4` packaged smoke passed. Public-feed restoration and
+> final disposable cache/receipt/byte/action readback are complete. See the
+> [0.1.4 release record](2026-09-11_package_implementation_0.1.4.md).
 > The version-specific design, inventories, and qualification below are
 > historical; do not promote them to current-release evidence. Broad workflow,
 > difficult-network, clean-install/uninstall, macOS, and other-machine testing
