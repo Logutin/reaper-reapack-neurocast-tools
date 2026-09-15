@@ -7,18 +7,15 @@
 > on 2026-08-29. macOS remains unqualified. This document is not a live backend
 > contract; recheck source and release inputs before future work.
 
-> **Current release note (2026-09-11):** `Neurocast Tools 0.1.4` is published
-> for limited-internal use and is in owner-reported team testing. It adds
-> AutoMix `v0.1.2`, updates MVSEP to `v0.2.1`, and replaces the matching Windows
-> 7-Zip pair with `26.03`. It has 14 Main actions, 68 Windows owned files, and
-> the unchanged REAPER 7.72+ minimum. Deterministic checks and the owner-run
-> Windows `0.1.3 -> 0.1.4` packaged smoke passed. Public-feed restoration and
-> final disposable cache/receipt/byte/action readback are complete. See the
-> [0.1.4 release record](2026-09-11_package_implementation_0.1.4.md).
-> The version-specific design, inventories, and qualification below are
-> historical; do not promote them to current-release evidence. Broad workflow,
-> difficult-network, clean-install/uninstall, macOS, and other-machine testing
-> were not repeated for this update.
+> **Current release note (2026-09-15):** `Neurocast Tools 0.1.5` is published
+> for limited-internal use. It updates only Manager to `v0.2.2` and its two
+> helpers. The owner passed the Windows `0.1.4 -> 0.1.5` update and Manager
+> startup/normal close. Readback verified 68 exact installed files and 14 Main
+> actions. Public-feed restoration in the disposable remains pending. See the
+> [0.1.5 release record](2026-09-15_package_implementation_0.1.5.md).
+> The design and original lifecycle qualification below are historical;
+> broader authenticated, difficult-network, macOS, other-machine, and full
+> lifecycle checks were not repeated for 0.1.5.
 
 ## Scope and ownership
 

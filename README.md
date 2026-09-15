@@ -1,61 +1,47 @@
 # Neurocast Tools
 
-This is the ReaPack distribution repository for **Neurocast Tools**.
-The current published package is **`Neurocast_Tools 0.1.4`**, a limited-internal
-release for selected team members, now in team testing (owner report on
-2026-09-11).
+The current published package is **`Neurocast_Tools 0.1.5`**, a
+limited-internal release for selected team members.
 
 Install/update through the repository
 [`index.xml`](https://raw.githubusercontent.com/Logutin/reaper-reapack-neurocast-tools/main/index.xml).
 ReaImGui remains an external prerequisite; package minimum remains REAPER 7.72+.
 
-## Next candidate: 0.1.5
+## Current release: 0.1.5
 
-The separate `0.1.5` candidate updates only ElevenLabs Manager to `v0.2.2`
-and its two Manager helpers, pinned to `auphonic-mt` commit
-`04fbd164ae06796bef170a7f9c3c6d8624cdbe74`. The root feed remains `0.1.4`.
-Candidate installation and owner startup acceptance are pending in the
-explicitly authorized disposable REAPER. See the
-[0.1.5 release record](docs/2026-09-15_package_implementation_0.1.5.md).
-The current manifest/source lock describe the candidate; the published
-`0.1.4` record below retains its historical source and payload pins.
+- ElevenLabs Manager `v0.2.2` adds explicit Manager connections, balance/access
+  editing, exact large fractional balances, and persistent actionable errors.
+- Only the Manager entrypoint and two Manager helpers change. The other 57 Lua
+  files, native extensions, curl, matching 7-Zip 26.03 pair, and notices retain
+  their `0.1.4` package bytes.
+- Six Tools, four Tool Actions, and four Utilities provide 14 Main actions;
+  Windows ownership remains 68 files.
 
-## Current release: 0.1.4
-
-- AutoMix `v0.1.2` is included in ReaPack for the first time, with collision-safe
-  stem extraction and saved result insertion position.
-- MVSEP `v0.2.1` adds repeat downloads from completed jobs, new filenames that
-  preserve existing files, and explicit manual import.
-- Windows ships the matching official 7-Zip `26.03` x64 executable and DLL.
-- Six Tools, four Tool Actions, and four Utilities provide 14 Main actions.
-  Windows ownership is 68 files. Native extensions, curl, and notices retain
-  their previous bytes.
-
-On 2026-09-11 the owner reported all requested live checks passed in
-`C:\extra_Reapers\Reaper_Empty_01\reaper.exe`, including the `0.1.3 -> 0.1.4`
-update and packaged startup/DOCX/AutoMix/MVSEP checks. The screenshot confirmed
-only the helper's source-marker and local 7-Zip checks. Independent readback
-verified version `0.1.4`, all 68 installed files byte-for-byte, and exactly 14
-Main actions. The owner restored the disposable installation to the public
-feed. Final readback verified its cached index against the published feed,
-all 68 installed files, and 14 exactly-once Main actions. Manual installation
-and the existing global install settings were preserved. Release delivery is complete.
-
-This is owner-reported GUI/workflow acceptance plus agent-run mechanical
-verification. It does not establish broad production, difficult-network,
-macOS, other-machine, or full lifecycle qualification. AutoMix production-host
-and large-upload checks remain open. MVSEP telemetry delivery errors and Script
-Aligner ambiguous-create retry duplication remain documented limitations.
+On 2026-09-15 the owner reported the `0.1.4 -> 0.1.5` update and installed
+Manager `v0.2.2` startup/normal close passed in
+`C:\extra_Reapers\Reaper_Empty_01\reaper.exe`. Independent readback verified
+all 68 installed files against the frozen candidate and exactly 14 Main
+actions. The root feed publishes that unchanged candidate. The disposable's
+public-feed URL restoration and final synchronization/readback remain pending.
 
 Runtime source is pinned to `auphonic-mt` commit
-`9d734e197bea078e112c85eebbe7dd5283b0bf39`. All 192 `0.1.4` platform source
-records are pinned to distribution payload
-`7701c852f3baca5d890e699a422d6d21032fb9d0`. The four historical versions
-`0.1.0-pre1`, `0.1.1`, `0.1.2`, and `0.1.3` retain their original records/URLs.
-Script/toolset labels retain their independent source version identities.
+`04fbd164ae06796bef170a7f9c3c6d8624cdbe74`; all 192 platform source records
+pin distribution payload `da01965751fa3d8d925bdd8babe37d1068553421`.
+All five historical version records/URLs remain unchanged. Script/toolset
+labels retain their independent source identities.
 
-See the [0.1.4 release record](docs/2026-09-11_package_implementation_0.1.4.md),
+This is owner-reported update/startup acceptance plus agent-run mechanical
+verification. The earlier local Manager balance/validation acceptance remains
+separate source evidence. Production Manager compatibility, broader authenticated
+workflows, difficult networks, macOS, other machines, and full lifecycle
+qualification were not repeated. Existing MVSEP telemetry and Script Aligner
+ambiguous-create retry limitations remain documented. No `0.1.5` team-testing
+outcome is implied.
+
+See the [0.1.5 release record](docs/2026-09-15_package_implementation_0.1.5.md),
 [payload manifest](release-manifest.yml), and [source lock](release-source-lock.yml).
+The [0.1.4 record](docs/2026-09-11_package_implementation_0.1.4.md) preserves
+its September 11 owner-reported workflow acceptance and team-testing status.
 
 ## Ownership and package shape
 

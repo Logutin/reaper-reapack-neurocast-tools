@@ -1,16 +1,21 @@
 # Neurocast Tools 0.1.5 release record
 
-> **Source snapshot warning:** This record describes release preparation on
+> **Source snapshot warning:** This record describes the release on
 > 2026-09-15. Recheck source pins, feed bytes, installed receipts, and owner
 > acceptance before relying on it for publication or a later release.
 
 ## Status and scope
 
-Candidate preparation is authorized. The owner requested the release routine,
-preferred minimal tests, and authorized the disposable installation at
-`C:\extra_Reapers\Reaper_Empty_01\reaper.exe`. The public root feed remains
-`0.1.4`; `0.1.5` awaits the owner-run packaged startup check and exact installed
-receipt/byte/action readback before root-feed promotion.
+The owner requested the release routine, preferred minimal tests, and authorized
+`C:\extra_Reapers\Reaper_Empty_01\reaper.exe`. On 2026-09-15 the owner
+reported "passed" for the packaged `0.1.4 -> 0.1.5` update and Manager
+`v0.2.2` startup/normal close. Independent readback then verified `0.1.5`,
+all 68 owned files byte-for-byte, and 14 exactly-once Main actions.
+
+The root feed publishes the unchanged qualified candidate for limited-internal
+use. The disposable installation still needs its repository URL restored from
+the separate candidate feed to the public root feed. Final public-feed
+synchronization/readback is pending; no additional workflow test is required.
 
 Runtime source pin: `auphonic-mt`
 `04fbd164ae06796bef170a7f9c3c6d8624cdbe74`.
@@ -55,7 +60,8 @@ hashes, local 7-Zip DLL resolution, metadata inventory and action counts.
 failures. The generated candidate index passed exact source/platform/path/action checks:
 all 192 new source URLs pin payload commit
 `da01965751fa3d8d925bdd8babe37d1068553421`, all five historical version
-records are unchanged, and the public root index retains its previous bytes.
+records are unchanged. Before promotion, the public root index retained its
+previous bytes; promotion copies the qualified generated candidate verbatim.
 Every package file matches the frozen payload commit. The helper passed Lua
 syntax validation. No broad workflow suite was repeated.
 
@@ -63,7 +69,10 @@ Candidate feed: `qualification/Neurocast_Tools_0.1.5_candidate.xml`. It was
 generated with `reapack-index --scan da01965751fa3d8d925bdd8babe37d1068553421
 --no-amend --strict --warnings --no-commit` and a separate output path.
 
-## What to check in REAPER live
+## Completed owner-run REAPER checklist
+
+The owner reported this minimal checklist passed on 2026-09-15. It is
+historical acceptance evidence, not another requested test.
 
 1. Open only `C:\extra_Reapers\Reaper_Empty_01\reaper.exe`. In Actions,
    load `qualification/Neurocast_Tools_0_1_5_candidate_and_smoke.lua` from
@@ -84,7 +93,8 @@ not launch tools or perform remote processing. After publication, the existing
 
 ## Evidence limits
 
-This is a limited-internal release for selected team members. Production
+This is a limited-internal release for selected team members. The owner report
+covers update/startup only; no team-testing outcome was reported for 0.1.5. Production
 Manager/backend compatibility, broader authenticated workflows, difficult
 networks, macOS, other machines, clean install/uninstall, and legacy migration
 are not qualified by this update/startup gate. No new native release, tag,
