@@ -1,8 +1,8 @@
--- ElevenLabs account assignment manager via Studio Neurocast.
+-- ElevenLabs account, balance and access manager via Studio Neurocast.
 -- English-only maintained ReaImGui entrypoint.
 
 local r = assert(reaper, "REAPER API not found. This script must run inside REAPER.")
-local SCRIPT_VERSION = "v0.1.3"
+local SCRIPT_VERSION = "v0.2.2"
 local APP_NAME = "ElevenLabs Manager"
 local ENTRYPOINT = "elevenlabs_manager_tool"
 local PRODUCTION_BACKEND_URL = "https://reaper.neurocast.tech"
@@ -109,7 +109,7 @@ local CFG = {
   retry_base_backoff_sec = 1.0,
   max_wait_time_for_retry = 12.0,
   retry_jitter_ratio = 0.0,
-  auth_max_attempts = 3,
+  auth_max_attempts = 1,
   manager_max_attempts = 3
 }
 
@@ -153,6 +153,17 @@ local S = {
   refresh_token = "",
   has_stored_refresh = false,
   backend_base_url = CFG.base_url,
+  connection_token = "",
+  connection_expires_at = 0,
+  connection_generation = 0,
+  connection_message = "Connect Manager to begin.",
+  needs_readback = false,
+  pending_action = nil,
+  selected_user_id = nil,
+  editor = nil,
+  credits = {},
+  credits_error = "",
+  pages = {},
   accounts = {},
   accounts_by_id = {},
   users = {},
@@ -373,8 +384,16 @@ end
 
 local function tracked_curl_submit(req, on_done, opts)
   return Curl.curl_submit(req, function(result, job)
-    update_last_curl(result, job, req.label or "Manager request")
+    -- Auth/connection responses contain private credentials. Never copy them to diagnostics.
+    if req.url:find("/api/auth/", 1, true) or req.url:find("/api/reaper-manager/connection", 1, true) then
+      update_last_curl({ ok = result.ok, http_code = result.http_code, err = result.err }, job, req.label)
+    else
+      update_last_curl(result, job, req.label or "Manager request")
+    end
     if type(on_done) == "function" then on_done(result, job) end
+    if req.url:find("/api/auth/", 1, true) or req.url:find("/api/reaper-manager/connection", 1, true) then
+      result.body = nil
+    end
   end, opts)
 end
 
@@ -389,7 +408,8 @@ local function rebuild_clients()
   })
   MANAGER_CLIENT = ManagerApi.create_client({
     base_url = base_url,
-    access_token_fn = function() return S.access_token end
+    access_token_fn = function() return S.access_token end,
+    connection_token_fn = function() return S.connection_token end
   })
   CFG.base_url = base_url
 end
@@ -465,6 +485,7 @@ local function default_submit_opts()
     read_body = true,
     body_max_bytes = 2 * 1024 * 1024,
     timeout_sec = CFG.timeout_sec,
+    early_secret_cleanup = true,
     keep_output = false
   }
 end
@@ -492,6 +513,10 @@ end
 
 local function submit_record(rec, request_builder, response_parser, on_success, on_failure, options)
   options = options or {}
+  local generation = S.connection_generation
+  local function obsolete()
+    return rec.kind == "Manager" and generation ~= S.connection_generation
+  end
 
   local function finish_failure(message, result)
     rec.state = "failed"
@@ -505,11 +530,13 @@ local function submit_record(rec, request_builder, response_parser, on_success, 
   end
 
   local function run_attempt(attempt)
+    if obsolete() then rec.state = "failed"; rec.error = "Manager connection ended."; return end
     rec.attempt = attempt
     rec.error = ""
     rec.next_retry_at = nil
 
     local function submit_current_attempt()
+      if obsolete() then rec.state = "failed"; rec.error = "Manager connection ended."; return end
       rec.state = "running"
       TelemetryBridge.record_started(rec)
 
@@ -519,7 +546,19 @@ local function submit_record(rec, request_builder, response_parser, on_success, 
         return
       end
 
+      -- Only reads may be retried or resubmitted after a JWT refresh.
+      local is_read = req.method == "GET"
+      if not is_read then rec.max_attempts = 1 end
       local job, submit_err = tracked_curl_submit(req, function(result, job_ref)
+        if obsolete() then rec.state = "failed"; rec.error = "Manager connection ended."; return end
+        local connection_error = ManagerApi.connection_error(result and result.body)
+        if rec.kind == "Manager" and tonumber(result and result.http_code) == 401 and connection_error then
+          Manager.stop(connection_error == "MANAGER_CONNECTION_REPLACED" and
+            "Another Manager connection replaced this one. Connect explicitly to take over." or
+            "Manager connection expired. Connect explicitly to continue.")
+          finish_failure(S.connection_message, result)
+          return
+        end
         rec.http_code = result and result.http_code or nil
         rec.job_id = job_ref and job_ref.id or rec.job_id
 
@@ -538,7 +577,7 @@ local function submit_record(rec, request_builder, response_parser, on_success, 
           return
         end
 
-        if options.allow_refresh_401 and
+        if is_read and options.allow_refresh_401 and
             tonumber(result and result.http_code or 0) == 401 and
             rec.refresh_used ~= true then
           rec.refresh_used = true
@@ -563,7 +602,7 @@ local function submit_record(rec, request_builder, response_parser, on_success, 
 
         local message = result_error(result)
         local retryable = Jobs.is_retryable_result(result)
-        if retryable and attempt < rec.max_attempts then
+        if is_read and retryable and attempt < rec.max_attempts then
           local next_attempt = attempt + 1
           rec.state = "retrying"
           rec.error = message
@@ -646,15 +685,14 @@ function Auth.request_refresh(label, on_done)
       end
     end,
     function(message, result)
-      local http_code = tonumber(result and result.http_code or 0) or 0
-      if NeurocastAuth.is_invalid_refresh_http_status(http_code) then
-        AUTH_CLIENT.clear_runtime_tokens()
-        AUTH_CLIENT.forget_refresh_token()
-        Util.extstate_delete(EXT.AUTH_SECTION, EXT.AUTH_BACKEND, true)
-        S.access_token = ""
-        S.refresh_token = ""
-        S.has_stored_refresh = false
-      end
+      -- Refresh rotation can commit even when its response is lost. Require a new login.
+      Manager.stop("Studio login refresh failed. Log in again, then connect Manager explicitly.")
+      AUTH_CLIENT.clear_runtime_tokens()
+      AUTH_CLIENT.forget_refresh_token()
+      Util.extstate_delete(EXT.AUTH_SECTION, EXT.AUTH_BACKEND, true)
+      S.access_token = ""
+      S.refresh_token = ""
+      S.has_stored_refresh = false
       sync_tokens_from_client()
       done = true
       if type(on_done) == "function" then
@@ -711,8 +749,7 @@ function Auth.request_login()
       S.password = ""
       sync_tokens_from_client()
       apply_remember_policy()
-      S.status_text = "Studio login completed. Loading manager data."
-      Manager.load_all()
+      S.status_text = "Studio login completed. Click Connect Manager to continue."
     end,
     function(message)
       S.password = ""
@@ -724,6 +761,7 @@ function Auth.request_login()
 end
 
 function Auth.forget_login()
+  Manager.stop("Stored login cleared.")
   AUTH_CLIENT.clear_runtime_tokens()
   AUTH_CLIENT.forget_refresh_token()
   Util.extstate_delete(EXT.AUTH_SECTION, EXT.AUTH_EMAIL, true)
@@ -794,22 +832,124 @@ function Manager.fetch_users(on_done, label)
 end
 
 function Manager.load_all()
-  if trim(S.access_token) == "" then
-    S.status_text = "Studio Neurocast login is required."
+  if not Manager.connected() then
+    S.status_text = "Connect Manager explicitly to load data."
     return false
   end
+  Manager.fetch_credits()
   Manager.fetch_accounts(function(ok_accounts, accounts_or_error)
     if not ok_accounts then
       r.MB("Could not load manager accounts:\n" .. tostring(accounts_or_error), APP_NAME, 0)
       return
     end
     Manager.fetch_users(function(ok_users, users_or_error)
+      if ok_users and S.pending_action then Manager.reconcile_action() end
       if not ok_users then
         r.MB("Could not load manager users:\n" .. tostring(users_or_error), APP_NAME, 0)
       end
     end)
   end)
   return true
+end
+
+function Manager.connected()
+  return S.connection_token ~= "" and os.time() * 1000 < S.connection_expires_at
+end
+
+function Manager.stop(message)
+  S.connection_generation = S.connection_generation + 1
+  Jobs.bump_retry_generation("Manager connection ended")
+  S.connection_token = ""
+  S.connection_expires_at = 0
+  S.connection_message = message
+  S.status_text = message
+  S.action_active = false
+  S.action_user_id = nil
+  S.needs_readback = S.pending_action ~= nil
+  S.accounts, S.accounts_by_id, S.users, S.credits, S.pages = {}, {}, {}, {}, {}
+  S.credits_error = ""
+  S.users_loaded = false
+  S.editor, S.selected_user_id = nil, nil
+end
+
+function Manager.connect()
+  if Jobs.network_busy() or S.action_active or trim(S.access_token) == "" then return end
+  Manager.stop("Connecting Manager...")
+  local rec = create_record("Manager", "connection", "Connect Manager", "manager_connect", 1)
+  submit_record(rec, function() return MANAGER_CLIENT:connect_request() end, ManagerApi.parse_connection,
+    function(connection)
+      S.connection_token = connection.connectionToken
+      S.connection_expires_at = connection.expiresAt
+      S.connection_message = "Connected. Opening another Manager connection will close this connection."
+      S.next_connection_check = Jobs.now() + 20
+      Manager.load_all()
+    end,
+    function(message)
+      S.connection_message = "Connection was not confirmed. Connect again explicitly. " .. tostring(message)
+    end, { allow_refresh_401 = true })
+end
+
+function Manager.disconnect()
+  if Jobs.network_busy() or not Manager.connected() then return end
+  local rec = create_record("Manager", "connection", "Disconnect Manager", "manager_disconnect", 1)
+  submit_record(rec, function() return MANAGER_CLIENT:disconnect_request() end, ManagerApi.parse_mutation,
+    function() Manager.stop("Manager disconnected.") end,
+    function() Manager.stop("Disconnected locally. Server disconnect was not confirmed; reconnect explicitly when needed.") end,
+    { allow_refresh_401 = true })
+end
+
+function Manager.check_connection(now_t)
+  if not Manager.connected() or S.action_active or Jobs.network_busy() or now_t < (S.next_connection_check or 0) then return end
+  S.next_connection_check = now_t + 20
+  local rec = create_record("Manager", "connection_status", "Check Manager connection", "manager_connection_check", 1)
+  submit_record(rec, function() return MANAGER_CLIENT:connection_status_request() end, ManagerApi.parse_mutation,
+    function() end, function(message) S.last_api_error = message end, { allow_refresh_401 = true })
+end
+
+function Manager.fetch_credits()
+  if not Manager.connected() then return end
+  local rec = create_record("Manager", "credits", "Refresh account credits", "manager_credits_fetch", 1)
+  S.credits_error = "Loading live credits..."
+  submit_record(rec, function() return MANAGER_CLIENT:credits_request() end, ManagerApi.parse_credits,
+    function(rows) S.credits = rows; S.credits_error = "" end,
+    function(message) S.credits = {}; S.credits_error = message end,
+    { allow_refresh_401 = true })
+end
+
+function Manager.load_page(kind, more)
+  local user_id = S.selected_user_id
+  if not user_id or not Manager.connected() or Jobs.network_busy() or S.action_active then return end
+  local old = S.pages[kind]
+  local cursor = more and old and (kind == "history" and old.nextBeforeId or old.nextAfterId) or nil
+  if more and cursor == nil then return end
+  local rec = create_record("Manager", kind, "Read user " .. kind, "manager_" .. kind .. "_fetch")
+  submit_record(rec, function() return MANAGER_CLIENT:page_request(user_id, kind, cursor) end,
+    function(body)
+      local page, err
+      if kind == "history" then page, err = ManagerApi.parse_history(body, user_id)
+      else page, err = ManagerApi.parse_pending(body, user_id) end
+      if not page then return nil, err end
+      local rows = kind == "history" and page.events or page.jobs
+      if cursor ~= nil and rows[1] and
+          ((kind == "history" and rows[1].id >= cursor) or (kind == "pending" and rows[1].id <= cursor)) then
+        return nil, "Page did not advance. Refresh the list before continuing."
+      end
+      return page
+    end,
+    function(page)
+      if S.selected_user_id ~= user_id then return end
+      if more and old then
+        local field = kind == "history" and "events" or "jobs"
+        local seen = {}
+        for _, item in ipairs(old[field]) do seen[item.id] = true end
+        for _, item in ipairs(page[field]) do
+          if not seen[item.id] then old[field][#old[field] + 1] = item end
+        end
+        page[field] = old[field]
+      end
+      S.pages[kind] = page
+    end, function(message) S.last_api_error = "Could not load " .. kind .. ": " .. message end,
+    { allow_refresh_401 = true })
 end
 
 local function find_user(users, user_id)
@@ -827,75 +967,108 @@ local function target_matches(user, target)
   return tostring(user.accountId or "") == tostring(target) and user.state == "assigned"
 end
 
-local function finish_action_failure(message)
-  S.action_active = false
-  S.action_user_id = nil
-  S.action_target = nil
-  local text = "Assignment action failed: " .. tostring(message or "unknown error")
-  S.status_text = text
-  S.last_api_error = tostring(message or "unknown error")
-  push_warning(text)
-  r.MB(text, APP_NAME, 0)
-end
-
-function Manager.perform_action(user, target)
-  if S.action_active or Jobs.network_busy() then return false end
-  if not user or trim(user.userId) == "" then
-    finish_action_failure("Selected user has no userId.")
-    return false
-  end
-  if target_matches(user, target) then return false end
-
+-- A pending action survives connection loss. Only successful readback unlocks edits.
+function Manager.reconcile_action()
+  local action = S.pending_action
+  if not action or not Manager.connected() then return end
   S.action_active = true
-  S.action_user_id = user.userId
-  S.action_target = target
-  local display_name = trim(user.fullname) ~= "" and trim(user.fullname) or user.email
-  local target_label = target == "blocked" and "Blocked" or (target == "elevenlabs_1" and "el_1" or "el_2")
-  local operation = target == "blocked" and "manager_assignment_block" or "manager_assignment_set"
-  local rec = create_record("Manager", "assignment", display_name .. " -> " .. target_label, operation)
-
-  submit_record(
-    rec,
-    function()
-      if target == "blocked" then
-        return MANAGER_CLIENT:block_request(user.userId, rec.label)
-      end
-      return MANAGER_CLIENT:assign_request(user.userId, target, rec.label)
-    end,
-    ManagerApi.parse_mutation,
-    function()
-      Manager.fetch_users(function(ok_users, users_or_error)
-        if not ok_users then
-          finish_action_failure(
-            "The assignment request succeeded, but the required user-directory readback failed: " ..
-              tostring(users_or_error)
-          )
-          return
-        end
-        local refreshed = find_user(users_or_error, user.userId)
-        if not target_matches(refreshed, target) then
-          finish_action_failure("Backend readback did not confirm the requested assignment.")
-          return
-        end
+  S.needs_readback = true
+  local function failed(message)
+    S.action_active = false
+    S.status_text = "Readback required before further edits: " .. tostring(message)
+    S.last_api_error = S.status_text
+  end
+  Manager.fetch_users(function(ok_users, users)
+    if not ok_users then failed(users); return end
+    local current = find_user(users, action.userId)
+    if not current then failed("User is missing from directory."); return end
+    local rec = create_record("Manager", "history", "Verify current user history", "manager_history_fetch")
+    submit_record(rec,
+      function() return MANAGER_CLIENT:page_request(action.userId, "history") end,
+      function(body) return ManagerApi.parse_history(body, action.userId) end,
+      function(page)
+        local confirmed = action.edit and ManagerApi.edit_confirmed(current, action.userId, action.edit) or
+          (action.target and target_matches(current, action.target))
+        S.pages = { history = page }
+        S.selected_user_id = action.userId
+        S.editor = { balance = ManagerApi.format_number(current.balance), enabled = current.enabled,
+          revision = current.revision, original_balance = current.balance, original_enabled = current.enabled }
+        S.pending_action = nil
+        S.needs_readback = false
         S.action_active = false
         S.action_user_id = nil
         S.action_target = nil
-        S.status_text = display_name .. " is now " .. target_label .. "."
-        S.last_api_error = ""
-      end, "Verify assignment readback")
-    end,
+        S.status_text = confirmed and "Readback confirms the requested state. History is available below." or
+          "Current state/history loaded. The requested state was not confirmed; review before another edit."
+        if not confirmed then
+          S.editor.validation_error = action.failure_message or "Requested state was not confirmed. Review current values before another edit."
+          if action.failure_message then S.status_text = S.status_text .. " " .. action.failure_message end
+        end
+        S.last_api_error = confirmed and "" or S.status_text
+      end, failed, { allow_refresh_401 = true })
+  end, "Read back current user state")
+end
+
+local function submit_action(user, action, builder, parser)
+  if S.action_active or S.needs_readback or Jobs.network_busy() or not Manager.connected() then return false end
+  S.action_active = true
+  S.needs_readback = true
+  S.action_user_id = user.userId
+  S.pending_action = action
+  local rec = create_record("Manager", "user_edit", "Update selected user", "manager_user_edit", 1)
+  submit_record(rec, builder, parser,
+    function() Manager.reconcile_action() end,
     function(message)
-      finish_action_failure(message)
-    end,
-    { allow_refresh_401 = true }
-  )
+      S.action_active = false
+      action.failure_message = tostring(message)
+      S.status_text = "Edit was not confirmed: " .. tostring(message) .. ". Reading current state; the edit will not be replayed."
+      if Manager.connected() then Manager.reconcile_action() end
+    end, { allow_refresh_401 = true })
   return true
 end
 
+function Manager.perform_action(user, target)
+  if not user or target_matches(user, target) then return false end
+  local label = target == "blocked" and "Remove account assignment" or ("Assign " .. target)
+  if r.MB(label .. " for " .. user.email .. "?\n\nThe balance, access setting and pending charges are preserved.", APP_NAME, 1) ~= 1 then return false end
+  return submit_action(user, { userId = user.userId, target = target }, function()
+    if target == "blocked" then return MANAGER_CLIENT:block_request(user.userId) end
+    return MANAGER_CLIENT:assign_request(user.userId, target)
+  end, ManagerApi.parse_mutation)
+end
+
+function Manager.save_wallet()
+  local user = find_user(S.users, S.selected_user_id)
+  local editor = S.editor
+  if not user or not editor then return end
+  local function validation_failed(message)
+    editor.validation_error = tostring(message)
+    S.status_text = "Cannot save balance/access: " .. editor.validation_error
+    S.last_api_error = S.status_text
+    Util.msg(S.status_text, 3)
+  end
+  local balance, balance_text, input_error = ManagerApi.parse_balance_input(editor.balance)
+  if balance == nil then validation_failed(input_error); return end
+  local edit = { expectedRevision = editor.revision }
+  if balance ~= editor.original_balance then edit.balance = balance end
+  if editor.enabled ~= editor.original_enabled then edit.enabled = editor.enabled end
+  local ok, err = ManagerApi.validate_edit(edit, balance_text)
+  if not ok then validation_failed(err); return end
+  editor.validation_error = nil
+  if r.MB("Save balance/access for " .. user.email .. "?\n\n" ..
+      "Balance: " .. balance_text .. "\nAccess enabled: " .. tostring(editor.enabled) ..
+      "\n\nSetting a balance replaces the amount. Pending charges can still apply.", APP_NAME, 1) ~= 1 then return end
+  submit_action(user, { userId = user.userId, edit = edit },
+    function() return MANAGER_CLIENT:wallet_request(user.userId, edit, balance_text) end, ManagerApi.parse_wallet)
+end
+
 local function set_backend(base_url)
-  if S.action_active or Jobs.network_busy() then return end
+  if S.action_active or Jobs.network_busy() or Manager.connected() then return end
   local normalized = ManagerApi.resolve_base_url(base_url)
   if normalized == active_backend() then return end
+  Manager.stop("Backend changed. Connect explicitly after login.")
+  S.pending_action = nil
+  S.needs_readback = false
   AUTH_CLIENT.clear_runtime_tokens()
   S.backend_base_url = normalized
   S.access_token = ""
@@ -939,8 +1112,7 @@ local function try_startup_auth()
   if not S.has_stored_refresh then return end
   Auth.request_refresh("Startup Studio refresh", function(ok_refresh, payload)
     if ok_refresh then
-      S.status_text = "Stored Studio login refreshed. Loading manager data."
-      Manager.load_all()
+      S.status_text = "Stored Studio login refreshed. Click Connect Manager to continue."
     else
       S.status_text = "Stored Studio login refresh failed. Manual login is required."
       S.last_api_error = tostring(payload and payload.error or "refresh failed")
@@ -1047,13 +1219,13 @@ local function draw_settings()
   local remember_changed, remember_value = ImGui.Checkbox(ctx, "Remember me", S.remember_me)
   if remember_changed then S.remember_me = remember_value end
 
-  local auth_busy = S.action_active or Jobs.network_busy()
+  local auth_busy = S.action_active or Jobs.network_busy() or Manager.connected()
   if auth_busy then ImGui.BeginDisabled(ctx, true) end
   if button_clicked("login", "Login", ctx) then Auth.request_login() end
   ImGui.SameLine(ctx)
   if button_clicked("refresh_login", "Refresh stored login", ctx) then
     Auth.request_refresh("Manual Studio refresh", function(ok_refresh)
-      if ok_refresh then Manager.load_all() end
+      if ok_refresh and Manager.connected() then Manager.load_all() end
     end)
   end
   ImGui.SameLine(ctx)
@@ -1083,7 +1255,7 @@ end
 local account_display = ManagerUserView.account_display
 
 local function table_buttons_locked()
-  return S.action_active or Jobs.network_busy() or trim(S.access_token) == ""
+  return S.action_active or S.needs_readback or Jobs.network_busy() or not Manager.connected()
 end
 
 local function draw_assignment_button(user, label, target, available)
@@ -1136,10 +1308,10 @@ local function draw_users_table()
     S.sort_column,
     S.sort_ascending
   )
-  ImGui.SeparatorText(ctx, "User assignments")
+  ImGui.SeparatorText(ctx, "Users")
   ImGui.Text(ctx, string.format("Users: %d / %d", #visible_users, #S.users))
   ImGui.SameLine(ctx)
-  local refresh_disabled = S.action_active or Jobs.network_busy() or trim(S.access_token) == ""
+  local refresh_disabled = S.action_active or Jobs.network_busy() or not Manager.connected()
   if refresh_disabled then ImGui.BeginDisabled(ctx, true) end
   if button_clicked("refresh_users", "Refresh users", ctx) then
     Manager.fetch_users(function(ok_users, error_message)
@@ -1170,7 +1342,7 @@ local function draw_users_table()
     ImGui.TableFlags_ScrollY |
     ImGui.TableFlags_Sortable
   local table_height = ImGui.GetFrameHeightWithSpacing(ctx) * 13
-  if ImGui.BeginTable(ctx, "##manager_users_table", 5, flags, -1, table_height) then
+  if ImGui.BeginTable(ctx, "##manager_users_table", 7, flags, -1, table_height) then
     ImGui.TableSetupColumn(
       ctx,
       "Name",
@@ -1185,9 +1357,11 @@ local function draw_users_table()
       ctx,
       "Action",
       ImGui.TableColumnFlags_WidthFixed | ImGui.TableColumnFlags_NoSort,
-      170,
+      205,
       5
     )
+    ImGui.TableSetupColumn(ctx, "Balance / Access", ImGui.TableColumnFlags_WidthFixed | ImGui.TableColumnFlags_NoSort, 175, 6)
+    ImGui.TableSetupColumn(ctx, "Details", ImGui.TableColumnFlags_WidthFixed | ImGui.TableColumnFlags_NoSort, 70, 7)
     ImGui.TableSetupScrollFreeze(ctx, 0, 1)
     ImGui.TableHeadersRow(ctx)
     update_table_sort()
@@ -1223,10 +1397,137 @@ local function draw_users_table()
         ImGui.SameLine(ctx)
         draw_assignment_button(user, "el_2", "elevenlabs_2", account_2_available)
         ImGui.SameLine(ctx)
-        draw_assignment_button(user, "Block", "blocked", true)
+        draw_assignment_button(user, "Unassign", "blocked", true)
+        ImGui.TableSetColumnIndex(ctx, 5)
+        ImGui.Text(ctx, ManagerApi.format_number(user.balance) .. (user.enabled and " / On" or " / Off"))
+        ImGui.TableSetColumnIndex(ctx, 6)
+        local details_locked = table_buttons_locked()
+        if details_locked then ImGui.BeginDisabled(ctx, true) end
+        if ImGui.SmallButton(ctx, "Open##details_" .. user.userId) then
+          S.selected_user_id = user.userId
+          S.editor = { balance = ManagerApi.format_number(user.balance), enabled = user.enabled,
+            revision = user.revision, original_balance = user.balance, original_enabled = user.enabled }
+          S.pages = {}
+          Manager.load_page("history", false)
+        end
+        if details_locked then ImGui.EndDisabled(ctx) end
       end
     end
     ImGui.EndTable(ctx)
+  end
+end
+
+local function number_text(value)
+  if type(value) ~= "number" then return "Unavailable" end
+  return ManagerApi.format_number(value) or "Unavailable"
+end
+
+local function draw_manager_connection()
+  ImGui.SeparatorText(ctx, "Manager connection")
+  ImGui.TextWrapped(ctx, S.connection_message)
+  local busy = Jobs.network_busy() or S.action_active
+  local connection_locked = busy or trim(S.access_token) == ""
+  if connection_locked then ImGui.BeginDisabled(ctx, true) end
+  if Manager.connected() then
+    ImGui.Text(ctx, "Expires: " .. os.date("%H:%M:%S", math.floor(S.connection_expires_at / 1000)))
+    if button_clicked("disconnect_manager", "Disconnect Manager") then Manager.disconnect() end
+  else
+    if button_clicked("connect_manager", "Connect Manager") then Manager.connect() end
+  end
+  if connection_locked then ImGui.EndDisabled(ctx) end
+  if S.needs_readback then
+    ImGui.TextWrapped(ctx, "An edit needs readback. Further edits are locked; no write will be replayed.")
+    local locked = busy or not Manager.connected()
+    if locked then ImGui.BeginDisabled(ctx, true) end
+    if button_clicked("verify_edit", "Read current state and history") then Manager.reconcile_action() end
+    if locked then ImGui.EndDisabled(ctx) end
+  end
+end
+
+local function draw_credits()
+  ImGui.SeparatorText(ctx, "Shared account credits")
+  local locked = Jobs.network_busy() or S.action_active or not Manager.connected()
+  if locked then ImGui.BeginDisabled(ctx, true) end
+  if button_clicked("refresh_credits", "Refresh credits") then Manager.fetch_credits() end
+  if locked then ImGui.EndDisabled(ctx) end
+  ImGui.TextWrapped(ctx, "Provider account totals include other applications. User balances are managed separately.")
+  if S.credits_error ~= "" then ImGui.TextWrapped(ctx, S.credits_error) end
+  for _, row in ipairs(S.credits) do
+    ImGui.Text(ctx, (row.label or row.accountId) .. " (" .. row.accountId .. ")")
+    if row.status == "ok" then
+      ImGui.TextWrapped(ctx, "Used: " .. number_text(row.creditsUsed) .. " / Allowance: " .. number_text(row.allowance) ..
+        " / Remaining: " .. number_text(row.remaining))
+      ImGui.Text(ctx, "Reset: " .. (row.nextResetUnix and os.date("%Y-%m-%d %H:%M:%S", row.nextResetUnix) or "Unavailable"))
+    else
+      local err = row.error
+      ImGui.TextWrapped(ctx, "Unavailable: " .. err.code .. (err.httpStatus and (" / HTTP " .. err.httpStatus) or "") ..
+        (err.retryAfterSeconds and (" / Retry after " .. err.retryAfterSeconds .. "s") or ""))
+    end
+    ImGui.TextDisabled(ctx, "Checked: " .. row.checkedAt)
+  end
+end
+
+local function draw_user_details()
+  local user = find_user(S.users, S.selected_user_id)
+  if not user or not S.editor then return end
+  local editor = S.editor
+  ImGui.SeparatorText(ctx, "Selected user: " .. user.email)
+  ImGui.TextWrapped(ctx, "Account: " .. account_display(user.accountId) .. " / Balance: " .. number_text(user.balance) ..
+    " / Access: " .. (user.enabled and "enabled" or "disabled") .. " / Revision: " .. user.revision)
+  ImGui.TextWrapped(ctx, "Consumed: " .. number_text(user.consumption) .. " / Pending: " .. user.pendingJobs ..
+    " / Uncertain: " .. user.uncertainJobs)
+  ImGui.TextWrapped(ctx, "ElevenLabs requires an account assignment, enabled access and a positive balance. Pending charges remain after edits or remapping.")
+  local locked = table_buttons_locked()
+  if locked then ImGui.BeginDisabled(ctx, true) end
+  ImGui.SetNextItemWidth(ctx, 220)
+  local changed, balance = ImGui.InputText(ctx, "Balance (absolute)", editor.balance)
+  if changed then editor.balance = balance; editor.validation_error = nil end
+  local changed_enabled, enabled = ImGui.Checkbox(ctx, "Access enabled", editor.enabled)
+  if changed_enabled then editor.enabled = enabled; editor.validation_error = nil end
+  if button_clicked("save_wallet", "Save balance / access") then Manager.save_wallet() end
+  if locked then ImGui.EndDisabled(ctx) end
+  if editor.validation_error then
+    ImGui.PushStyleColor(ctx, ImGui.Col_Text, 0xFF3030FF)
+    ImGui.TextWrapped(ctx, "Cannot save: " .. editor.validation_error)
+    ImGui.PopStyleColor(ctx)
+  end
+  for _, kind in ipairs({ "history", "pending" }) do
+    if ImGui.CollapsingHeader(ctx, kind == "history" and "Balance / access history" or "Pending jobs") then
+      local read_locked = Jobs.network_busy() or S.action_active or not Manager.connected()
+      if read_locked then ImGui.BeginDisabled(ctx, true) end
+      if button_clicked("refresh_" .. kind, "Refresh##" .. kind) then Manager.load_page(kind, false) end
+      local page = S.pages[kind]
+      local cursor = page and (kind == "history" and page.nextBeforeId or page.nextAfterId)
+      if cursor ~= nil then
+        ImGui.SameLine(ctx)
+        if button_clicked("more_" .. kind, "Load more##" .. kind) then Manager.load_page(kind, true) end
+      end
+      if read_locked then ImGui.EndDisabled(ctx) end
+      if not page then ImGui.TextDisabled(ctx, "Not loaded.")
+      else
+        local rows = kind == "history" and page.events or page.jobs
+        ImGui.Text(ctx, "Loaded: " .. #rows)
+        if #rows == 0 then ImGui.TextDisabled(ctx, "No entries.") end
+        if ImGui.BeginChild(ctx, "##" .. kind .. "_entries", -1, 180) then
+          for _, item in ipairs(rows) do
+            if kind == "history" then
+              ImGui.TextWrapped(ctx, tostring(item.id) .. " / " .. item.kind .. " / Delta: " .. number_text(item.delta) ..
+                " / Balance: " .. number_text(item.balance) .. " / Access: " .. tostring(item.previousEnabled) ..
+                " -> " .. tostring(item.enabled) .. " / Revision: " .. item.revision)
+              ImGui.TextWrapped(ctx, "Actor: " .. tostring(item.actorUserId or "-") .. " / Job: " .. tostring(item.jobId or "-") ..
+                " / Time: " .. tostring(item.createdAt or "-"))
+            else
+              ImGui.TextWrapped(ctx, item.id .. " / " .. tostring(item.operation or "-") .. " / Original account: " .. tostring(item.accountId or "-") ..
+                " / Provider job: " .. tostring(item.externalId or "-"))
+              ImGui.TextWrapped(ctx, "Issue: " .. tostring(item.issue or "-") .. " / Created: " .. tostring(item.createdAt or "-") ..
+                " / Checked: " .. tostring(item.checkedAt or "-"))
+            end
+            ImGui.Separator(ctx)
+          end
+          ImGui.EndChild(ctx)
+        end
+      end
+    end
   end
 end
 
@@ -1493,12 +1794,16 @@ end
 local function gui_frame()
   local now_t = Jobs.now()
   TelemetryBridge.safe_tick(now_t)
+  if S.connection_token ~= "" and not Manager.connected() then
+    Manager.stop("Manager connection expired. Connect explicitly to continue.")
+  end
   Jobs.tick_all(now_t)
+  Manager.check_connection(now_t)
   sync_tokens_from_client()
   try_startup_auth()
   draw_status_window()
 
-  ImGui.SetNextWindowSize(ctx, 1080, 900, ImGui.Cond_FirstUseEver)
+  ImGui.SetNextWindowSize(ctx, 1350, 1000, ImGui.Cond_FirstUseEver)
   prepare_main_window_before_begin()
   local visible, open = ImGui.Begin(
     ctx,
@@ -1515,7 +1820,10 @@ local function gui_frame()
     end
     draw_status_panel(ctx)
     draw_settings()
+    draw_manager_connection()
+    draw_credits()
     draw_users_table()
+    draw_user_details()
     draw_request_table(ctx, "_main")
     draw_telemetry_section()
     ImGui.PopFont(ctx)

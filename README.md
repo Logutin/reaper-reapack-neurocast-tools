@@ -9,6 +9,17 @@ Install/update through the repository
 [`index.xml`](https://raw.githubusercontent.com/Logutin/reaper-reapack-neurocast-tools/main/index.xml).
 ReaImGui remains an external prerequisite; package minimum remains REAPER 7.72+.
 
+## Next candidate: 0.1.5
+
+The separate `0.1.5` candidate updates only ElevenLabs Manager to `v0.2.2`
+and its two Manager helpers, pinned to `auphonic-mt` commit
+`04fbd164ae06796bef170a7f9c3c6d8624cdbe74`. The root feed remains `0.1.4`.
+Candidate installation and owner startup acceptance are pending in the
+explicitly authorized disposable REAPER. See the
+[0.1.5 release record](docs/2026-09-15_package_implementation_0.1.5.md).
+The current manifest/source lock describe the candidate; the published
+`0.1.4` record below retains its historical source and payload pins.
+
 ## Current release: 0.1.4
 
 - AutoMix `v0.1.2` is included in ReaPack for the first time, with collision-safe

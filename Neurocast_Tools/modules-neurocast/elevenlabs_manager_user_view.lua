@@ -24,7 +24,7 @@ local function normalized_text(value)
 end
 
 function UserView.account_display(account_id)
-  if account_id == nil or trim(account_id) == "" then return "Blocked" end
+  if account_id == nil or trim(account_id) == "" then return "Unassigned" end
   if account_id == "elevenlabs_1" then return "el_1" end
   if account_id == "elevenlabs_2" then return "el_2" end
   return tostring(account_id)

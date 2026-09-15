@@ -3,30 +3,23 @@ schema_version: 1
 package:
   display_name: Neurocast Tools
   slug: Neurocast_Tools
-  version: 0.1.4
+  version: 0.1.5
   inventory: release-manifest.yml
 
 tracked_lua:
   repository: https://github.com/Logutin/auphonic-mt
-  commit: 9d734e197bea078e112c85eebbe7dd5283b0bf39
+  commit: 04fbd164ae06796bef170a7f9c3c6d8624cdbe74
   count: 60
-  policy: All Lua inputs match the pinned source commit after its Git clean filter. Nine changed or added runtime files are byte-exact source blobs; nine unchanged files retain historical CRLF bytes. The source TOOLSET_VERSION values remain independent of ReaPack version 0.1.4.
+  policy: All Lua inputs match the pinned source commit after its Git clean filter. Three changed runtime files are byte-exact source blobs; eight unchanged files retain historical CRLF bytes. The source TOOLSET_VERSION values remain independent of ReaPack version 0.1.5.
   byte_exact_changed_files:
-    - scr/automix_tool.lua
-    - scr/modules-neurocast/Curl.lua
-    - scr/modules-neurocast/ReaperX_Import_Media_Manually.lua
-    - scr/modules-neurocast/auphonic_api_via_neurocast.lua
-    - scr/modules-neurocast/automix_tool_languages.lua
-    - scr/modules-neurocast/mvsep_tool_languages.lua
-    - scr/modules-neurocast/zip_archive.lua
-    - scr/modules-neurocast/zip_extract_writer.lua
-    - scr/mvsep_tool.lua
+    - scr/elevenlabs_manager_tool.lua
+    - scr/modules-neurocast/elevenlabs_manager_user_view.lua
+    - scr/modules-neurocast/reaper_manager_elevenlabs_api.lua
   historical_crlf_preserved_distribution_files:
     - Neurocast_Tools/modules-neurocast/elevenlabs_tool_languages.lua
     - Neurocast_Tools/modules-neurocast/json.lua
     - Neurocast_Tools/modules-neurocast/neurocast_auth.lua
     - Neurocast_Tools/modules-neurocast/prompts.lua
-    - Neurocast_Tools/modules-neurocast/reaper_manager_elevenlabs_api.lua
     - Neurocast_Tools/modules-neurocast/Util.lua
     - Neurocast_Tools/modules-neurocast/docx_dialogue_parser.lua
     - Neurocast_Tools/modules-neurocast/docx_import_tool_languages.lua
@@ -111,7 +104,7 @@ validated_toolchain:
   pandoc: 3.10.2
   git: 2.55.0.windows.3
 
-status: published_limited_internal_in_team_testing_delivery_verified
+status: candidate_pending_owner_packaged_smoke
 
 seven_zip_upstream:
   version: "26.03"

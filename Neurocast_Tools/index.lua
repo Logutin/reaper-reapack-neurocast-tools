@@ -1,15 +1,15 @@
 -- @description Neurocast Tools
--- @version 0.1.4
+-- @version 0.1.5
 -- @author Slava Logutin
 -- @metapackage
--- @changelog Add AutoMix v0.1.2 with collision-safe stem extraction and saved insertion position; update MVSEP to v0.2.1 with repeat result downloads and manual import; upgrade the matching Windows 7-Zip pair to 26.03.
+-- @changelog Update ElevenLabs Manager to v0.2.2 with explicit Manager connections, balance and access editing, exact large fractional balances, and persistent actionable validation errors.
 -- @about
 --   Neurocast Tools for Windows x64, macOS x86_64, and macOS ARM64, including the local DOCX importer.
 --   ReaImGui is an external prerequisite and is not bundled. Package minimum: REAPER 7.72+.
---   Limited-internal delivery for selected team members. The Windows release gate covers the 0.1.3 to 0.1.4 update and owner-run package startup/archive smoke.
+--   Limited-internal delivery for selected team members. The 0.1.5 Windows release gate covers the update and owner-run Manager startup smoke.
 --   AutoMix v0.1.2 and MVSEP v0.2.1 have owner-accepted source happy paths. AutoMix production-host, difficult-network, and macOS qualification remain open.
 --   MVSEP telemetry delivery errors and Script Aligner ambiguous-create retry duplication remain documented limitations.
---   Script TOOLSET_VERSION values identify their source line; ReaPack 0.1.4 identifies this package.
+--   Script TOOLSET_VERSION values identify their source line; ReaPack 0.1.5 identifies this package.
 -- @link https://github.com/Logutin/reaper-reapack-neurocast-tools
 -- @provides
 --   [win64 main] automix_tool.lua
