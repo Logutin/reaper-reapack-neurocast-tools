@@ -22,7 +22,9 @@ Manager `v0.2.2` startup/normal close passed in
 `C:\extra_Reapers\Reaper_Empty_01\reaper.exe`. Independent readback verified
 all 68 installed files against the frozen candidate and exactly 14 Main
 actions. The root feed publishes that unchanged candidate. The disposable's
-public-feed URL restoration and final synchronization/readback remain pending.
+public-feed URL restoration and final synchronization/readback passed; its
+cached index matches the public feed and all installed files/actions remain
+correct. Manual installation and global settings are preserved. Delivery is complete.
 
 Runtime source is pinned to `auphonic-mt` commit
 `04fbd164ae06796bef170a7f9c3c6d8624cdbe74`; all 192 platform source records

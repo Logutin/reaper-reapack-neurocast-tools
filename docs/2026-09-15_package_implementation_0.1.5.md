@@ -13,9 +13,11 @@ reported "passed" for the packaged `0.1.4 -> 0.1.5` update and Manager
 all 68 owned files byte-for-byte, and 14 exactly-once Main actions.
 
 The root feed publishes the unchanged qualified candidate for limited-internal
-use. The disposable installation still needs its repository URL restored from
-the separate candidate feed to the public root feed. Final public-feed
-synchronization/readback is pending; no additional workflow test is required.
+use. The owner restored the disposable installation to the public root feed
+and reported "Done". Final readback passed: enabled public URL, manual
+installation, unchanged global install settings, exact cached/public/candidate
+index bytes, 68 exact installed files, and 14 exactly-once Main actions.
+Publication and delivery cleanup are complete.
 
 Runtime source pin: `auphonic-mt`
 `04fbd164ae06796bef170a7f9c3c6d8624cdbe74`.
@@ -90,6 +92,18 @@ The helper changes only the disposable's Neurocast repository URL with manual
 installation, queues synchronization, and opens the package browser. It does
 not launch tools or perform remote processing. After publication, the existing
 `qualification/Neurocast_Tools_restore_public_feed.lua` restores the public URL.
+
+## Final public-feed readback (2026-09-15)
+
+Publication commit: `87e3545493ccf30cfd76c8bc3df9bd03dba7ae1a`.
+The cached index, public root feed, committed index, and qualified candidate
+are byte-identical. SHA-256:
+`a165f5edd1b8b6a2d9d7b57d14d36a227e1faee1651aa4a739e5b1b4746286c2`.
+All six versions are present; the 192 `0.1.5` records still pin the frozen
+payload and all five historical records remain unchanged. The installed
+receipt is `0.1.5`, with 68 byte-exact owned files and 14 exactly-once Main
+actions. The public repository remains enabled with `autoInstall=0`;
+global `autoinstall=0` and `prereleases=0` remain unchanged.
 
 ## Evidence limits
 

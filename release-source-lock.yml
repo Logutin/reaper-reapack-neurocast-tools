@@ -104,7 +104,7 @@ validated_toolchain:
   pandoc: 3.10.2
   git: 2.55.0.windows.3
 
-status: published_limited_internal_owner_smoke_passed_public_feed_restore_pending
+status: published_limited_internal_owner_smoke_passed_delivery_verified
 
 seven_zip_upstream:
   version: "26.03"

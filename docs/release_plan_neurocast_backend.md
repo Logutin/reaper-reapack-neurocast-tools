@@ -11,7 +11,8 @@
 > for limited-internal use. It updates only Manager to `v0.2.2` and its two
 > helpers. The owner passed the Windows `0.1.4 -> 0.1.5` update and Manager
 > startup/normal close. Readback verified 68 exact installed files and 14 Main
-> actions. Public-feed restoration in the disposable remains pending. See the
+> actions. Disposable public-feed restoration and final cache/file/action
+> readback passed; release delivery is complete. See the
 > [0.1.5 release record](2026-09-15_package_implementation_0.1.5.md).
 > The design and original lifecycle qualification below are historical;
 > broader authenticated, difficult-network, macOS, other-machine, and full
