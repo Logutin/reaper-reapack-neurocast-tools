@@ -52,8 +52,16 @@ checks, separate from owner-observed behavior.
 checks, exact dependency closure and exclusions, unchanged binary/notice
 hashes, local 7-Zip DLL resolution, metadata inventory and action counts.
 `reapack-index --check --strict --warnings .` passed with one package and zero
-failures. Candidate index generation and its immutable history/payload checks
-are the next mechanical steps.
+failures. The generated candidate index passed exact source/platform/path/action checks:
+all 192 new source URLs pin payload commit
+`da01965751fa3d8d925bdd8babe37d1068553421`, all five historical version
+records are unchanged, and the public root index retains its previous bytes.
+Every package file matches the frozen payload commit. The helper passed Lua
+syntax validation. No broad workflow suite was repeated.
+
+Candidate feed: `qualification/Neurocast_Tools_0.1.5_candidate.xml`. It was
+generated with `reapack-index --scan da01965751fa3d8d925bdd8babe37d1068553421
+--no-amend --strict --warnings --no-commit` and a separate output path.
 
 ## What to check in REAPER live
 
