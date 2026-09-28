@@ -10,3 +10,4 @@
 /Neurocast_Tools/native/*/* -text
 /Neurocast_Tools/licenses/*.txt -text
 /Neurocast_Tools/automix_tool.lua -text -whitespace
+/Neurocast_Tools/manuals/*.html -text

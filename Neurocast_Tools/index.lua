@@ -1,17 +1,19 @@
 -- @description Neurocast Tools
--- @version 0.1.5
+-- @version 0.1.6
 -- @author Slava Logutin
 -- @metapackage
--- @changelog Update ElevenLabs Manager to v0.2.2 with explicit Manager connections, balance and access editing, exact large fractional balances, and persistent actionable validation errors.
+-- @changelog Update ElevenLabs to v2.1.4: STS preparation and clearer limits, localized one-row Help, and bundled Russian offline manual.
 -- @about
 --   Neurocast Tools for Windows x64, macOS x86_64, and macOS ARM64, including the local DOCX importer.
 --   ReaImGui is an external prerequisite and is not bundled. Package minimum: REAPER 7.72+.
---   Limited-internal delivery for selected team members. The 0.1.5 Windows release gate covers the update and owner-run Manager startup smoke.
+--   Limited-internal delivery for selected team members. The 0.1.6 Windows release gate covers the update and owner-run ElevenLabs startup and Help smoke.
 --   AutoMix v0.1.2 and MVSEP v0.2.1 have owner-accepted source happy paths. AutoMix production-host, difficult-network, and macOS qualification remain open.
 --   MVSEP telemetry delivery errors and Script Aligner ambiguous-create retry duplication remain documented limitations.
---   Script TOOLSET_VERSION values identify their source line; ReaPack 0.1.5 identifies this package.
+--   Script TOOLSET_VERSION values identify their source line; ReaPack 0.1.6 identifies this package.
 -- @link https://github.com/Logutin/reaper-reapack-neurocast-tools
 -- @provides
+--   [win64] modules-neurocast/offline_manual.lua
+--   [win64] manuals/2026-09-28_elevenlabs_tool_manual_ru_draft.html
 --   [win64 main] automix_tool.lua
 --   [win64] modules-neurocast/ReaperX_Import_Media_Manually.lua
 --   [win64] modules-neurocast/auphonic_api_via_neurocast.lua
@@ -80,6 +82,8 @@
 --   [win64] licenses/zlib-LICENSE.txt
 --   [win64] licenses/7-Zip-License.txt
 --   [win64] licenses/Unicode-License.txt
+--   [darwin64] modules-neurocast/offline_manual.lua
+--   [darwin64] manuals/2026-09-28_elevenlabs_tool_manual_ru_draft.html
 --   [darwin64 main] automix_tool.lua
 --   [darwin64] modules-neurocast/ReaperX_Import_Media_Manually.lua
 --   [darwin64] modules-neurocast/auphonic_api_via_neurocast.lua
@@ -142,6 +146,8 @@
 --   [darwin64] modules-neurocast/ReaperX_render_settings_helper.lua
 --   [darwin64 extension] native/darwin64/reaper_cyr_essentials.dylib > reaper_cyr_essentials.dylib
 --   [darwin64] licenses/Unicode-License.txt
+--   [darwin-arm64] modules-neurocast/offline_manual.lua
+--   [darwin-arm64] manuals/2026-09-28_elevenlabs_tool_manual_ru_draft.html
 --   [darwin-arm64 main] automix_tool.lua
 --   [darwin-arm64] modules-neurocast/ReaperX_Import_Media_Manually.lua
 --   [darwin-arm64] modules-neurocast/auphonic_api_via_neurocast.lua

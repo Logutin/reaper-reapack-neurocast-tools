@@ -1,5 +1,5 @@
 --========================================================
--- Elevenlabs Studio Neurocast tool script v2.1.1
+-- Elevenlabs Studio Neurocast tool script v2.1.4
 --========================================================
 
 -- Entrypoint-owned orchestration between the shared Voice Library API/state/
@@ -1208,7 +1208,7 @@ if ... == "__voice_library_add_controller_headless" then
 end
 
 local r = assert(reaper, "Reaper API not found. This script must be run within Reaper.")
-local SCRIPT_VERSION = "v2.1.1"
+local SCRIPT_VERSION = "v2.1.4"
 local TOOLSET_VERSION = SCRIPT_VERSION
 
 local active_locale = "eng"
@@ -1333,6 +1333,14 @@ if not ok_files then
   return
 end
 local Files = files_or_err
+
+local ok_manual, manual_or_err = pcall(require, "modules-neurocast.offline_manual")
+if not ok_manual then
+  package.path = old_package_path
+  r.MB(string.format(t("Failed to load offline help support: %s. Reinstall the complete Neurocast Tools package."), tostring(manual_or_err)), t("Error"), 0)
+  return
+end
+local OfflineManual = manual_or_err
 
 local ok_voice_catalog, voice_catalog_or_err = pcall(require, "modules-neurocast.elevenlabs_voice_catalog")
 if not ok_voice_catalog then
@@ -1523,7 +1531,9 @@ local ImGui = ImGuiOrErr
 -- we will also revert package.path to old_package_path on exit:
 local send_telemetry_closed_event = nil
 local shutdown_voice_library_controller = nil
+local shutdown_offline_manual = nil
 r.atexit(function()
+  if shutdown_offline_manual then shutdown_offline_manual() end
   if type(shutdown_voice_library_controller) == "function" then
     shutdown_voice_library_controller()
   end
@@ -1777,6 +1787,7 @@ local S = {
     cmd         = ''
   },
   render_regions_output = t("Press the button to list render regions."),
+  sts_preparation = nil,
   rendered_regions = nil,
   tts_records = nil,
   fast_sts_records = nil,
@@ -3707,7 +3718,7 @@ do --WORK WITH REAPER PROJ
 
   local function describe_sts_skipped_region(skipped)
     if type(skipped) ~= "table" then
-      return t("Skipped STS region.")
+      return t("STS audio exceeds the length limit for one ElevenLabs request.")
     end
     local label = track_label_for_region(skipped.track)
     local region = skipped.region or {}
@@ -3718,7 +3729,7 @@ do --WORK WITH REAPER PROJ
     if duration < 0 then duration = 0 end
     local max_len = tonumber(skipped.max_region_length_sec) or 0
     return string.format(
-      t("Skipped STS region on %s: %s - %s (dur: %s) exceeds Max region length (sec) = %.2f."),
+      t("Audio on %s: %s - %s (duration: %s) exceeds the maximum audio length per ElevenLabs request (%.2f sec)."),
       tostring(label),
       fmt_time_for_region(start_pos),
       fmt_time_for_region(end_pos),
@@ -3833,24 +3844,99 @@ do --WORK WITH REAPER PROJ
 
   end --get_track_items_regions(items_table)
 
-  local function collect_selected_items_by_track()
-    local number_of_selected_items = r.CountSelectedMediaItems(0)
-    if number_of_selected_items < 1 then
-      return false, t('No selected items in project! Please select items to process.'), nil
-    end
+  -- STS eligibility is deliberately separate from the TTS notes collector.
+  function ReaperX.is_sts_audio_item(item)
+    local take = item and r.GetActiveTake(item)
+    return take ~= nil and not r.TakeIsMIDI(take)
+  end
 
-    local items_by_track = {}
-    for i = 0, (number_of_selected_items - 1) do
-      local current_item = r.GetSelectedMediaItem(0, i)
-      local track = r.GetMediaItemTrack(current_item)
-      if not items_by_track[track] then
-        items_by_track[track] = {}
+  local function collect_selected_sts_audio_by_track()
+    local items_by_track, ignored = {}, 0
+    for index = 0, r.CountSelectedMediaItems(0) - 1 do
+      local item = r.GetSelectedMediaItem(0, index)
+      if ReaperX.is_sts_audio_item(item) then
+        local track = r.GetMediaItemTrack(item)
+        items_by_track[track] = items_by_track[track] or {}
+        table.insert(items_by_track[track], item)
+      else
+        ignored = ignored + 1
       end
-      table.insert(items_by_track[track], current_item)
     end
+    if not next(items_by_track) then
+      return false, t("No selected audio items. Select audio and compute regions again."), nil, ignored
+    end
+    return true, "ok", items_by_track, ignored
+  end
 
-    return true, "ok", items_by_track
-  end --function collect_selected_items_by_track()
+  -- Project revision conservatively covers source/FX edits that keep item bounds.
+  -- Selection is also captured explicitly: selection changes need not create undo.
+  function ReaperX.capture_sts_inputs()
+    local project = r.EnumProjects(-1, "")
+    local settings = get_sts_region_settings()
+    local parts = {
+      tostring(project), tostring(r.GetProjectStateChangeCount(project)),
+      tostring(settings.merge_gap_sec), tostring(settings.max_region_length_sec),
+      tostring(settings.send_each_item_separately), tostring(Backend.active_base_url()),
+      tostring(S.email or "")
+    }
+    local items, tracks, choices = {}, {}, {}
+    for index = 0, r.CountSelectedMediaItems(0) - 1 do
+      local item = r.GetSelectedMediaItem(0, index)
+      local track = r.GetMediaItemTrack(item)
+      local take = r.GetActiveTake(item)
+      local is_audio = take ~= nil and not r.TakeIsMIDI(take)
+      local _, name = r.GetTrackName(track)
+      items[#items + 1] = table.concat({
+        tostring(item), tostring(track), tostring(take),
+        string.format("%.17g", r.GetMediaItemInfo_Value(item, "D_POSITION")),
+        string.format("%.17g", r.GetMediaItemInfo_Value(item, "D_LENGTH")),
+        tostring(is_audio), string.format("%q", name or "")
+      }, "|")
+      if is_audio then tracks[name or ""] = true end
+    end
+    table.sort(items)
+    for _, item in ipairs(items) do parts[#parts + 1] = item end
+    local names = {}
+    for name in pairs(tracks) do names[#names + 1] = name end
+    table.sort(names)
+    for _, name in ipairs(names) do
+      local resolution = VoiceCatalog.resolve_name(S.el_voices, name)
+      local ids = {}
+      for _, voice in ipairs(resolution.candidates or {}) do ids[#ids + 1] = tostring(voice.id) end
+      table.sort(ids)
+      parts[#parts + 1] = string.format("%q:%s:%s:%s", name, tostring(resolution.status),
+        tostring(resolution.selected_voice_id), table.concat(ids, ","))
+      choices[#choices + 1] = string.format("%q:%s", name, tostring(S.voice_choice_by_name[name]))
+    end
+    return table.concat(parts, "\n"), table.concat(choices, "\n")
+  end
+
+  function ReaperX.fail_sts_preparation(message)
+    local report = tostring(message)
+    -- Keep the disabled-button reason short; details remain in the report field.
+    S.sts_preparation = { status = "failed", message = report:match("^[^\r\n]*") }
+    S.render_regions_output = report
+  end
+
+  function ReaperX.check_sts_preparation()
+    local prep = S.sts_preparation
+    if prep and (prep.status == "ready" or prep.status == "pending") then
+      local inputs, choices = ReaperX.capture_sts_inputs()
+      if inputs ~= prep.inputs or (prep.status == "ready" and choices ~= prep.choices_key) then
+        ReaperX.fail_sts_preparation(t("Source data changed. Compute regions again."))
+        S.sts_preparation.status = "stale"
+      end
+    end
+    prep = S.sts_preparation
+    return prep and prep.status == "ready" or false,
+      prep and prep.message or t("Compute regions successfully before starting STS.")
+  end
+
+  function ReaperX.get_prepared_sts_regions()
+    local ready, reason = ReaperX.check_sts_preparation()
+    if not ready then return false, reason end
+    return true, S.sts_preparation.prepared, S.sts_preparation.voice_choices
+  end
 
   local function build_sts_regions_by_track(items_by_track)
     if not items_by_track or not next(items_by_track) then
@@ -4008,6 +4094,13 @@ do --WORK WITH REAPER PROJ
   -- Gets render regions by track so later steps can use it.
   -- Called by several helpers (for example `run_el_speech_to_speech_for_selected_items`, `run_el_speech_to_speech_fast`, and `GuiLoop`); caller passes no arguments and uses shared state.
   function ReaperX.get_render_regions_by_track(voice_choices)
+    local ok_items, items_msg, items_by_track, ignored = collect_selected_sts_audio_by_track()
+    if not ok_items then
+      if ignored > 0 then
+        items_msg = items_msg .. "\n" .. string.format(t("Ignored non-audio items: %d."), ignored)
+      end
+      return false, items_msg
+    end
     if (S) and (S.el_voices) and (S.el_voices.by_id) and (next(S.el_voices.by_id))
       then
         --ok
@@ -4017,11 +4110,6 @@ do --WORK WITH REAPER PROJ
           false,
           t('No voices configured! Please fetch voices from server first.')
     end --if
-    local ok_items, items_msg, items_by_track = collect_selected_items_by_track()
-    if not ok_items then
-      return false, items_msg
-    end
-
     local missing_tracks = {}
     for track, items_table in pairs(items_by_track) do
       local _, track_name = r.GetTrackName(track)
@@ -4050,7 +4138,11 @@ do --WORK WITH REAPER PROJ
 
     local regions_by_track = prepared and prepared.regions_by_track or nil
     local skipped_regions = prepared and prepared.skipped_regions or nil
-    if (regions_by_track and next(regions_by_track)) or (skipped_regions and #skipped_regions > 0) then
+    prepared.ignored_items = ignored
+    if skipped_regions and #skipped_regions > 0 then
+      return false, t("Some audio exceeds the maximum length per ElevenLabs request. Change the selection or STS settings and compute again. Nothing will be processed."), prepared
+    end
+    if regions_by_track and next(regions_by_track) then
       return true, prepared
     end
 
@@ -4613,6 +4705,7 @@ do --WORK WITH REAPER PROJ
   -- Called by `GuiLoop`; caller passes `regions_by_track`.
   function ReaperX.format_render_regions_by_track(regions_by_track)
     local prepared = regions_by_track
+    local ignored = type(prepared) == "table" and tonumber(prepared.ignored_items) or 0
     local skipped_regions = nil
     if type(prepared) == "table" and (prepared.regions_by_track or prepared.skipped_regions) then
       regions_by_track = prepared.regions_by_track or {}
@@ -4696,12 +4789,15 @@ do --WORK WITH REAPER PROJ
 
     if has_skipped then
       table.insert(lines, "")
-      table.insert(lines, string.format(t("Skipped STS regions: %d"), #skipped_regions))
+      table.insert(lines, string.format(t("Regions exceeding the length limit: %d"), #skipped_regions))
       for i, skipped in ipairs(skipped_regions) do
         table.insert(lines, string.format(t("  %d) %s"), i, describe_sts_skipped_region(skipped)))
       end
     end
 
+    if ignored and ignored > 0 then
+      table.insert(lines, string.format(t("Ignored non-audio items: %d."), ignored))
+    end
     return table.concat(lines, "\n")
   end
 end  --enf of "do --WORK WITH REAPER PROJ"
@@ -6114,6 +6210,7 @@ function Jobs.full_reset_state(reason)
   S.stop_polling_flag = false
   S.next_poll_at = nil
   S.rendered_regions = nil
+  S.sts_preparation = nil
   S.render_regions_output = t("Press the button to list render regions.")
   S.tts_records = nil
   S.fast_tts_records = nil
@@ -7233,7 +7330,7 @@ do --RENDER (audio)
     end
 
     if skipped_regions and #skipped_regions > 0 then
-      ReaperX.push_sts_skipped_region_warnings(skipped_regions)
+      return false, t("Some audio exceeds the maximum length per ElevenLabs request. Change the selection or STS settings and compute again. Nothing will be processed."), nil
     end
 
     if not (CFG and CFG.tmp_dir) then
@@ -7247,7 +7344,7 @@ do --RENDER (audio)
 
     if not regions_by_track_table or not next(regions_by_track_table) then
       if skipped_regions and #skipped_regions > 0 then
-        return false, t("No STS regions to render after applying Max region length (sec)."), nil
+        return false, t("No STS audio to send within the maximum length per ElevenLabs request."), nil
       end
       return false, t("No regions to render."), nil
     end
@@ -9558,6 +9655,8 @@ local function collect_selected_voice_names(flow_id)
     if include_item and is_tts then
       local _, notes = r.GetSetMediaItemInfo_String(item, "P_NOTES", "", false)
       include_item = tostring(notes or "") ~= ""
+    elseif include_item then
+      include_item = ReaperX.is_sts_audio_item(item)
     end
     if include_item then
       local track = r.GetMediaItemTrack(item)
@@ -9575,7 +9674,18 @@ local function collect_selected_voice_names(flow_id)
 end
 
 function Eleven.prepare_voice_resolution(flow_id)
-  if not Auth.has_access_token() then
+  local approval = S.voice_flow_approval
+  if approval and approval.flow_id == flow_id and approval.sts_inputs
+      and approval.sts_inputs ~= ReaperX.capture_sts_inputs() then
+    local message = t("Source data changed. Compute regions again.")
+    S.voice_flow_approval = nil
+    ReaperX.fail_sts_preparation(message)
+    S.status_text = message
+    S.last_api_error = message
+    S.ui_lock_network_buttons = false
+    return false
+  end
+  if flow_id ~= "sts_scan" and not Auth.has_access_token() then
     return true, {}
   end
   local catalog = S.el_voices
@@ -9599,7 +9709,6 @@ function Eleven.prepare_voice_resolution(flow_id)
     end
   end
 
-  local approval = S.voice_flow_approval
   if approval and approval.flow_id == flow_id then
     local approved_choices = approval.choices or {}
     local approval_valid = true
@@ -9633,6 +9742,9 @@ function Eleven.prepare_voice_resolution(flow_id)
     open_requested = true,
     started_at = TelemetryBridge.now()
   }
+  if flow_id == "sts_scan" or flow_id == "sts_fast" then
+    S.voice_resolver.sts_inputs = ReaperX.capture_sts_inputs()
+  end
   UI.request_main_window_expanded_for_modal("duplicate_voice_resolver")
   S.ui_lock_network_buttons = true
   S.status_text = t("Choose voices for duplicate track names.")
@@ -9647,7 +9759,10 @@ end
 local function resume_voice_resolved_flow(flow_id)
   local label
   local runner
-  if flow_id == "tts_regular" then
+  if flow_id == "sts_scan" then
+    Eleven.compute_sts_regions(true)
+    return true
+  elseif flow_id == "tts_regular" then
     label = t("Text-to-speech")
     runner = Eleven.run_el_text_to_speech_for_selected_items
   elseif flow_id == "tts_fast" then
@@ -9738,6 +9853,21 @@ function Eleven.draw_voice_resolver_modal(ctx_to_show)
 
   ImGui.Separator(ctx_to_show)
   if ImGui.Button(ctx_to_show, t("OK")) then
+    if resolver.sts_inputs and resolver.sts_inputs ~= ReaperX.capture_sts_inputs() then
+      local message = t("Source data changed. Compute regions again.")
+      ReaperX.fail_sts_preparation(message)
+      S.status_text = message
+      S.last_api_error = message
+      S.voice_resolver = nil
+      S.voice_flow_approval = nil
+      S.ui_lock_network_buttons = false
+      ImGui.CloseCurrentPopup(ctx_to_show)
+      TelemetryBridge.operation_failed("elevenlabs_voice_resolution", {
+        flow_id = resolver.flow_id, safe_message = message
+      }, resolver.started_at, "source_changed")
+      ImGui.EndPopup(ctx_to_show)
+      return
+    end
     local choices = {}
     for _, row in ipairs(resolver.rows or {}) do
       choices[row.track_name] = row.selected_voice_id
@@ -9746,7 +9876,8 @@ function Eleven.draw_voice_resolver_modal(ctx_to_show)
     local flow_id = resolver.flow_id
     S.voice_flow_approval = {
       flow_id = flow_id,
-      choices = choices
+      choices = choices,
+      sts_inputs = resolver.sts_inputs
     }
     S.voice_resolver = nil
     S.ui_lock_network_buttons = false
@@ -9769,6 +9900,9 @@ function Eleven.draw_voice_resolver_modal(ctx_to_show)
     S.voice_flow_approval = nil
     S.ui_lock_network_buttons = false
     S.status_text = t("Voice selection canceled. No render or request was started.")
+    if flow_id == "sts_scan" then
+      ReaperX.fail_sts_preparation(t("Voice selection canceled. Compute regions again."))
+    end
     S.last_api_error = ""
     ImGui.CloseCurrentPopup(ctx_to_show)
     TelemetryBridge.operation_completed("elevenlabs_voice_resolution", {
@@ -9781,11 +9915,80 @@ function Eleven.draw_voice_resolver_modal(ctx_to_show)
   ImGui.EndPopup(ctx_to_show)
 end
 
+-- A scan only prepares a validated plan. It never clears jobs or starts rendering.
+function Eleven.compute_sts_regions(resuming)
+  local started = TelemetryBridge.now()
+  if resuming then
+    ReaperX.check_sts_preparation()
+    if not S.sts_preparation or S.sts_preparation.status ~= "pending" then
+      S.voice_flow_approval = nil
+      return false
+    end
+    started = S.sts_preparation.started_at
+  else
+    S.sts_preparation = {
+      status = "pending", inputs = ReaperX.capture_sts_inputs(), started_at = started,
+      message = t("Computing STS regions...")
+    }
+    S.render_regions_output = S.sts_preparation.message
+    TelemetryBridge.operation_started("elevenlabs_render_region_scan", {})
+  end
+
+  local resolution_ready, voice_choices, resolution_status = Eleven.prepare_voice_resolution("sts_scan")
+  if not resolution_ready then
+    if resolution_status == "pending" then
+      S.sts_preparation.message = t("Choose voices to finish computing regions.")
+      S.render_regions_output = S.sts_preparation.message
+    end
+    return false
+  end
+  local ok, result, rejected = ReaperX.get_render_regions_by_track(voice_choices)
+  if not ok then
+    local message = tostring(result)
+    if rejected then message = message .. "\n\n" .. ReaperX.format_render_regions_by_track(rejected) end
+    ReaperX.fail_sts_preparation(message)
+    TelemetryBridge.operation_failed("elevenlabs_render_region_scan", {
+      safe_message = tostring(result)
+    }, started, "validation_failed")
+    return false
+  end
+  local inputs, choices_key = ReaperX.capture_sts_inputs()
+  S.sts_preparation = {
+    status = "ready", inputs = inputs, choices_key = choices_key,
+    prepared = result, voice_choices = voice_choices,
+    message = t("Regions are ready. You can start STS.")
+  }
+  S.render_regions_output = ReaperX.format_render_regions_by_track(result)
+  local count = 0
+  for _, regions in pairs(result.regions_by_track) do count = count + #regions end
+  TelemetryBridge.operation_completed("elevenlabs_render_region_scan", {
+    region_count = count, ignored_items = result.ignored_items
+  }, started)
+  return true
+end
+
+function UI.render_sts_preparation()
+  ReaperX.check_sts_preparation()
+  local busy = Jobs.network_busy() or S.ui_lock_network_buttons
+  if busy then ImGui.BeginDisabled(ctx, true) end
+  -- This local calculation must not silently discard a rapid repeat click.
+  if UI.button_clicked("render_regions_btn", t("Compute render regions (selected items)"), 0) then
+    Eleven.compute_sts_regions()
+  end
+  if busy then ImGui.EndDisabled(ctx) end
+  ImGui.InputTextMultiline(ctx, "##render_regions_output", S.render_regions_output or "", 0, 140, ImGui.InputTextFlags_ReadOnly)
+  local ready, reason = ReaperX.check_sts_preparation()
+  if not ready then
+    ImGui.TextWrapped(ctx, reason)
+  elseif busy then
+    ImGui.TextWrapped(ctx, t("Network is busy. Please wait for current jobs to finish."))
+  end
+  return ready
+end
+
 -- Runs ElevenLabs speech to speech for selected items as part of the workflow.
 -- Called by `GuiLoop`; caller passes no arguments and uses shared state.
 function Eleven.run_el_speech_to_speech_for_selected_items()
-  local resolution_ready, voice_choices = Eleven.prepare_voice_resolution("sts_regular")
-  if not resolution_ready then return end
   S.ui_lock_network_buttons = true
   local telemetry_started_at = TelemetryBridge.now()
   TelemetryBridge.operation_started("elevenlabs_sts_preflight", {})
@@ -9793,12 +9996,19 @@ function Eleven.run_el_speech_to_speech_for_selected_items()
   -- Handles fail so other code can call it.
   -- Called by several helpers (for example `run_el_speech_to_speech_for_selected_items`, `run_el_speech_to_speech_fast`, and `run_el_text_to_speech_for_selected_items`); caller passes `msg_to_show`.
   local function fail(msg_to_show, event_name, extra_payload)
+    ReaperX.fail_sts_preparation(msg_to_show)
     S.status_text = msg_to_show
     S.last_api_error = msg_to_show
     S.ui_lock_network_buttons = false
     local payload = extra_payload or {}
     payload.safe_message = tostring(msg_to_show or "")
     TelemetryBridge.operation_failed("elevenlabs_sts_preflight", payload, telemetry_started_at, event_name)
+  end
+
+  local ready, prepared, voice_choices = ReaperX.get_prepared_sts_regions()
+  if not ready then
+    fail(prepared, "preparation_required")
+    return
   end
 
   local ok_auth, auth_msg = Auth.ensure_access_token()
@@ -9818,7 +10028,7 @@ function Eleven.run_el_speech_to_speech_for_selected_items()
     return
   end
 
-  local ok_regions, err_or_regions = ReaperX.get_render_regions_by_track(voice_choices)
+  local ok_regions, err_or_regions = ReaperX.get_prepared_sts_regions()
   if not ok_regions then
     fail(string.format(t("Render regions failed: %s"), tostring(err_or_regions)))
     return
@@ -9859,15 +10069,15 @@ end
 function Eleven.run_el_speech_to_speech_fast()
   local resolution_ready, voice_choices = Eleven.prepare_voice_resolution("sts_fast")
   if not resolution_ready then return end
+  local source_inputs, source_choices = ReaperX.capture_sts_inputs()
   S.ui_lock_network_buttons = true
   local telemetry_started_at = TelemetryBridge.now()
   TelemetryBridge.operation_started("elevenlabs_sts_fast_preflight", {})
-  Jobs.bump_retry_generation()
-  S.fast_sts_records = nil
 
   -- Handles fail so other code can call it.
   -- Called by several helpers (for example `run_el_speech_to_speech_for_selected_items`, `run_el_speech_to_speech_fast`, and `run_el_text_to_speech_for_selected_items`); caller passes `msg_to_show`.
   local function fail(msg_to_show, event_name, extra_payload)
+    ReaperX.fail_sts_preparation(msg_to_show)
     S.status_text = msg_to_show
     S.last_api_error = msg_to_show
     S.ui_lock_network_buttons = false
@@ -9893,9 +10103,17 @@ function Eleven.run_el_speech_to_speech_fast()
     return
   end
 
-  local ok_regions, err_or_regions = ReaperX.get_render_regions_by_track(voice_choices)
+  local ok_regions, err_or_regions, rejected = ReaperX.get_render_regions_by_track(voice_choices)
   if not ok_regions then
-    fail(string.format(t("Render regions failed: %s"), tostring(err_or_regions)))
+    local message = string.format(t("Render regions failed: %s"), tostring(err_or_regions))
+    if rejected then message = message .. "\n\n" .. ReaperX.format_render_regions_by_track(rejected) end
+    fail(message)
+    return
+  end
+
+  local current_inputs, current_choices = ReaperX.capture_sts_inputs()
+  if current_inputs ~= source_inputs or current_choices ~= source_choices then
+    fail(t("Source data changed. Compute regions again."), "source_changed")
     return
   end
 
@@ -9909,6 +10127,7 @@ function Eleven.run_el_speech_to_speech_fast()
     return
   end
 
+  Jobs.bump_retry_generation()
   S.fast_sts_records = records
   local ok_submit, submit_err = Eleven.submit_el_speech_to_speech_jobs_fast(S.fast_sts_records)
   if not ok_submit then
@@ -12713,11 +12932,124 @@ end
 --================= GuiLoop - DEFER part ========================================
 --===============================================================================
 --===============================================================================
+-- Offline help has independent error state; network callbacks cannot clear it.
+function UI.offline_help_failed(reason)
+  S.help_error = reason
+end
+
+function UI.open_offline_help()
+  if S.help_request then return end
+  local ok, result = OfflineManual.open(r, OfflineManual.path(script_path))
+  if ok == nil then
+    S.help_request = result
+  elseif ok then
+    S.help_error = nil
+  else
+    UI.offline_help_failed(result)
+  end
+end
+
+function UI.poll_offline_help()
+  if not S.help_request then return end
+  local ok, reason = OfflineManual.poll(r, S.help_request)
+  if ok == nil then return end
+  S.help_request = nil
+  if ok then S.help_error = nil else UI.offline_help_failed(reason) end
+end
+
+function UI.render_offline_help_error()
+  if not S.help_error then return end
+  if S.help_error == "missing" then
+    ImGui.TextWrapped(ctx, t("Offline manual not found. Reinstall the complete Neurocast Tools package, including its manuals folder."))
+  elseif S.help_error == "timeout" then
+    ImGui.TextWrapped(ctx, t("Could not confirm that Help opened. Check your browser before trying again, or open the file below manually."))
+  elseif S.help_error == "temporary" then
+    ImGui.TextWrapped(ctx, t("Could not prepare the Help launcher. Check access to the system temporary folder, or open the file below manually."))
+  elseif S.help_error == "unsupported" then
+    ImGui.TextWrapped(ctx, t("Automatic Help opening is unavailable on this platform. Open the file below manually."))
+  else
+    ImGui.TextWrapped(ctx, t("Could not open Help. Check the default application for HTML files, or open the file below manually."))
+  end
+  ImGui.TextWrapped(ctx, OfflineManual.path(script_path))
+end
+
+shutdown_offline_manual = function()
+  OfflineManual.cleanup(S.help_request)
+  S.help_request = nil
+end
+
+function UI.render_header()
+    local row_right = ImGui.GetCursorPosX(ctx) + ImGui.GetContentRegionAvail(ctx)
+    local help_label = t("Help")
+    local frame_padding = ImGui.GetStyleVar(ctx, ImGui.StyleVar_FramePadding)
+    local spacing = ImGui.GetStyleVar(ctx, ImGui.StyleVar_ItemSpacing)
+    local help_width = ImGui.CalcTextSize(ctx, help_label) + 2 * frame_padding
+    ImGui.AlignTextToFramePadding(ctx)
+    ImGui.Text(ctx, t("Language") .. ":")
+    ImGui.SameLine(ctx)
+    local remaining = ImGui.GetContentRegionAvail(ctx)
+    local status_width = ImGui.GetFrameHeight(ctx) + ImGui.CalcTextSize(ctx, t("Status window")) + spacing
+    ImGui.SetNextItemWidth(ctx, math.max(60, math.min(160, remaining - status_width - help_width - 3 * spacing)))
+    local locale_combo_disabled = not translated_locale_available("rus")
+    if locale_combo_disabled then ImGui.BeginDisabled(ctx, true) end
+    local locale_combo_open = ImGui.BeginCombo(ctx, "##ui_locale_combo", locale_display_name(active_locale), ImGui.ComboFlags_HeightRegular)
+    if locale_combo_open then
+      local locale_options = { "eng" }
+      if translated_locale_available("rus") then
+        table.insert(locale_options, "rus")
+      end
+      for _, locale_id in ipairs(locale_options) do
+        local is_selected = (active_locale == locale_id)
+        local activated = ImGui.Selectable(ctx, locale_display_name(locale_id), is_selected)
+        if activated then
+          set_active_runtime_locale(locale_id)
+          UI.persist_locale(locale_id)
+        end
+        if is_selected then ImGui.SetItemDefaultFocus(ctx) end
+      end
+      ImGui.EndCombo(ctx)
+    end
+    if locale_combo_disabled then ImGui.EndDisabled(ctx) end
+
+    ImGui.SameLine(ctx)
+    local changed_show_status, new_show_status = ImGui.Checkbox(ctx, t("Status window") .. "##status_window_toggle", S.show_status_window)
+    if changed_show_status then
+      S.show_status_window = new_show_status
+      UI.persist_show_status_window(new_show_status)
+      TelemetryBridge.safe_event("feature_used", {
+        operation = "elevenlabs_status_window_toggle",
+        status = new_show_status and "enabled" or "disabled",
+        show_status_window = new_show_status == true
+      }, {
+        operation = "elevenlabs_status_window_toggle",
+        status = new_show_status and "enabled" or "disabled"
+      })
+    end
+
+    if ImGui.BeginItemTooltip(ctx) then
+      ImGui.Text(ctx, t("Show status in dedicated window"))
+      ImGui.EndTooltip(ctx)
+    end
+    ImGui.SameLine(ctx)
+    ImGui.SetCursorPosX(ctx, math.max(ImGui.GetCursorPosX(ctx), row_right - help_width))
+    local opening_help = S.help_request ~= nil
+    if opening_help then ImGui.BeginDisabled(ctx, true) end
+    if ImGui.Button(ctx, help_label .. "##offline_help", help_width) then UI.open_offline_help() end
+    if opening_help then ImGui.EndDisabled(ctx) end
+    if ImGui.BeginItemTooltip(ctx) then
+      ImGui.Text(ctx, t("Open the offline manual (Russian)."))
+      ImGui.EndTooltip(ctx)
+    end
+    UI.render_offline_help_error()
+end
+
 local function GuiLoop()
   --ImGui.SetNextWindowBgAlpha( ctx, 1 )
   local now_t = TelemetryBridge.now()
   TelemetryBridge.safe_tick(now_t)
   Jobs.tick_all(now_t)
+  UI.poll_offline_help()
+  ReaperX.check_sts_preparation()
 
   Actions.poll_action_flags()
   local conditions_met = false
@@ -12745,44 +13077,7 @@ local function GuiLoop()
     ImGui.PushFont(ctx, FONT, font_size)
     Eleven.draw_voice_resolver_modal(ctx)
 
-    ImGui.Text(ctx, t("Language") .. ":")
-    ImGui.SameLine(ctx)
-    ImGui.SetNextItemWidth(ctx, 160)
-    local locale_combo_disabled = not translated_locale_available("rus")
-    if locale_combo_disabled then ImGui.BeginDisabled(ctx, true) end
-    local locale_combo_open = ImGui.BeginCombo(ctx, "##ui_locale_combo", locale_display_name(active_locale), ImGui.ComboFlags_HeightRegular)
-    if locale_combo_open then
-      local locale_options = { "eng" }
-      if translated_locale_available("rus") then
-        table.insert(locale_options, "rus")
-      end
-      for _, locale_id in ipairs(locale_options) do
-        local is_selected = (active_locale == locale_id)
-        local activated = ImGui.Selectable(ctx, locale_display_name(locale_id), is_selected)
-        if activated then
-          set_active_runtime_locale(locale_id)
-          UI.persist_locale(locale_id)
-        end
-        if is_selected then ImGui.SetItemDefaultFocus(ctx) end
-      end
-      ImGui.EndCombo(ctx)
-    end
-    if locale_combo_disabled then ImGui.EndDisabled(ctx) end
-
-    ImGui.SameLine(ctx)
-    local changed_show_status, new_show_status = ImGui.Checkbox(ctx, t("Show status in dedicated window"), S.show_status_window)
-    if changed_show_status then
-      S.show_status_window = new_show_status
-      UI.persist_show_status_window(new_show_status)
-      TelemetryBridge.safe_event("feature_used", {
-        operation = "elevenlabs_status_window_toggle",
-        status = new_show_status and "enabled" or "disabled",
-        show_status_window = new_show_status == true
-      }, {
-        operation = "elevenlabs_status_window_toggle",
-        status = new_show_status and "enabled" or "disabled"
-      })
-    end
+    UI.render_header()
 
     if not S.show_status_window then
       UI.render_status_panel(ctx, "_inline")
@@ -12999,38 +13294,6 @@ local function GuiLoop()
       ImGui.SeparatorText(ctx, t("Telemetry"))
       UI.render_telemetry_level_setting()
     end --if settings section
-
-    -- Render regions by track (selected items)
-    if ImGui.CollapsingHeader(ctx, t("Render Regions")) then
-      if UI.button_clicked("render_regions_btn", t("Compute render regions (selected items)")) then
-        local telemetry_started_at = TelemetryBridge.now()
-        TelemetryBridge.operation_started("elevenlabs_render_region_scan", {})
-        local ok, err_or_regions = ReaperX.get_render_regions_by_track()
-        if ok then
-          S.render_regions_output = ReaperX.format_render_regions_by_track(err_or_regions)
-          local region_count = 0
-          if type(err_or_regions) == "table" then
-            for _, rows in pairs(err_or_regions.regions_by_track or err_or_regions) do
-              if type(rows) == "table" then
-                region_count = region_count + #rows
-              end
-            end
-          end
-          TelemetryBridge.operation_completed("elevenlabs_render_region_scan", {
-            region_count = region_count
-          }, telemetry_started_at)
-        else
-          S.render_regions_output = string.format(t("Error: %s"), tostring(err_or_regions))
-          TelemetryBridge.operation_failed("elevenlabs_render_region_scan", {
-            safe_message = tostring(err_or_regions or "")
-          }, telemetry_started_at, "render_failed")
-        end
-      end
-
-      local regions_output = S.render_regions_output or ""
-      local rflags = ImGui.InputTextFlags_ReadOnly
-      ImGui.InputTextMultiline(ctx, "##render_regions_output", regions_output, 0, 100, rflags)
-    end --if collapsing header "Render Regions"
 
     --==========================================================================
     --==========================================================================
@@ -14008,7 +14271,7 @@ Adjusts the output volume level.
       end
     end --if collapsing header "Voice Design"
 
-    if ImGui.CollapsingHeader(ctx, t("Text-to-Speech")) then
+    if ImGui.CollapsingHeader(ctx, t("TTS (Text-to-speech)")) then
       local tts_models, tts_default = Eleven.build_tts_model_list()
       local has_tts_models = (#tts_models > 0)
       if has_tts_models then
@@ -14141,9 +14404,9 @@ Adjusts the output volume level.
       end
 
 
-    end --if collapsing header "Text-to-Speech"
+    end --if collapsing header "TTS (Text-to-speech)"
 
-    if ImGui.CollapsingHeader(ctx, t("Speech-to-Speech")) then
+    if ImGui.CollapsingHeader(ctx, t("STS (Speech-to-speech)")) then
       local sts_gap_value = tonumber(CFG.sts_merge_gap_sec) or 3.5
       if sts_gap_value < 0 then sts_gap_value = 0 end
       local sts_max_len_value = normalize_sts_max_region_length_sec(CFG.sts_max_region_length_sec)
@@ -14160,7 +14423,7 @@ Adjusts the output volume level.
       if sts_send_each_item then
         ImGui.BeginDisabled(ctx, true)
       end
-      ImGui.Text(ctx, t("Auto-merge gap (sec):"))
+      ImGui.Text(ctx, t("Maximum gap between items for grouping (sec):"))
       ImGui.SameLine(ctx)
       ImGui.SetNextItemWidth(ctx, 110)
       local gap_changed, gap_value = ImGui.InputDouble(ctx, "##sts_merge_gap_sec", sts_gap_value, 0.1, 1.0, "%.2f")
@@ -14173,7 +14436,7 @@ Adjusts the output volume level.
         UI.persist_sts_merge_gap_sec(gap_value)
       end
 
-      ImGui.Text(ctx, t("Max region length (sec):"))
+      ImGui.Text(ctx, t("Maximum audio length per ElevenLabs request (sec):"))
       ImGui.SameLine(ctx)
       ImGui.SetNextItemWidth(ctx, 110)
       local max_len_changed, max_len_value = ImGui.InputInt(ctx, "##sts_max_region_length_sec", sts_max_len_value, 1, 10)
@@ -14185,6 +14448,7 @@ Adjusts the output volume level.
       end
       UI.ui_info(string.format("%s    %s", fmt_minutes_seconds(sts_max_len_value), t("Max 5 minutes! (ElevenLabs limit)")))
 
+      local sts_prepared = UI.render_sts_preparation()
       local sts_disabled = Jobs.network_busy() or S.ui_lock_network_buttons
       if UI.guard_with_timer_button_clicked("el_sts_fast_run_btn", t("FAST STS FLOW (auto insert)"), nil, sts_disabled) then
         local scheduled = Jobs.schedule_job(t("Fast speech-to-speech"), function()
@@ -14195,7 +14459,7 @@ Adjusts the output volume level.
           S.last_api_error = t("Could not schedule fast speech-to-speech job.")
         end
       end
-      if UI.guard_with_timer_button_clicked("el_sts_run_btn", t("Render regions + Speech-to-Speech (selected items)"), nil, sts_disabled) then
+      if UI.guard_with_timer_button_clicked("el_sts_run_btn", t("Render regions + Speech-to-Speech (selected items)"), nil, sts_disabled or not sts_prepared) then
         local scheduled = Jobs.schedule_job(t("Speech-to-speech"), function()
           Eleven.run_el_speech_to_speech_for_selected_items()
         end)
@@ -14207,7 +14471,7 @@ Adjusts the output volume level.
       if UI.button_clicked("el_sts_add_results_btn", t("Add STS results to project!")) then
         ReaperX.add_all_sts_results_to_project()
       end
-    end --if collapsing header "Speech-to-Speech"
+    end --if collapsing header "STS (Speech-to-speech)"
 
     --====RESET STATE and clear table!
     if UI.button_clicked("reset_state_btn", t('Clear Table and RESET STATE! (Start again...)')) then

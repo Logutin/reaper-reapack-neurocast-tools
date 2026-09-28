@@ -3,20 +3,19 @@ schema_version: 1
 package:
   display_name: Neurocast Tools
   slug: Neurocast_Tools
-  version: 0.1.5
+  version: 0.1.6
   inventory: release-manifest.yml
 
 tracked_lua:
   repository: https://github.com/Logutin/auphonic-mt
-  commit: 04fbd164ae06796bef170a7f9c3c6d8624cdbe74
-  count: 60
-  policy: All Lua inputs match the pinned source commit after its Git clean filter. Three changed runtime files are byte-exact source blobs; eight unchanged files retain historical CRLF bytes. The source TOOLSET_VERSION values remain independent of ReaPack version 0.1.5.
+  commit: a3cb30115e19944133a01bbdd76fc667a5922211
+  count: 61
+  policy: All Lua inputs match the pinned source commit after its Git clean filter. Two updated and one new Lua file are byte-exact source blobs; seven unchanged files retain historical CRLF bytes. The source TOOLSET_VERSION values remain independent of ReaPack version 0.1.6.
   byte_exact_changed_files:
-    - scr/elevenlabs_manager_tool.lua
-    - scr/modules-neurocast/elevenlabs_manager_user_view.lua
-    - scr/modules-neurocast/reaper_manager_elevenlabs_api.lua
+    - scr/elevenlabs_tool.lua
+    - scr/modules-neurocast/elevenlabs_tool_languages.lua
+    - scr/modules-neurocast/offline_manual.lua
   historical_crlf_preserved_distribution_files:
-    - Neurocast_Tools/modules-neurocast/elevenlabs_tool_languages.lua
     - Neurocast_Tools/modules-neurocast/json.lua
     - Neurocast_Tools/modules-neurocast/neurocast_auth.lua
     - Neurocast_Tools/modules-neurocast/prompts.lua
@@ -24,6 +23,16 @@ tracked_lua:
     - Neurocast_Tools/modules-neurocast/docx_dialogue_parser.lua
     - Neurocast_Tools/modules-neurocast/docx_import_tool_languages.lua
     - Neurocast_Tools/modules-neurocast/neurocast_script_aligner_tool_languages.lua
+
+tracked_assets:
+  repository: https://github.com/Logutin/auphonic-mt
+  commit: a3cb30115e19944133a01bbdd76fc667a5922211
+  policy: HTML support asset matches the committed source bytes exactly; no generation or screenshot conversion.
+  files:
+    - source_path: scr/manuals/2026-09-28_elevenlabs_tool_manual_ru_draft.html
+      destination: Neurocast_Tools/manuals/2026-09-28_elevenlabs_tool_manual_ru_draft.html
+      size_bytes: 3302197
+      sha256: e9e5c02b4e970066f3a1882d6bbfac7d10a2171b200e643acaf53fb04949e034
 
 local_windows_inputs:
   repository: https://github.com/Logutin/auphonic-mt
