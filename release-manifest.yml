@@ -4,15 +4,15 @@ schema_version: 1
 package:
   display_name: Neurocast Tools
   slug: Neurocast_Tools
-  version: 0.1.6
+  version: 0.1.7
   architecture: one_metapackage
   installable: true
 
 source:
   repository: https://github.com/Logutin/auphonic-mt
-  commit: a3cb30115e19944133a01bbdd76fc667a5922211
+  commit: b90ec1f60d699e42b1877900f0a2a2ab46a1d99a
   tracked_lua_count: 61
-  tracked_lua_policy: commit_pinned_content_exact_after_source_clean_filter_with_two_updated_and_one_new_lua_blobs_byte_exact
+  tracked_lua_policy: commit_pinned_content_exact_after_source_clean_filter_with_three_changed_lua_blobs_byte_exact
 
 local_windows_release_inputs:
   repository: https://github.com/Logutin/auphonic-mt
@@ -67,8 +67,8 @@ payload:
     destination: Neurocast_Tools/manuals/2026-09-28_elevenlabs_tool_manual_ru_draft.html
     platforms: [win64, darwin64, darwin-arm64]
     role: support_file
-    size_bytes: 3302197
-    sha256: e9e5c02b4e970066f3a1882d6bbfac7d10a2171b200e643acaf53fb04949e034
+    size_bytes: 3302343
+    sha256: e2279e6732ae750d8a5a9c05f3e38e3f700a11382e3e22e296ad88e86aa94316
   - source: auphonic-mt:scr/automix_tool.lua
     destination: Neurocast_Tools/automix_tool.lua
     platforms: [win64, darwin64, darwin-arm64]

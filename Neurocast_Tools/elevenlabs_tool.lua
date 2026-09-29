@@ -1,5 +1,5 @@
 --========================================================
--- Elevenlabs Studio Neurocast tool script v2.1.4
+-- Elevenlabs Studio Neurocast tool script v2.1.5
 --========================================================
 
 -- Entrypoint-owned orchestration between the shared Voice Library API/state/
@@ -1208,7 +1208,7 @@ if ... == "__voice_library_add_controller_headless" then
 end
 
 local r = assert(reaper, "Reaper API not found. This script must be run within Reaper.")
-local SCRIPT_VERSION = "v2.1.4"
+local SCRIPT_VERSION = "v2.1.5"
 local TOOLSET_VERSION = SCRIPT_VERSION
 
 local active_locale = "eng"
@@ -1531,9 +1531,7 @@ local ImGui = ImGuiOrErr
 -- we will also revert package.path to old_package_path on exit:
 local send_telemetry_closed_event = nil
 local shutdown_voice_library_controller = nil
-local shutdown_offline_manual = nil
 r.atexit(function()
-  if shutdown_offline_manual then shutdown_offline_manual() end
   if type(shutdown_voice_library_controller) == "function" then
     shutdown_voice_library_controller()
   end
@@ -12933,49 +12931,30 @@ end
 --===============================================================================
 --===============================================================================
 -- Offline help has independent error state; network callbacks cannot clear it.
-function UI.offline_help_failed(reason)
-  S.help_error = reason
-end
-
-function UI.open_offline_help()
-  if S.help_request then return end
-  local ok, result = OfflineManual.open(r, OfflineManual.path(script_path))
-  if ok == nil then
-    S.help_request = result
-  elseif ok then
-    S.help_error = nil
-  else
-    UI.offline_help_failed(result)
+function UI.init_offline_help()
+  if S.help_path then return end
+  S.help_path = OfflineManual.path(script_path)
+  S.help_available = r.file_exists(S.help_path)
+  if not S.help_available then
+    -- Warning only; !SHOW: keeps the normal msg console output from opening a window.
+    Util.msg("!SHOW:Offline manual not found; Help hidden until script restart: " .. S.help_path, 2)
   end
 end
 
-function UI.poll_offline_help()
-  if not S.help_request then return end
-  local ok, reason = OfflineManual.poll(r, S.help_request)
-  if ok == nil then return end
-  S.help_request = nil
-  if ok then S.help_error = nil else UI.offline_help_failed(reason) end
+function UI.open_offline_help()
+  if not S.help_available then return end
+  local ok, reason = OfflineManual.open(r, S.help_path)
+  if ok then S.help_error = nil else S.help_error = reason end
 end
 
 function UI.render_offline_help_error()
   if not S.help_error then return end
-  if S.help_error == "missing" then
-    ImGui.TextWrapped(ctx, t("Offline manual not found. Reinstall the complete Neurocast Tools package, including its manuals folder."))
-  elseif S.help_error == "timeout" then
-    ImGui.TextWrapped(ctx, t("Could not confirm that Help opened. Check your browser before trying again, or open the file below manually."))
-  elseif S.help_error == "temporary" then
-    ImGui.TextWrapped(ctx, t("Could not prepare the Help launcher. Check access to the system temporary folder, or open the file below manually."))
-  elseif S.help_error == "unsupported" then
+  if S.help_error == "unsupported" then
     ImGui.TextWrapped(ctx, t("Automatic Help opening is unavailable on this platform. Open the file below manually."))
   else
     ImGui.TextWrapped(ctx, t("Could not open Help. Check the default application for HTML files, or open the file below manually."))
   end
-  ImGui.TextWrapped(ctx, OfflineManual.path(script_path))
-end
-
-shutdown_offline_manual = function()
-  OfflineManual.cleanup(S.help_request)
-  S.help_request = nil
+  ImGui.TextWrapped(ctx, S.help_path)
 end
 
 function UI.render_header()
@@ -12983,7 +12962,7 @@ function UI.render_header()
     local help_label = t("Help")
     local frame_padding = ImGui.GetStyleVar(ctx, ImGui.StyleVar_FramePadding)
     local spacing = ImGui.GetStyleVar(ctx, ImGui.StyleVar_ItemSpacing)
-    local help_width = ImGui.CalcTextSize(ctx, help_label) + 2 * frame_padding
+    local help_width = S.help_available and (ImGui.CalcTextSize(ctx, help_label) + 2 * frame_padding) or 0
     ImGui.AlignTextToFramePadding(ctx)
     ImGui.Text(ctx, t("Language") .. ":")
     ImGui.SameLine(ctx)
@@ -13030,15 +13009,14 @@ function UI.render_header()
       ImGui.Text(ctx, t("Show status in dedicated window"))
       ImGui.EndTooltip(ctx)
     end
-    ImGui.SameLine(ctx)
-    ImGui.SetCursorPosX(ctx, math.max(ImGui.GetCursorPosX(ctx), row_right - help_width))
-    local opening_help = S.help_request ~= nil
-    if opening_help then ImGui.BeginDisabled(ctx, true) end
-    if ImGui.Button(ctx, help_label .. "##offline_help", help_width) then UI.open_offline_help() end
-    if opening_help then ImGui.EndDisabled(ctx) end
-    if ImGui.BeginItemTooltip(ctx) then
-      ImGui.Text(ctx, t("Open the offline manual (Russian)."))
-      ImGui.EndTooltip(ctx)
+    if S.help_available then
+      ImGui.SameLine(ctx)
+      ImGui.SetCursorPosX(ctx, math.max(ImGui.GetCursorPosX(ctx), row_right - help_width))
+      if ImGui.Button(ctx, help_label .. "##offline_help", help_width) then UI.open_offline_help() end
+      if ImGui.BeginItemTooltip(ctx) then
+        ImGui.Text(ctx, t("Open the offline manual (Russian)."))
+        ImGui.EndTooltip(ctx)
+      end
     end
     UI.render_offline_help_error()
 end
@@ -13048,7 +13026,6 @@ local function GuiLoop()
   local now_t = TelemetryBridge.now()
   TelemetryBridge.safe_tick(now_t)
   Jobs.tick_all(now_t)
-  UI.poll_offline_help()
   ReaperX.check_sts_preparation()
 
   Actions.poll_action_flags()
@@ -14603,6 +14580,7 @@ UI.load_show_status_window_on_startup()
 UI.load_backend_base_url_override_on_startup()
 UI.load_tts_model_preference_on_startup()
 UI.load_sts_settings_on_startup()
+UI.init_offline_help()
 TelemetryBridge.script_started()
 Auth.try_auto_login_on_startup()
 Actions.install_actions_on_startup()

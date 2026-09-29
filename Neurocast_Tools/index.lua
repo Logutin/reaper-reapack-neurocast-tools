@@ -1,15 +1,15 @@
 -- @description Neurocast Tools
--- @version 0.1.6
+-- @version 0.1.7
 -- @author Slava Logutin
 -- @metapackage
--- @changelog Update ElevenLabs to v2.1.4: STS preparation and clearer limits, localized one-row Help, and bundled Russian offline manual.
+-- @changelog Fix ElevenLabs Help in v2.1.5: native startup-only manual check, hide missing Help with a warning, direct system opening without SWS or temporary files. Includes STS preparation and the Russian offline manual since 0.1.5.
 -- @about
 --   Neurocast Tools for Windows x64, macOS x86_64, and macOS ARM64, including the local DOCX importer.
 --   ReaImGui is an external prerequisite and is not bundled. Package minimum: REAPER 7.72+.
---   Limited-internal delivery for selected team members. The 0.1.6 Windows release gate covers the update and owner-run ElevenLabs startup and Help smoke.
+--   Limited-internal delivery for selected team members. The 0.1.7 Windows release gate covers the update and owner-run ElevenLabs startup and Help smoke.
 --   AutoMix v0.1.2 and MVSEP v0.2.1 have owner-accepted source happy paths. AutoMix production-host, difficult-network, and macOS qualification remain open.
 --   MVSEP telemetry delivery errors and Script Aligner ambiguous-create retry duplication remain documented limitations.
---   Script TOOLSET_VERSION values identify their source line; ReaPack 0.1.6 identifies this package.
+--   Script TOOLSET_VERSION values identify their source line; ReaPack 0.1.7 identifies this package.
 -- @link https://github.com/Logutin/reaper-reapack-neurocast-tools
 -- @provides
 --   [win64] modules-neurocast/offline_manual.lua

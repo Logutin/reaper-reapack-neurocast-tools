@@ -3,14 +3,14 @@ schema_version: 1
 package:
   display_name: Neurocast Tools
   slug: Neurocast_Tools
-  version: 0.1.6
+  version: 0.1.7
   inventory: release-manifest.yml
 
 tracked_lua:
   repository: https://github.com/Logutin/auphonic-mt
-  commit: a3cb30115e19944133a01bbdd76fc667a5922211
+  commit: b90ec1f60d699e42b1877900f0a2a2ab46a1d99a
   count: 61
-  policy: All Lua inputs match the pinned source commit after its Git clean filter. Two updated and one new Lua file are byte-exact source blobs; seven unchanged files retain historical CRLF bytes. The source TOOLSET_VERSION values remain independent of ReaPack version 0.1.6.
+  policy: All Lua inputs match the pinned source commit after its Git clean filter. Three updated Lua files are byte-exact source blobs; seven unchanged files retain historical CRLF bytes. The source TOOLSET_VERSION values remain independent of ReaPack version 0.1.7.
   byte_exact_changed_files:
     - scr/elevenlabs_tool.lua
     - scr/modules-neurocast/elevenlabs_tool_languages.lua
@@ -26,13 +26,13 @@ tracked_lua:
 
 tracked_assets:
   repository: https://github.com/Logutin/auphonic-mt
-  commit: a3cb30115e19944133a01bbdd76fc667a5922211
+  commit: b90ec1f60d699e42b1877900f0a2a2ab46a1d99a
   policy: HTML support asset matches the committed source bytes exactly; no generation or screenshot conversion.
   files:
     - source_path: scr/manuals/2026-09-28_elevenlabs_tool_manual_ru_draft.html
       destination: Neurocast_Tools/manuals/2026-09-28_elevenlabs_tool_manual_ru_draft.html
-      size_bytes: 3302197
-      sha256: e9e5c02b4e970066f3a1882d6bbfac7d10a2171b200e643acaf53fb04949e034
+      size_bytes: 3302343
+      sha256: e2279e6732ae750d8a5a9c05f3e38e3f700a11382e3e22e296ad88e86aa94316
 
 local_windows_inputs:
   repository: https://github.com/Logutin/auphonic-mt

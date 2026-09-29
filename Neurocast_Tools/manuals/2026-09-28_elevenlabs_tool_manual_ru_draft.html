@@ -6,7 +6,7 @@
   <meta name="color-scheme" content="light">
   <meta name="description" content="Offline Russian operator manual for ElevenLabs Tool: Settings, project preparation, Voice Library, Account Voices, IVC, Voice Design, TTS, STS, jobs, results, errors and REAPER commands.">
   <meta name="manual-script" content="elevenlabs_tool.lua">
-  <meta name="manual-script-version" content="v2.1.4">
+  <meta name="manual-script-version" content="v2.1.5">
   <meta name="manual-source-snapshot" content="2026-09-28">
   <meta name="manual-status" content="draft-awaiting-owner-review">
   <title>ElevenLabs Tool — Рабочее руководство</title>
@@ -124,10 +124,10 @@
   <main class="main" id="manual-start">
     <div class="topline"><span>Neurocast Tools / ElevenLabs Tool</span><button class="print" id="print-button" type="button" hidden>Печать</button></div>
     <h1>ElevenLabs Tool · Рабочее руководство</h1>
-    <p class="draft-note">Структура согласована · все главы написаны, согласование продолжается · скрипт v2.1.4 · снимок исходников: 28.09.2026. После обновления скрипта сведения могут устареть.</p>
+    <p class="draft-note">Структура согласована · все главы написаны, согласование продолжается · скрипт v2.1.5 · обновление помощи: 29.09.2026; снимки глав: 28.09.2026. После обновления скрипта сведения могут устареть.</p>
     <section id="manual-overview" aria-labelledby="manual-overview-title">
       <h2 id="manual-overview-title">Как пользоваться руководством</h2>
-      <p>Кнопка <code class="ui">Помощь</code> (<code class="ui">Help</code> при английском интерфейсе) справа в верхней строке главного окна открывает это руководство в приложении для HTML-файлов. Руководство на русском языке, хранится вместе со скриптом и доступно без интернета и входа в аккаунт. Его также можно открыть вручную из папки <code>manuals</code> рядом со скриптом.</p>
+      <p>Кнопка <code class="ui">Помощь</code> (<code class="ui">Help</code> при английском интерфейсе) справа в верхней строке главного окна открывает это руководство в приложении для HTML-файлов. Руководство на русском языке, хранится вместе со скриптом и доступно без интернета и входа в аккаунт. Его также можно открыть вручную из папки <code>manuals</code> рядом со скриптом. Кнопка появляется, только если руководство найдено при запуске скрипта; после восстановления файла перезапустите скрипт.</p>
       <p>Сначала познакомьтесь с общими правилами работы, затем переходите к нужной задаче. Таблица заданий, статусы и действия при ошибке используются во всех режимах.</p>
       <nav class="toc" aria-label="Порядок изучения руководства">
         <strong>От основ к действиям</strong>
@@ -1475,12 +1475,12 @@
   "title": "ElevenLabs Tool - foundations, existing voices, TTS, STS, voice acquisition/creation and REAPER commands",
   "source_snapshot_date": "2026-09-28",
   "authored_date": "2026-09-27",
-  "script_version": "v2.1.4",
-  "source_commit": "b2a267305a8fc95c9adab45f964ccf3ecad7253c",
+  "script_version": "v2.1.5",
+  "source_commit": "f41f2752c31dfedcfe24a5573326b3f0cac0c23d",
   "help_revision": {
-    "date": "2026-09-28",
-    "scope": "Working-tree v2.1.4 adds installation-relative offline Help and shortens the status checkbox label. Only the overview and status-label explanation changed; all 31 screenshot bytes and existing chapter review states are preserved.",
-    "verification": "Headless helper/header checks passed. The owner reported the Windows source live checklist passed; acceptance recorded 2026-09-29. Real macOS and installed-package qualification remain pending; the report does not identify the SWS/no-SWS route. Existing chapter source snapshots and prior live evidence remain historical."
+    "date": "2026-09-29",
+    "scope": "Working-tree v2.1.5 replaces the rejected 0.1.6 candidate opener. Startup-only native file check; missing manual hides Help and logs a warning. Direct system opening without SWS or temporary files. All 31 screenshot payloads and chapter review states retained.",
+    "verification": "Focused headless checks; corrected installed-package and real macOS opening remain pending. Earlier owner source acceptance is historical, not acceptance of the failed package."
   },
   "status": "draft-awaiting-owner-review",
   "audience": "Internal team operators and freelancers",
@@ -1777,7 +1777,7 @@
   "revised_date": "2026-09-28",
   "source_base_commit": "80d41e396991a440414f5fa4a6c4489ceefb3074",
   "source_state": "Active v2.1.3 source SHA-256 rechecked unchanged on clean main matching origin/main at e35e68ca67541c5d0479057d10e54c2b121308e4 before Chapter 02 authoring. Earlier chapter source snapshots remain recorded separately. Before Chapter 04, the checkout was clean main matching live origin/main at 051f48170df732ae5c66398720a88455fc6728af; the active source hash remained unchanged. Before Chapter 05, clean main matched live origin/main at a7b106f7249efb5a4992a07b2deb11075d46193c; active source hash unchanged. Before Chapter 06, clean main matched live origin/main at 36003caff8f53b6b960e53412e6e9b4c494f1ca0; active source SHA-256 unchanged. Before Chapter 09, clean main matched live origin/main at 663450078c328fa10f9d82d54b9b122637133cc1; active v2.1.3 source SHA-256 unchanged. Before Chapter 10, clean main matched live origin/main at 8cbe434d4624ed51b69bfc4070b7aca68a7cfcc3; active v2.1.3 source SHA-256 unchanged.",
-  "source_sha256": "43ca5cda371b9aa7b7005828fd70767d3004c17df376140e4d5e0ecdbaddb663",
+  "source_sha256": "14a5118d1e2ddd41e479173d6743700683afaa23249e9db0dacfb251063e48d6",
   "pending_screenshots": [],
   "tts_screenshots": [
     {
