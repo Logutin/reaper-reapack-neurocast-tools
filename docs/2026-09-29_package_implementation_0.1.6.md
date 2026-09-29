@@ -6,8 +6,15 @@
 
 ## Status and scope
 
-Candidate prepared for limited-internal use; owner packaged acceptance and
-public-feed promotion are pending. The owner requested minimal tests and the
+**Failed candidate, superseded by 0.1.7.** The owner reported the installed
+Help temporary-launcher preparation error on 2026-09-29. All 70 installed
+files and 14 actions matched the frozen candidate, so the failure was not a
+missing payload. The temporary receipt code discarded the underlying error;
+the exact host path/error is not established. Do not promote this candidate.
+Its frozen payload and separate index remain unchanged. Earlier preparation
+steps below are historical. See the [0.1.7 correction](2026-09-29_package_implementation_0.1.7.md).
+
+This candidate was prepared for limited-internal use. The owner requested minimal tests and the
 usual helper, and authorized only
 `C:\extra_Reapers\Reaper_Empty_01\reaper.exe`. Public `index.xml` remains at
 `0.1.5` until the owner accepts the installed candidate and mechanical readback
@@ -73,7 +80,7 @@ The official REAPER API reference and changelog were checked on 2026-09-29
 (generated/current version 7.81); the helper retains the previously qualified
 ReaPack setup calls and executable/resource path guards.
 
-## Owner action now required
+## Historical owner check (failed at Help opening)
 
 1. In only `C:\extra_Reapers\Reaper_Empty_01\reaper.exe`, load/run
    `qualification/Neurocast_Tools_0_1_6_candidate_and_smoke.lua` from this

@@ -7,19 +7,19 @@ Install/update through the repository
 [`index.xml`](https://raw.githubusercontent.com/Logutin/reaper-reapack-neurocast-tools/main/index.xml).
 ReaImGui remains an external prerequisite; package minimum remains REAPER 7.72+.
 
-## Candidate: 0.1.6 (awaiting owner packaged check)
+## Candidate: 0.1.7 (awaiting owner packaged check)
 
-The separate candidate updates ElevenLabs to `v2.1.4` with STS preparation,
-clearer limits and localized Help on the existing header row. The Russian
-offline manual is included under `Neurocast_Tools/manuals/`; no SWS dependency
-is added. Source Windows acceptance is recorded; real Mac opening remains
-untested. Other tools and binaries retain their `0.1.5` package bytes.
+The corrected candidate contains ElevenLabs v2.1.5. It checks the Russian
+manual once at startup, hides Help with a warning when absent, and opens it
+through the direct system opener. SWS, temporary files and polling are removed.
+The 0.1.6 candidate failed its packaged Help check and will not be promoted;
+its frozen payload and separate feed are preserved as historical evidence.
 
-Candidate payload/metadata now describe `0.1.6`; the public root `index.xml`
-still serves `0.1.5`. Use only the authorized disposable
-`C:\extra_Reapers\Reaper_Empty_01\reaper.exe` for the owner-run
-[`0.1.6 candidate helper`](qualification/Neurocast_Tools_0_1_6_candidate_and_smoke.lua).
-See the [candidate record](docs/2026-09-29_package_implementation_0.1.6.md).
+The public root `index.xml` still serves 0.1.5. Use only
+`C:\extra_Reapers\Reaper_Empty_01\reaper.exe` for the
+[0.1.7 candidate helper](qualification/Neurocast_Tools_0_1_7_candidate_and_smoke.lua).
+See the [correction record](docs/2026-09-29_package_implementation_0.1.7.md).
+Manifest, source lock and working payload describe the corrected candidate.
 
 ## Current release: 0.1.5
 
