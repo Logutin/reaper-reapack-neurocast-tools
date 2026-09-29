@@ -1,63 +1,46 @@
 # Neurocast Tools
 
-The current published package is **`Neurocast_Tools 0.1.5`**, a
+The current published package is **`Neurocast_Tools 0.1.7`**, a
 limited-internal release for selected team members.
 
 Install/update through the repository
 [`index.xml`](https://raw.githubusercontent.com/Logutin/reaper-reapack-neurocast-tools/main/index.xml).
 ReaImGui remains an external prerequisite; package minimum remains REAPER 7.72+.
 
-## Candidate: 0.1.7 (awaiting owner packaged check)
+## Current release: 0.1.7
 
-The corrected candidate contains ElevenLabs v2.1.5. It checks the Russian
-manual once at startup, hides Help with a warning when absent, and opens it
-through the direct system opener. SWS, temporary files and polling are removed.
-The 0.1.6 candidate failed its packaged Help check and will not be promoted;
-its frozen payload and separate feed are preserved as historical evidence.
+ElevenLabs v2.1.5 includes updated STS preparation/localization and localized
+Help on the existing language/status row. The Russian offline manual ships in
+`manuals/` alongside the script. Startup checks availability once; missing HTML
+hides Help with a warning. Help uses the direct system opener without SWS,
+temporary files or polling. Other tools and binaries retain their prior bytes.
 
-The public root `index.xml` still serves 0.1.5. Use only
-`C:\extra_Reapers\Reaper_Empty_01\reaper.exe` for the
-[0.1.7 candidate helper](qualification/Neurocast_Tools_0_1_7_candidate_and_smoke.lua).
-See the [correction record](docs/2026-09-29_package_implementation_0.1.7.md).
-Manifest, source lock and working payload describe the corrected candidate.
-
-## Current release: 0.1.5
-
-- ElevenLabs Manager `v0.2.2` adds explicit Manager connections, balance/access
-  editing, exact large fractional balances, and persistent actionable errors.
-- Only the Manager entrypoint and two Manager helpers change. The other 57 Lua
-  files, native extensions, curl, matching 7-Zip 26.03 pair, and notices retain
-  their `0.1.4` package bytes.
-- Six Tools, four Tool Actions, and four Utilities provide 14 Main actions;
-  Windows ownership remains 68 files.
-
-On 2026-09-15 the owner reported the `0.1.4 -> 0.1.5` update and installed
-Manager `v0.2.2` startup/normal close passed in
+On 2026-09-29 the owner reported the installed candidate check passed and
+confirmed that Help opened the installed Russian manual in the authorized
 `C:\extra_Reapers\Reaper_Empty_01\reaper.exe`. Independent readback verified
-all 68 installed files against the frozen candidate and exactly 14 Main
-actions. The root feed publishes that unchanged candidate. The disposable's
-public-feed URL restoration and final synchronization/readback passed; its
-cached index matches the public feed and all installed files/actions remain
-correct. Manual installation and global settings are preserved. Delivery is complete.
+receipt 0.1.7, all 70 owned Windows files against the frozen payload, and
+14 exactly-once Main actions. The root feed publishes the exact accepted
+candidate. Restoring the disposable to the public feed and final cache readback
+remain pending; no further workflow test is required for this release gate.
 
 Runtime source is pinned to `auphonic-mt` commit
-`04fbd164ae06796bef170a7f9c3c6d8624cdbe74`; all 192 platform source records
-pin distribution payload `da01965751fa3d8d925bdd8babe37d1068553421`.
-All five historical version records/URLs remain unchanged. Script/toolset
-labels retain their independent source identities.
+`b90ec1f60d699e42b1877900f0a2a2ab46a1d99a`; all 198 new platform source records
+pin distribution payload `3adfe1daf0355b9ff158a13cf75f6e3ec72ad447`.
+The six historical public versions remain unchanged. Failed candidate 0.1.6
+is preserved only in its separate historical feed and is not published.
+Script/toolset labels retain their independent source identities.
 
-This is owner-reported update/startup acceptance plus agent-run mechanical
-verification. The earlier local Manager balance/validation acceptance remains
-separate source evidence. Production Manager compatibility, broader authenticated
-workflows, difficult networks, macOS, other machines, and full lifecycle
-qualification were not repeated. Existing MVSEP telemetry and Script Aligner
-ambiguous-create retry limitations remain documented. No `0.1.5` team-testing
-outcome is implied.
+This is owner-reported Windows package/Help acceptance plus agent-run mechanical
+verification. Real macOS opening, broader authenticated workflows, difficult
+networks, other machines and full lifecycle qualification remain separate.
+Existing MVSEP telemetry and Script Aligner ambiguous-create retry limitations
+remain documented. No new team-testing outcome is implied.
 
-See the [0.1.5 release record](docs/2026-09-15_package_implementation_0.1.5.md),
+See the [0.1.7 release record](docs/2026-09-29_package_implementation_0.1.7.md),
 [payload manifest](release-manifest.yml), and [source lock](release-source-lock.yml).
-The [0.1.4 record](docs/2026-09-11_package_implementation_0.1.4.md) preserves
-its September 11 owner-reported workflow acceptance and team-testing status.
+The [0.1.5 record](docs/2026-09-15_package_implementation_0.1.5.md) and
+[0.1.4 record](docs/2026-09-11_package_implementation_0.1.4.md) preserve prior
+release and workflow acceptance.
 
 ## Ownership and package shape
 

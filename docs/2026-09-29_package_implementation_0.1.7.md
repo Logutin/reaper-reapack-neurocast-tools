@@ -1,15 +1,18 @@
-# Neurocast Tools 0.1.7 candidate record
+# Neurocast Tools 0.1.7 release record
 
-> **Source snapshot warning:** Preparation record as of 2026-09-29. Recheck
-> current feeds, pins and owner acceptance before publication.
+> **Source snapshot warning:** Release record as of 2026-09-29. Recheck
+> current feeds, pins and restoration state before relying on this snapshot.
 
 ## Status and scope
 
-Corrected candidate awaiting the owner's packaged check in the authorized
-`C:\extra_Reapers\Reaper_Empty_01\reaper.exe`. The public root feed remains
-0.1.5. The failed 0.1.6 candidate and frozen payload are preserved; they will
-not be promoted or rewritten. The owner approved this correction and requested
-minimal testing, with a stop at the next owner action.
+Published limited-internal release after owner acceptance on 2026-09-29.
+The owner reported the packaged check passed in the authorized disposable
+`C:\extra_Reapers\Reaper_Empty_01\reaper.exe` and specifically confirmed Help
+opened `file:///C:/extra_Reapers/Reaper_Empty_01/Scripts/Neurocast%20Tools/Neurocast_Tools/manuals/2026-09-28_elevenlabs_tool_manual_ru_draft.html`.
+Independent readback then verified receipt 0.1.7, all 70 byte-exact owned files
+and 14 exactly-once Main actions. The public root feed promotes the unchanged
+candidate. Disposable public-feed restoration/final cache readback is pending.
+The failed 0.1.6 candidate and frozen payload remain historical and unchanged.
 
 Source pin: `b90ec1f60d699e42b1877900f0a2a2ab46a1d99a` in auphonic-mt.
 Previous candidate baseline: `16c82af9edad735124501cd4de792203477c545b`.
@@ -47,29 +50,29 @@ Source checks passed: 10 focused Help groups, fixed-action regression, Lua
 syntax, scoped localization validation/build and unchanged manual image/ID/
 chapter metadata checks. Localization has 837 active strings, 605 Russian
 translations and 232 retained English fallbacks. Help tests execute the real
-startup/controller/header with OS/UI doubles; live opening is still required.
+startup/controller/header with OS/UI doubles; owner-reported Windows opening now passes.
 
 The package verifier passes source fidelity, 61 Lua syntax/dependency checks,
 exact HTML hash/path, excluded-file inventory, unchanged-file and binary/notice
 checks, matching package-local 7-Zip pair, metadata counts and Main roles.
 Strict ReaPack metadata checking and helper syntax checks pass. Candidate-index
 validation passed: all six public historical versions are unchanged and all
-198 new records pin the frozen payload. Both the public feed and failed 0.1.6
-candidate feed remain byte-identical to their previous committed versions. Failed 0.1.6 remains in its separate historical
+198 new records pin the frozen payload. At candidate preparation, the public feed and failed 0.1.6
+candidate feed retained their previous bytes. Publication changes only the public
+feed to the accepted 0.1.7 candidate. Failed 0.1.6 remains in its separate historical
 candidate feed, not in the public version history.
 
-## Owner action
+## Remaining owner action
 
-1. Run `qualification/Neurocast_Tools_0_1_7_candidate_and_smoke.lua` only in
-   `C:\extra_Reapers\Reaper_Empty_01\reaper.exe`; both executable and resource
-   paths are guarded.
-2. Apply only Neurocast Tools 0.1.7 and rerun the helper. Its file/version
-   markers are preliminary; independent byte/receipt readback follows.
-3. Open installed ElevenLabs v2.1.5. Click Help, confirm the installed Russian
-   manual opens, confirm the header stays on one row, and close normally.
-   No login or processing request is needed.
-4. Report pass/failure. After acceptance, verify installed bytes/actions,
-   promote the unchanged candidate and restore the disposable public feed.
+Run `qualification/Neurocast_Tools_restore_public_feed.lua` only in the
+authorized disposable REAPER, confirm restoration, wait for synchronization
+and report done. The helper guards both executable and resource paths and
+preserves manual installation. Final readback will check the public URL,
+cached index bytes, installation settings, receipt, files and actions.
+
+The candidate update/startup/Help check is complete. No login, processing or
+repeat workflow test is requested. The agent did not directly edit installed
+payload, REAPER settings or projects.
 
 Real Mac opening, broader workflows and bad-network qualification remain
 separate. No new backend contract, native build, telemetry identity, tag,
