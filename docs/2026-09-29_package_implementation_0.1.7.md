@@ -11,7 +11,11 @@ The owner reported the packaged check passed in the authorized disposable
 opened `file:///C:/extra_Reapers/Reaper_Empty_01/Scripts/Neurocast%20Tools/Neurocast_Tools/manuals/2026-09-28_elevenlabs_tool_manual_ru_draft.html`.
 Independent readback then verified receipt 0.1.7, all 70 byte-exact owned files
 and 14 exactly-once Main actions. The public root feed promotes the unchanged
-candidate. Disposable public-feed restoration/final cache readback is pending.
+candidate. Disposable public-feed restoration/final cache readback was pending
+at this snapshot. This release is now historical: the
+[0.1.8 release](2026-10-07_package_implementation_0.1.8.md) supersedes it and
+records completed public-feed/cache/settings readback on 2026-10-07. The old
+restoration instructions below are not a current operator task.
 The failed 0.1.6 candidate and frozen payload remain historical and unchanged.
 
 Source pin: `b90ec1f60d699e42b1877900f0a2a2ab46a1d99a` in auphonic-mt.
@@ -62,7 +66,7 @@ candidate feed retained their previous bytes. Publication changes only the publi
 feed to the accepted 0.1.7 candidate. Failed 0.1.6 remains in its separate historical
 candidate feed, not in the public version history.
 
-## Remaining owner action
+## Owner action outstanding at the original snapshot (superseded)
 
 Run `qualification/Neurocast_Tools_restore_public_feed.lua` only in the
 authorized disposable REAPER, confirm restoration, wait for synchronization

@@ -9,7 +9,9 @@
 `Neurocast Tools 0.1.3` is published for limited-internal team testing through
 the public root `index.xml`. The owner confirmed the minimal Windows
 `0.1.2 -> 0.1.3` update/UI gate. The disposable installation's switch back to
-the published feed and final synchronization/readback remain pending.
+the published feed and final synchronization/readback were pending at this
+snapshot. These instructions are historical, not a current operator task;
+see the completed [0.1.8 delivery](2026-10-07_package_implementation_0.1.8.md).
 
 Runtime source is frozen at `auphonic-mt` commit
 `7c7def2d31526fa6cd0f9fd387c246ed44a34e21`. The only runtime changes from
@@ -73,7 +75,7 @@ byte-for-byte against the candidate, and exactly-once registration of all
 earlier that day. These are owner-run GUI results plus agent-run read-only checks,
 not agent-operated GUI tests.
 
-## Remaining delivery cleanup and evidence boundary
+## Delivery cleanup outstanding at the original snapshot and evidence boundary
 
 Run the guarded `qualification/Neurocast_Tools_restore_public_feed.lua` in the
 same disposable REAPER and allow synchronization. Then verify the real-feed
