@@ -49,3 +49,24 @@ Current source validation and screenshot integrity are recorded in
 [the source audit](https://github.com/Logutin/auphonic-mt/blob/adbcf6fd7bf51460f990279f532f396edf2b5874/docs/testing_and_verification.md#docx-help-and-manual-documentation-audit-2026-10-06).
 Broader import/Undo, responsive/print layout, real Mac opening, difficult-network,
 other-machine and lifecycle qualification remain separate.
+
+## Candidate handoff
+
+Frozen payload: `1287e97cb20f5278b381ad1894c8bbfa93a7bded`.
+Candidate/helper publication: `0b3ea66` on main. Candidate feed:
+`qualification/Neurocast_Tools_0.1.8_candidate.xml`.
+
+The generated candidate has 201 immutable source URLs and preserves all seven
+public historical versions exactly. Strict index checks pass. Candidate feed,
+helper, both HTML files, DOCX entrypoint and opener downloaded from GitHub match
+their committed bytes. The public root feed remains byte-identical to 0.1.7.
+
+The owner selected an owner-run install/Help check on 2026-10-07. Run
+`qualification/Neurocast_Tools_0_1_8_candidate_and_smoke.lua` only in the named
+disposable, apply 0.1.8 through ReaPack, then rerun the helper. Confirm DOCX
+v0.1.1 opens its illustrated installed manual and ElevenLabs v2.1.6 opens its
+own renamed manual; both tools close normally. Report the actual observations.
+Installed byte/receipt/action verification and public promotion are pending
+that report. No live startup/Help pass is claimed by preparation alone.
+
+Candidate feed SHA-256: `301ea1773c8f3c322b39598d63dbccbe3b055da10e1e9b9736b46a684bf76b65` (committed LF bytes).
