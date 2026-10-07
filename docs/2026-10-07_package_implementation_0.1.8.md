@@ -85,5 +85,24 @@ Independent read-only verification passed: receipt 0.1.8, 71 owned Windows
 files byte-identical to the frozen candidate, and 14 exactly-once Main actions.
 The public root index now contains the exact committed candidate bytes, with
 201 immutable 0.1.8 source records and all seven historical versions preserved.
-No runtime or HTML payload changed after acceptance. Public URL download and
-disposable public-feed restoration/readback follow publication.
+No runtime or HTML payload changed after acceptance. Public URL download
+passed byte-for-byte against the committed root feed and accepted candidate.
+Publication commit: `2d788b6`.
+
+## Deferred disposable follow-up
+
+The owner stopped Computer Use during the repository-manager step, then
+explicitly requested no Computer Use while in a meeting and said they would
+switch and check later. No repository setting was applied by the agent.
+The supplied follow-up captures show the temporary 0.1.8 candidate URL and
+installed package 0.1.8. The owner will change that repository URL to the
+published root feed and synchronize; final public-feed/cache/settings readback
+remains deferred. No new processing or Help test is required.
+
+Public feed:
+https://raw.githubusercontent.com/Logutin/reaper-reapack-neurocast-tools/main/index.xml
+
+Public download, committed root index and accepted candidate all match
+SHA-256 `301ea1773c8f3c322b39598d63dbccbe3b055da10e1e9b9736b46a684bf76b65`.
+Installed receipt/files/actions already passed exact readback. Publication is
+complete; this deferred installation setting does not change package contents.
