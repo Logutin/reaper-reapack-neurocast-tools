@@ -117,7 +117,7 @@ validated_toolchain:
   pandoc: 3.10.2
   git: 2.55.0.windows.3
 
-status: prepared_pending_packaged_help_check
+status: published_pending_disposable_public_feed_readback
 
 seven_zip_upstream:
   version: "26.03"

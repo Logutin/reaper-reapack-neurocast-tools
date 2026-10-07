@@ -1,46 +1,45 @@
 # Neurocast Tools
 
-The current published package is **`Neurocast_Tools 0.1.7`**, a
+The current published package is **`Neurocast_Tools 0.1.8`**, a
 limited-internal release for selected team members.
 
 Install/update through the repository
 [`index.xml`](https://raw.githubusercontent.com/Logutin/reaper-reapack-neurocast-tools/main/index.xml).
 ReaImGui remains an external prerequisite; package minimum remains REAPER 7.72+.
 
-## Current release: 0.1.7
+## Current release: 0.1.8
 
-ElevenLabs v2.1.5 includes updated STS preparation/localization and localized
-Help on the existing language/status row. The Russian offline manual ships in
-`manuals/` alongside the script. Startup checks availability once; missing HTML
-hides Help with a warning. Help uses the direct system opener without SWS,
-temporary files or polling. Other tools and binaries retain their prior bytes.
+The main change is the illustrated Russian offline DOCX Import manual v1:
+eight chapters, eleven unchanged owner screenshot payloads and 36 separate
+vector callouts. DOCX v0.1.1 adds localized Help; ElevenLabs v2.1.6 opens its
+renamed canonical manual. Both manuals ship as support assets under `manuals/`.
+The shared resolver uses fixed per-tool paths. Other tools, binaries, native
+extensions and notices retain their prior bytes.
 
-On 2026-09-29 the owner reported the installed candidate check passed and
-confirmed that Help opened the installed Russian manual in the authorized
-`C:\extra_Reapers\Reaper_Empty_01\reaper.exe`. Independent readback verified
-receipt 0.1.7, all 70 owned Windows files against the frozen payload, and
-14 exactly-once Main actions. The root feed publishes the exact accepted
-candidate. Restoring the disposable to the public feed and final cache readback
-remain pending; no further workflow test is required for this release gate.
+On 2026-10-07 the owner confirmed the candidate startup/Help check passed in
+`C:\extra_Reapers\Reaper_Empty_01\reaper.exe`, covering both tools and manuals.
+Independent readback verified receipt 0.1.8, all 71 owned Windows files against
+the frozen payload, and 14 exactly-once Main actions. The root feed publishes
+the exact accepted candidate. Disposable public-feed restoration/readback is
+being completed separately; no repeat workflow test is required.
 
 Runtime source is pinned to `auphonic-mt` commit
-`b90ec1f60d699e42b1877900f0a2a2ab46a1d99a`; all 198 new platform source records
-pin distribution payload `3adfe1daf0355b9ff158a13cf75f6e3ec72ad447`.
-The six historical public versions remain unchanged. Failed candidate 0.1.6
+`adbcf6fd7bf51460f990279f532f396edf2b5874`; all 201 new platform source records
+pin distribution payload `1287e97cb20f5278b381ad1894c8bbfa93a7bded`.
+All seven historical public versions remain unchanged. Failed candidate 0.1.6
 is preserved only in its separate historical feed and is not published.
 Script/toolset labels retain their independent source identities.
 
 This is owner-reported Windows package/Help acceptance plus agent-run mechanical
-verification. Real macOS opening, broader authenticated workflows, difficult
-networks, other machines and full lifecycle qualification remain separate.
-Existing MVSEP telemetry and Script Aligner ambiguous-create retry limitations
-remain documented. No new team-testing outcome is implied.
+verification. All eight DOCX chapters still await owner content review. Broader
+import/Undo, desktop/narrow/print layout, real macOS opening, difficult networks,
+other machines and full lifecycle qualification remain separate. Existing MVSEP
+telemetry and Script Aligner ambiguous-create retry limitations remain documented.
 
-See the [0.1.7 release record](docs/2026-09-29_package_implementation_0.1.7.md),
+See the [0.1.8 release record](docs/2026-10-07_package_implementation_0.1.8.md),
 [payload manifest](release-manifest.yml), and [source lock](release-source-lock.yml).
-The [0.1.5 record](docs/2026-09-15_package_implementation_0.1.5.md) and
-[0.1.4 record](docs/2026-09-11_package_implementation_0.1.4.md) preserve prior
-release and workflow acceptance.
+The [0.1.7 record](docs/2026-09-29_package_implementation_0.1.7.md) preserves the
+previous release and its owner-reported Help acceptance.
 
 ## Ownership and package shape
 

@@ -1,12 +1,13 @@
 # Neurocast Tools 0.1.8 release record
 
-> **Source snapshot warning:** Release preparation as of 2026-10-07. Recheck
+> **Source snapshot warning:** Release record as of 2026-10-07. Recheck
 > feed, source pins and installed state before relying on this dated record.
 
 ## Scope and status
 
-Prepared for limited-internal delivery at the owner's request. Public feed
-remains at 0.1.7 until the installed startup/Help check and byte readback pass.
+Published for limited-internal delivery after owner acceptance and exact
+installed readback on 2026-10-07. The root feed promotes the unchanged tested
+candidate; disposable public-feed restoration/readback remains to be completed.
 The owner authorized end-to-end release work using only
 `C:\extra_Reapers\Reaper_Empty_01\reaper.exe`, with minimal testing.
 
@@ -50,7 +51,7 @@ Current source validation and screenshot integrity are recorded in
 Broader import/Undo, responsive/print layout, real Mac opening, difficult-network,
 other-machine and lifecycle qualification remain separate.
 
-## Candidate handoff
+## Candidate handoff (pre-acceptance evidence)
 
 Frozen payload: `1287e97cb20f5278b381ad1894c8bbfa93a7bded`.
 Candidate/helper publication: `0b3ea66` on main. Candidate feed:
@@ -59,14 +60,30 @@ Candidate/helper publication: `0b3ea66` on main. Candidate feed:
 The generated candidate has 201 immutable source URLs and preserves all seven
 public historical versions exactly. Strict index checks pass. Candidate feed,
 helper, both HTML files, DOCX entrypoint and opener downloaded from GitHub match
-their committed bytes. The public root feed remains byte-identical to 0.1.7.
+their committed bytes. At this preparation stage, the public root feed remained byte-identical to 0.1.7.
 
 The owner selected an owner-run install/Help check on 2026-10-07. Run
 `qualification/Neurocast_Tools_0_1_8_candidate_and_smoke.lua` only in the named
 disposable, apply 0.1.8 through ReaPack, then rerun the helper. Confirm DOCX
 v0.1.1 opens its illustrated installed manual and ElevenLabs v2.1.6 opens its
 own renamed manual; both tools close normally. Report the actual observations.
-Installed byte/receipt/action verification and public promotion are pending
-that report. No live startup/Help pass is claimed by preparation alone.
+At handoff, installed verification and promotion were pending the owner's
+report. The acceptance and independent readback below complete those gates.
 
 Candidate feed SHA-256: `301ea1773c8f3c322b39598d63dbccbe3b055da10e1e9b9736b46a684bf76b65` (committed LF bytes).
+
+## Acceptance and public promotion
+
+On 2026-10-07 the owner replied "Confirmed. Passed." to the candidate checklist.
+This is owner-reported startup, installed DOCX illustrated manual opening,
+ElevenLabs renamed manual opening and normal close. The two supplied captures
+show DOCX v0.1.1 and ElevenLabs v2.1.6 with their Russian Help controls; they
+show startup/header states, not browser rendering or executed import/Undo.
+No agent-run live processing or project edit occurred.
+
+Independent read-only verification passed: receipt 0.1.8, 71 owned Windows
+files byte-identical to the frozen candidate, and 14 exactly-once Main actions.
+The public root index now contains the exact committed candidate bytes, with
+201 immutable 0.1.8 source records and all seven historical versions preserved.
+No runtime or HTML payload changed after acceptance. Public URL download and
+disposable public-feed restoration/readback follow publication.
