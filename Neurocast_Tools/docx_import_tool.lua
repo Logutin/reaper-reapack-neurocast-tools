@@ -61,7 +61,7 @@ end
 
 local r = assert(reaper, t("Reaper API not found. This script must be run within Reaper."))
 
-local SCRIPT_VERSION = "v0.1.0"
+local SCRIPT_VERSION = "v0.1.1"
 local TOOLSET_VERSION = SCRIPT_VERSION
 
 local function current_main_window_title_text()
@@ -196,6 +196,16 @@ if not ok_dialogue_import then
   )
   return
 end
+
+-- Offline Help bootstrap: require while the installation module path is active.
+local ok_manual, manual_or_err = pcall(require, "modules-neurocast.offline_manual")
+if not ok_manual then
+  package.path = old_package_path
+  r.MB(string.format(t("Failed to load offline help support: %s. Reinstall the complete Neurocast Tools package."), tostring(manual_or_err)), t("Error"), 0)
+  return
+end
+local OfflineManual = manual_or_err
+-- End offline Help bootstrap.
 
 if not r.ImGui_CreateContext then
   package.path = old_package_path
@@ -7605,23 +7615,44 @@ function UI.render_telemetry_section()
   )
 end
 
-function UI.gui_loop()
-  Helpers.refresh_project_relative_paths()
-  Helpers.set_status(Helpers.workflow_status_text(), nil, state.technical_status_text)
-  local now_t = TelemetryBridge.now()
-  TelemetryBridge.safe_tick(now_t)
-  Jobs.tick_all(now_t)
-  ImGui.SetNextWindowSize(ctx, 750, 975, ImGui.Cond_FirstUseEver)
-  local visible, open = ImGui.Begin(ctx, current_main_window_title_text() .. "##docx_import_tool_main_window", true)
-  if visible then
-    -- ReaImGui Lua can report collapsed windows as not visible; guard End with the visible branch.
-    ImGui.PushFont(ctx, FONT, font_size)
+-- Offline help has independent error state; workflow callbacks cannot clear it.
+function UI.init_offline_help()
+  if state.help_path then return end
+  state.help_path = OfflineManual.path(script_path, "manuals/2026-10-05_docx_import_tool_manual_ru.html")
+  state.help_available = r.file_exists(state.help_path)
+  if not state.help_available then
+    -- Warning only; !SHOW: does not open the console window.
+    Util.msg("!SHOW:Offline manual not found; Help hidden until script restart: " .. state.help_path, 2)
+  end
+end
 
+function UI.open_offline_help()
+  if not state.help_available then return end
+  local ok, reason = OfflineManual.open(r, state.help_path)
+  if ok then state.help_error = nil else state.help_error = reason end
+end
+
+function UI.render_offline_help_error()
+  if not state.help_error then return end
+  if state.help_error == "unsupported" then
+    ImGui.TextWrapped(ctx, t("Automatic Help opening is unavailable on this platform. Open the file below manually."))
+  else
+    ImGui.TextWrapped(ctx, t("Could not open Help. Check the default application for HTML files, or open the file below manually."))
+  end
+  ImGui.TextWrapped(ctx, state.help_path)
+end
+
+function UI.render_header()
+    local row_right = ImGui.GetCursorPosX(ctx) + ImGui.GetContentRegionAvail(ctx)
+    local help_label = t("Help")
+    local frame_padding = ImGui.GetStyleVar(ctx, ImGui.StyleVar_FramePadding)
+    local spacing = ImGui.GetStyleVar(ctx, ImGui.StyleVar_ItemSpacing)
+    local help_width = state.help_available and (ImGui.CalcTextSize(ctx, help_label) + 2 * frame_padding) or 0
+    ImGui.AlignTextToFramePadding(ctx)
     ImGui.Text(ctx, t("Language") .. ":")
     ImGui.SameLine(ctx)
-    if ImGui.SetNextItemWidth then
-      ImGui.SetNextItemWidth(ctx, 160)
-    end
+    local remaining = ImGui.GetContentRegionAvail(ctx)
+    ImGui.SetNextItemWidth(ctx, math.max(60, math.min(160, remaining - help_width - 2 * spacing)))
     local locale_combo_disabled = not translated_locale_available("rus")
     if locale_combo_disabled and ImGui.BeginDisabled then
       ImGui.BeginDisabled(ctx, true)
@@ -7652,6 +7683,32 @@ function UI.gui_loop()
     if locale_combo_disabled and ImGui.EndDisabled then
       ImGui.EndDisabled(ctx)
     end
+
+    if state.help_available then
+      ImGui.SameLine(ctx)
+      ImGui.SetCursorPosX(ctx, math.max(ImGui.GetCursorPosX(ctx), row_right - help_width))
+      if ImGui.Button(ctx, help_label .. "##docx_import_offline_help", help_width) then UI.open_offline_help() end
+      if ImGui.BeginItemTooltip(ctx) then
+        ImGui.Text(ctx, t("Open the offline manual (Russian)."))
+        ImGui.EndTooltip(ctx)
+      end
+    end
+    UI.render_offline_help_error()
+end
+
+function UI.gui_loop()
+  Helpers.refresh_project_relative_paths()
+  Helpers.set_status(Helpers.workflow_status_text(), nil, state.technical_status_text)
+  local now_t = TelemetryBridge.now()
+  TelemetryBridge.safe_tick(now_t)
+  Jobs.tick_all(now_t)
+  ImGui.SetNextWindowSize(ctx, 750, 975, ImGui.Cond_FirstUseEver)
+  local visible, open = ImGui.Begin(ctx, current_main_window_title_text() .. "##docx_import_tool_main_window", true)
+  if visible then
+    -- ReaImGui Lua can report collapsed windows as not visible; guard End with the visible branch.
+    ImGui.PushFont(ctx, FONT, font_size)
+
+    UI.render_header()
 
     UI.render_status_panel()
     UI.render_settings_section()
@@ -7749,6 +7806,7 @@ end
 
 Helpers.refresh_project_relative_paths()
 Helpers.load_persisted_state()
+UI.init_offline_help()
 Helpers.refresh_import_ready_rows()
 state.status_text = t("DOCX import prototype initialized.")
 state.last_status_text = state.status_text

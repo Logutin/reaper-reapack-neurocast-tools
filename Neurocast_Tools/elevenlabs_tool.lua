@@ -1208,7 +1208,7 @@ if ... == "__voice_library_add_controller_headless" then
 end
 
 local r = assert(reaper, "Reaper API not found. This script must be run within Reaper.")
-local SCRIPT_VERSION = "v2.1.5"
+local SCRIPT_VERSION = "v2.1.6"
 local TOOLSET_VERSION = SCRIPT_VERSION
 
 local active_locale = "eng"
@@ -12933,7 +12933,7 @@ end
 -- Offline help has independent error state; network callbacks cannot clear it.
 function UI.init_offline_help()
   if S.help_path then return end
-  S.help_path = OfflineManual.path(script_path)
+  S.help_path = OfflineManual.path(script_path, "manuals/2026-09-28_elevenlabs_tool_manual_ru.html")
   S.help_available = r.file_exists(S.help_path)
   if not S.help_available then
     -- Warning only; !SHOW: keeps the normal msg console output from opening a window.

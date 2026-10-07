@@ -3,36 +3,40 @@ schema_version: 1
 package:
   display_name: Neurocast Tools
   slug: Neurocast_Tools
-  version: 0.1.7
+  version: 0.1.8
   inventory: release-manifest.yml
 
 tracked_lua:
   repository: https://github.com/Logutin/auphonic-mt
-  commit: b90ec1f60d699e42b1877900f0a2a2ab46a1d99a
+  commit: adbcf6fd7bf51460f990279f532f396edf2b5874
   count: 61
-  policy: All Lua inputs match the pinned source commit after its Git clean filter. Three updated Lua files are byte-exact source blobs; seven unchanged files retain historical CRLF bytes. The source TOOLSET_VERSION values remain independent of ReaPack version 0.1.7.
+  policy: All Lua inputs match the pinned source commit after its Git clean filter. Four updated Lua files are byte-exact source blobs; six unchanged files retain historical CRLF bytes. Source SCRIPT_VERSION and TOOLSET_VERSION values are independent of ReaPack version 0.1.8.
   byte_exact_changed_files:
-    - scr/elevenlabs_tool.lua
-    - scr/modules-neurocast/elevenlabs_tool_languages.lua
     - scr/modules-neurocast/offline_manual.lua
+    - scr/elevenlabs_tool.lua
+    - scr/docx_import_tool.lua
+    - scr/modules-neurocast/docx_import_tool_languages.lua
   historical_crlf_preserved_distribution_files:
     - Neurocast_Tools/modules-neurocast/json.lua
     - Neurocast_Tools/modules-neurocast/neurocast_auth.lua
     - Neurocast_Tools/modules-neurocast/prompts.lua
     - Neurocast_Tools/modules-neurocast/Util.lua
     - Neurocast_Tools/modules-neurocast/docx_dialogue_parser.lua
-    - Neurocast_Tools/modules-neurocast/docx_import_tool_languages.lua
     - Neurocast_Tools/modules-neurocast/neurocast_script_aligner_tool_languages.lua
 
 tracked_assets:
   repository: https://github.com/Logutin/auphonic-mt
-  commit: b90ec1f60d699e42b1877900f0a2a2ab46a1d99a
-  policy: HTML support asset matches the committed source bytes exactly; no generation or screenshot conversion.
+  commit: adbcf6fd7bf51460f990279f532f396edf2b5874
+  policy: Both directly maintained Russian HTML support assets match the committed source bytes exactly; embedded screenshots are unchanged.
   files:
-    - source_path: scr/manuals/2026-09-28_elevenlabs_tool_manual_ru_draft.html
-      destination: Neurocast_Tools/manuals/2026-09-28_elevenlabs_tool_manual_ru_draft.html
-      size_bytes: 3302343
-      sha256: e2279e6732ae750d8a5a9c05f3e38e3f700a11382e3e22e296ad88e86aa94316
+    - source_path: scr/manuals/2026-09-28_elevenlabs_tool_manual_ru.html
+      destination: Neurocast_Tools/manuals/2026-09-28_elevenlabs_tool_manual_ru.html
+      size_bytes: 3302877
+      sha256: fa7f878808bf6f59b40e060d5fd7d6549ca4b1c99b3314f81b595cb9771c00a0
+    - source_path: scr/manuals/2026-10-05_docx_import_tool_manual_ru.html
+      destination: Neurocast_Tools/manuals/2026-10-05_docx_import_tool_manual_ru.html
+      size_bytes: 1862686
+      sha256: 017e9476b1b4c041cfc98b33b9298cdfb02b0184c67dacbc7dbb004b9d4848d9
 
 local_windows_inputs:
   repository: https://github.com/Logutin/auphonic-mt
@@ -113,7 +117,7 @@ validated_toolchain:
   pandoc: 3.10.2
   git: 2.55.0.windows.3
 
-status: published_limited_internal_owner_smoke_passed_delivery_verified
+status: prepared_pending_packaged_help_check
 
 seven_zip_upstream:
   version: "26.03"

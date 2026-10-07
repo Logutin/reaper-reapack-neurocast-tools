@@ -1,10 +1,10 @@
 -- Submit a local HTML file to the system opener. No browser confirmation.
 local M = {}
 
-M.relative_path = "manuals/2026-09-28_elevenlabs_tool_manual_ru_draft.html"
+M.relative_path = "manuals/2026-09-28_elevenlabs_tool_manual_ru.html"
 
-function M.path(script_directory)
-  return tostring(script_directory):gsub("[/\\]+$", "") .. "/" .. M.relative_path
+function M.path(script_directory, relative_path)
+  return tostring(script_directory):gsub("[/\\]+$", "") .. "/" .. (relative_path or M.relative_path)
 end
 
 function M.launch_command(platform, target)
