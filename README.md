@@ -20,10 +20,10 @@ On 2026-10-07 the owner confirmed the candidate startup/Help check passed in
 `C:\extra_Reapers\Reaper_Empty_01\reaper.exe`, covering both tools and manuals.
 Independent readback verified receipt 0.1.8, all 71 owned Windows files against
 the frozen payload, and 14 exactly-once Main actions. The root feed publishes
-the exact accepted candidate. The owner will switch the disposable to the
-public feed and check it later; final public-feed/cache/settings readback is
-deferred. No further Computer Use is currently authorized and no repeat
-workflow test is required.
+the exact accepted candidate. The owner switched the disposable to the public
+feed; final read-only cache/settings/file/action verification passed and private
+telemetry files are preserved. Publication and installation follow-up are
+complete. No further Computer Use or repeat workflow test was performed.
 
 Runtime source is pinned to `auphonic-mt` commit
 `adbcf6fd7bf51460f990279f532f396edf2b5874`; all 201 new platform source records

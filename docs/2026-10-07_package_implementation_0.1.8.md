@@ -7,7 +7,7 @@
 
 Published for limited-internal delivery after owner acceptance and exact
 installed readback on 2026-10-07. The root feed promotes the unchanged tested
-candidate; disposable public-feed restoration/readback remains to be completed.
+candidate; final disposable public-feed/cache/settings readback passed.
 The owner authorized end-to-end release work using only
 `C:\extra_Reapers\Reaper_Empty_01\reaper.exe`, with minimal testing.
 
@@ -89,15 +89,20 @@ No runtime or HTML payload changed after acceptance. Public URL download
 passed byte-for-byte against the committed root feed and accepted candidate.
 Publication commit: `2d788b6`.
 
-## Deferred disposable follow-up
+## Disposable public-feed follow-up (completed)
 
 The owner stopped Computer Use during the repository-manager step, then
 explicitly requested no Computer Use while in a meeting and said they would
 switch and check later. No repository setting was applied by the agent.
-The supplied follow-up captures show the temporary 0.1.8 candidate URL and
-installed package 0.1.8. The owner will change that repository URL to the
-published root feed and synchronize; final public-feed/cache/settings readback
-remains deferred. No new processing or Help test is required.
+The first follow-up captures showed the temporary candidate URL and installed
+0.1.8. The owner then switched to the published root feed and supplied updated
+captures showing the public URL and 0.1.8. Final read-only verification passed:
+enabled public URL; exact cached/public/committed/accepted-candidate index;
+receipt 0.1.8, 71 owned files and 14 exactly-once Main actions. Repository default
+policy 2 matches the pre-update baseline; global `autoinstall=0` and
+`prereleases=0`, unrelated repositories, private telemetry identity and telemetry
+settings are unchanged. No further Computer Use, project operation, processing
+or Help test was performed. Publication and installation follow-up are complete.
 
 Public feed:
 https://raw.githubusercontent.com/Logutin/reaper-reapack-neurocast-tools/main/index.xml
@@ -105,4 +110,5 @@ https://raw.githubusercontent.com/Logutin/reaper-reapack-neurocast-tools/main/in
 Public download, committed root index and accepted candidate all match
 SHA-256 `301ea1773c8f3c322b39598d63dbccbe3b055da10e1e9b9736b46a684bf76b65`.
 Installed receipt/files/actions already passed exact readback. Publication is
-complete; this deferred installation setting does not change package contents.
+complete, including the owner's public-feed switch and final readback. Package
+contents and historical feed entries remain unchanged.
