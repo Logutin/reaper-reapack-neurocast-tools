@@ -7,16 +7,14 @@
 > on 2026-08-29. macOS remains unqualified. This document is not a live backend
 > contract; recheck source and release inputs before future work.
 
-> **Current release note (2026-10-07):** Neurocast Tools 0.1.8 is published
-> for limited-internal use. The main change is the illustrated Russian DOCX
-> manual and localized DOCX v0.1.1 Help; ElevenLabs v2.1.6 opens its renamed
-> manual. The owner passed installed Windows startup/Help checks. Readback
-> verified 71 exact owned files, 14 Main actions, public/cache/candidate feed
-> identity and preserved baseline/private settings. Release delivery is complete.
-> See the [0.1.8 release record](2026-10-07_package_implementation_0.1.8.md).
-> The design and original lifecycle qualification below are historical;
-> broader authenticated, difficult-network, macOS, other-machine and full
-> lifecycle checks were not repeated for 0.1.8.
+> **Current release note (2026-10-09):** Neurocast Tools 0.1.9 is published
+> for limited-internal use. ElevenLabs v2.1.7 skips ineligible STS selections,
+> displays the skip report and ships refreshed manual guidance. The owner
+> passed the packaged Windows check; readback verified 71 exact files and
+> 14 Main actions. The disposable public-feed switch remains pending.
+> See the [0.1.9 release record](2026-10-09_package_implementation_0.1.9.md).
+> The original design and lifecycle qualification below are historical;
+> broader platform/network/lifecycle checks were not repeated.
 
 ## Scope and ownership
 

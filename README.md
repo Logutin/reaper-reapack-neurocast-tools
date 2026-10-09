@@ -1,55 +1,43 @@
 # Neurocast Tools
 
-The current published package is **`Neurocast_Tools 0.1.8`**, a
+The current published package is **Neurocast Tools 0.1.9**, a
 limited-internal release for selected team members.
 
 Install/update through the repository
-[`index.xml`](https://raw.githubusercontent.com/Logutin/reaper-reapack-neurocast-tools/main/index.xml).
+[index.xml](https://raw.githubusercontent.com/Logutin/reaper-reapack-neurocast-tools/main/index.xml).
 ReaImGui remains an external prerequisite; package minimum remains REAPER 7.72+.
 
-## Candidate 0.1.9 (2026-10-09)
+## Current release: 0.1.9
 
-ElevenLabs v2.1.7 allows broad STS selections, skipping empty/MIDI items and
-unmatched tracks while processing eligible audio. The Russian/English skip
-report and offline manual are updated. Source live testing passed per the owner;
-the packaged Windows check is pending. The public feed remains 0.1.8.
-See the [candidate record](docs/2026-10-09_package_implementation_0.1.9.md).
+ElevenLabs v2.1.7 accepts broad STS selections: empty/MIDI items and tracks
+without matching voices are skipped while eligible audio continues. The
+Russian/English report shows skipped counts and reasons. The offline manual
+now explains select-all, omissions and FAST/shortcut behavior. Its 31 existing
+screenshots and anchors are preserved, with older screenshot dates identified.
 
-## Current release: 0.1.8
+The owner passed the source workflow and packaged Windows startup/STS
+explanation/Help/normal-close checks on 2026-10-09. Independent readback
+verified receipt 0.1.9, all 71 exact Windows files and 14 exactly-once Main
+actions. The public feed promotes the unchanged accepted candidate and
+preserves all eight prior public versions. No Computer Use or repeated paid
+processing was performed. The disposable's switch from candidate to public
+feed remains an owner follow-up; its installed payload is already verified.
 
-The main change is the illustrated Russian offline DOCX Import manual v1:
-eight chapters, eleven unchanged owner screenshot payloads and 36 separate
-vector callouts. DOCX v0.1.1 adds localized Help; ElevenLabs v2.1.6 opens its
-renamed canonical manual. Both manuals ship as support assets under `manuals/`.
-The shared resolver uses fixed per-tool paths. Other tools, binaries, native
-extensions and notices retain their prior bytes.
+Runtime source: 1f5ca2a87e0fc36e5cd621f1c86934fa85fd6a15.
+Frozen distribution payload: ac23a1d76c45b297dd40b196ce50e2b320122389.
+Two Lua files and the ElevenLabs HTML change; 59 other Lua files, DOCX HTML,
+binaries, native extensions and notices retain their exact prior bytes.
+The package retains 201 platform records and 14 Main actions per platform.
 
-On 2026-10-07 the owner confirmed the candidate startup/Help check passed in
-`C:\extra_Reapers\Reaper_Empty_01\reaper.exe`, covering both tools and manuals.
-Independent readback verified receipt 0.1.8, all 71 owned Windows files against
-the frozen payload, and 14 exactly-once Main actions. The root feed publishes
-the exact accepted candidate. The owner switched the disposable to the public
-feed; final read-only cache/settings/file/action verification passed and private
-telemetry files are preserved. Publication and installation follow-up are
-complete. No further Computer Use or repeat workflow test was performed.
+This is limited Windows package acceptance, not broad platform, network,
+other-machine or full lifecycle qualification. Full manual content/layout
+acceptance, existing MVSEP telemetry and Script Aligner retry limitations
+remain separate. Script/toolset identities remain independent of ReaPack.
 
-Runtime source is pinned to `auphonic-mt` commit
-`adbcf6fd7bf51460f990279f532f396edf2b5874`; all 201 new platform source records
-pin distribution payload `1287e97cb20f5278b381ad1894c8bbfa93a7bded`.
-All seven historical public versions remain unchanged. Failed candidate 0.1.6
-is preserved only in its separate historical feed and is not published.
-Script/toolset labels retain their independent source identities.
-
-This is owner-reported Windows package/Help acceptance plus agent-run mechanical
-verification. All eight DOCX chapters still await owner content review. Broader
-import/Undo, desktop/narrow/print layout, real macOS opening, difficult networks,
-other machines and full lifecycle qualification remain separate. Existing MVSEP
-telemetry and Script Aligner ambiguous-create retry limitations remain documented.
-
-See the [0.1.8 release record](docs/2026-10-07_package_implementation_0.1.8.md),
+See the [0.1.9 release record](docs/2026-10-09_package_implementation_0.1.9.md),
 [payload manifest](release-manifest.yml), and [source lock](release-source-lock.yml).
-The [0.1.7 record](docs/2026-09-29_package_implementation_0.1.7.md) preserves the
-previous release and its owner-reported Help acceptance.
+The [0.1.8 record](docs/2026-10-07_package_implementation_0.1.8.md) preserves
+the previous DOCX manual/Help release. Failed candidate 0.1.6 remains excluded.
 
 ## Ownership and package shape
 

@@ -1,9 +1,10 @@
-# Neurocast Tools 0.1.9 candidate
+# Neurocast Tools 0.1.9 release record
 
-> **Source snapshot warning:** Candidate record as of 2026-10-09. Recheck
+> **Source snapshot warning:** Published release record as of 2026-10-09. Recheck
 > feed, source pins and installed state before relying on this snapshot.
 
-Candidate preparation for limited-internal delivery. Public feed remains 0.1.8.
+Published for limited-internal delivery after owner packaged acceptance and
+exact installed readback on 2026-10-09. Disposable public-feed switch is pending.
 The owner passed source v2.1.7 live testing and authorized release work using only
 C:/extra_Reapers/Reaper_Empty_01/reaper.exe, with minimal checks and no Computer Use.
 No agent-operated REAPER interaction is performed.
@@ -25,11 +26,11 @@ localization checks passed. On 2026-10-09 the owner reported 'Live test passed'.
 The supplied image shows two eligible and three skipped items, one eligible
 track and one region. This is source acceptance, not packaged acceptance.
 
-Before promotion, run the owner helper in the authorized disposable, update to
-0.1.9 and confirm installed ElevenLabs v2.1.7 opens, shows the skip explanation,
-opens Help with the refreshed STS guidance, and closes normally. No paid request
-or repeated source workflow test is needed. Exact receipt/file/action readback
-follows the owner report. Public promotion remains pending until that gate passes.
+On 2026-10-09 the owner replied 'Confirmed, passed. Please continue.' to
+the installed startup/STS-explanation/Help/normal-close checklist. The supplied
+captures show package 0.1.9 and the helper detecting v2.1.7 plus refreshed HTML.
+The user report establishes live acceptance; the images alone do not prove
+browser opening or normal close. No repeat paid workflow was required.
 
 Broader networks, platforms, other machines, full manual layout/content acceptance
 and unrelated workflow qualification are outside this release check.
@@ -42,22 +43,37 @@ assets, unchanged binary/notice pins and 201 metadata rows. Strict reapack-index
 checks passed for one package with zero failures.
 
 Read-only disposable baseline passed: 0.1.8 receipt, 71 byte-exact owned files
-and 14 exactly-once actions. The public repository is configured; original
+and 14 exactly-once actions. At baseline the public repository was configured; original
 repository settings and private telemetry file hashes were retained locally
 outside Git. No installed files, running project or settings were changed by
 the agent. The owner-run helper performs the candidate repository setup.
 
-## Frozen candidate handoff
+## Frozen candidate handoff (historical preparation)
 
 Payload commit: `ac23a1d76c45b297dd40b196ce50e2b320122389`.
 Candidate feed: `qualification/Neurocast_Tools_0.1.9_candidate.xml`.
 SHA-256: `a5001379d3fdc2197caf0c7d29c6e5e17d3bdfa929a2fc3b3860a87e42394951`.
 All 201 new source URLs pin that payload; the eight historical public versions
-are unchanged. The public root index remains byte-identical to 0.1.8.
+are unchanged. Before promotion the public root index remained byte-identical to 0.1.8.
 
-Run `qualification/Neurocast_Tools_0_1_9_candidate_and_smoke.lua` through the
-disposable REAPER Action List. Apply 0.1.9, then rerun the helper for the small
-startup/STS-explanation/Help/normal-close checklist. Its path guard and setup,
-installed-state, missing-dependency and rejected-setup branches passed five
-headless scenarios. Installed receipt/byte verification and owner packaged
-acceptance are pending; the candidate must not be promoted before both pass.
+The owner ran the candidate helper and applied the update. Its path guard
+and setup, installed-state, missing-dependency and rejected-setup branches
+passed five headless scenarios before handoff.
+
+## Acceptance and promotion
+
+Read-only verification passed: receipt 0.1.9, 71 owned Windows files exactly
+matching the frozen payload, and 14 exactly-once Main actions. Cached candidate
+bytes match the committed candidate. Both private telemetry files retain their
+baseline hashes; global autoinstall/prereleases and unrelated repositories are
+unchanged. No runtime payload changed after acceptance.
+
+The root index promotes the exact accepted candidate, with 201 immutable 0.1.9
+source URLs and all eight historical public versions preserved. Feed SHA-256:
+a5001379d3fdc2197caf0c7d29c6e5e17d3bdfa929a2fc3b3860a87e42394951.
+
+The disposable still uses the candidate URL with manual-install policy 0.
+Its pre-update baseline used the public URL with default policy 2. Owner switch
+to the public URL and subsequent readback remain pending; do not call those
+settings restored yet. No Computer Use or direct edits to REAPER settings were
+performed.
