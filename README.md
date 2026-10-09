@@ -7,6 +7,14 @@ Install/update through the repository
 [`index.xml`](https://raw.githubusercontent.com/Logutin/reaper-reapack-neurocast-tools/main/index.xml).
 ReaImGui remains an external prerequisite; package minimum remains REAPER 7.72+.
 
+## Candidate 0.1.9 (2026-10-09)
+
+ElevenLabs v2.1.7 allows broad STS selections, skipping empty/MIDI items and
+unmatched tracks while processing eligible audio. The Russian/English skip
+report and offline manual are updated. Source live testing passed per the owner;
+the packaged Windows check is pending. The public feed remains 0.1.8.
+See the [candidate record](docs/2026-10-09_package_implementation_0.1.9.md).
+
 ## Current release: 0.1.8
 
 The main change is the illustrated Russian offline DOCX Import manual v1:

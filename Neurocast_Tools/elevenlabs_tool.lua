@@ -1,5 +1,5 @@
 --========================================================
--- Elevenlabs Studio Neurocast tool script v2.1.5
+-- Elevenlabs Studio Neurocast tool script v2.1.7
 --========================================================
 
 -- Entrypoint-owned orchestration between the shared Voice Library API/state/
@@ -1208,7 +1208,7 @@ if ... == "__voice_library_add_controller_headless" then
 end
 
 local r = assert(reaper, "Reaper API not found. This script must be run within Reaper.")
-local SCRIPT_VERSION = "v2.1.6"
+local SCRIPT_VERSION = "v2.1.7"
 local TOOLSET_VERSION = SCRIPT_VERSION
 
 local active_locale = "eng"
@@ -3849,7 +3849,7 @@ do --WORK WITH REAPER PROJ
   end
 
   local function collect_selected_sts_audio_by_track()
-    local items_by_track, ignored = {}, 0
+    local items_by_track, ignored, ignored_by_track = {}, 0, {}
     for index = 0, r.CountSelectedMediaItems(0) - 1 do
       local item = r.GetSelectedMediaItem(0, index)
       if ReaperX.is_sts_audio_item(item) then
@@ -3858,12 +3858,11 @@ do --WORK WITH REAPER PROJ
         table.insert(items_by_track[track], item)
       else
         ignored = ignored + 1
+        local track = r.GetMediaItemTrack(item)
+        ignored_by_track[track] = (ignored_by_track[track] or 0) + 1
       end
     end
-    if not next(items_by_track) then
-      return false, t("No selected audio items. Select audio and compute regions again."), nil, ignored
-    end
-    return true, "ok", items_by_track, ignored
+    return items_by_track, ignored, ignored_by_track
   end
 
   -- Project revision conservatively covers source/FX edits that keep item bounds.
@@ -4092,12 +4091,21 @@ do --WORK WITH REAPER PROJ
   -- Gets render regions by track so later steps can use it.
   -- Called by several helpers (for example `run_el_speech_to_speech_for_selected_items`, `run_el_speech_to_speech_fast`, and `GuiLoop`); caller passes no arguments and uses shared state.
   function ReaperX.get_render_regions_by_track(voice_choices)
-    local ok_items, items_msg, items_by_track, ignored = collect_selected_sts_audio_by_track()
-    if not ok_items then
-      if ignored > 0 then
-        items_msg = items_msg .. "\n" .. string.format(t("Ignored non-audio items: %d."), ignored)
-      end
-      return false, items_msg
+    local items_by_track, ignored, ignored_by_track = collect_selected_sts_audio_by_track()
+    local skipped_items = {}
+    local function record_skipped(track, count, reason)
+      local _, name = r.GetTrackName(track)
+      skipped_items[#skipped_items + 1] = {
+        name = name or "", index = r.GetMediaTrackInfo_Value(track, "IP_TRACKNUMBER") or 0,
+        count = count, reason = reason
+      }
+    end
+    for track, count in pairs(ignored_by_track) do
+      record_skipped(track, count, t("No active audio take (empty or MIDI item)."))
+    end
+    local empty_plan = { regions_by_track = {}, ignored_items = ignored, skipped_items = skipped_items }
+    if not next(items_by_track) then
+      return false, t("No selected audio items. Select audio and compute regions again."), empty_plan
     end
     if (S) and (S.el_voices) and (S.el_voices.by_id) and (next(S.el_voices.by_id))
       then
@@ -4108,25 +4116,23 @@ do --WORK WITH REAPER PROJ
           false,
           t('No voices configured! Please fetch voices from server first.')
     end --if
-    local missing_tracks = {}
+    local eligible_items = 0
     for track, items_table in pairs(items_by_track) do
       local _, track_name = r.GetTrackName(track)
-      local track_idx = r.GetMediaTrackInfo_Value(track, "IP_TRACKNUMBER") or 0
       Util.msg('Track: '..tostring(track_name)..', has '..tostring(#items_table)..' selected items.')
       local voice_id = Eleven.resolve_voice_id_for_track_name(track_name, voice_choices)
       if voice_id then
         Util.msg('Track: '..tostring(track_name)..' is mapped to voice ID: '..tostring(voice_id)..'.')
+        eligible_items = eligible_items + #items_table
       else
-        Util.msg('Track: '..tostring(track_name)..' is NOT mapped to any voice ID! Aborting...', 1)
-        table.insert(S.warnings, string.format(t('Track: %s has wrong name (no voice found)! Aborting.'), tostring(track_name)))
-        local label = (track_name and track_name ~= "") and track_name or string.format(t("Track %s"), tostring(track_idx))
-        table.insert(missing_tracks, label)
+        Util.msg('Track: '..tostring(track_name)..' has no matching voice; skipping '..tostring(#items_table)..' audio items.', 1)
+        record_skipped(track, #items_table, t("No matching voice."))
+        items_by_track[track] = nil
       end --if
     end --for
 
-    if #missing_tracks > 0 then
-      local msg_txt = string.format(t('Track name(s) not mapped to voice IDs: %s'), table.concat(missing_tracks, ", "))
-      return false, msg_txt
+    if not next(items_by_track) then
+      return false, t("No eligible audio remains. Match at least one audio track name to an account voice and compute regions again."), empty_plan
     end --if
 
     local ok_regions, regions_msg, prepared = build_sts_regions_by_track(items_by_track)
@@ -4137,6 +4143,8 @@ do --WORK WITH REAPER PROJ
     local regions_by_track = prepared and prepared.regions_by_track or nil
     local skipped_regions = prepared and prepared.skipped_regions or nil
     prepared.ignored_items = ignored
+    prepared.skipped_items = skipped_items
+    prepared.eligible_items = eligible_items
     if skipped_regions and #skipped_regions > 0 then
       return false, t("Some audio exceeds the maximum length per ElevenLabs request. Change the selection or STS settings and compute again. Nothing will be processed."), prepared
     end
@@ -4704,6 +4712,8 @@ do --WORK WITH REAPER PROJ
   function ReaperX.format_render_regions_by_track(regions_by_track)
     local prepared = regions_by_track
     local ignored = type(prepared) == "table" and tonumber(prepared.ignored_items) or 0
+    local skipped_items = type(prepared) == "table" and prepared.skipped_items or {}
+    skipped_items = skipped_items or {}
     local skipped_regions = nil
     if type(prepared) == "table" and (prepared.regions_by_track or prepared.skipped_regions) then
       regions_by_track = prepared.regions_by_track or {}
@@ -4712,7 +4722,7 @@ do --WORK WITH REAPER PROJ
 
     local has_regions = type(regions_by_track) == "table" and next(regions_by_track) ~= nil
     local has_skipped = type(skipped_regions) == "table" and #skipped_regions > 0
-    if (not has_regions) and (not has_skipped) then
+    if (not has_regions) and (not has_skipped) and #skipped_items == 0 then
       return t("No regions to display.")
     end
 
@@ -4796,6 +4806,26 @@ do --WORK WITH REAPER PROJ
     if ignored and ignored > 0 then
       table.insert(lines, string.format(t("Ignored non-audio items: %d."), ignored))
     end
+    -- Put omissions before the potentially long region list so select-all is reviewable.
+    local summary = {}
+    if prepared.eligible_items then
+      summary[#summary + 1] = string.format(t("Eligible audio items: %d."), prepared.eligible_items)
+    end
+    if #skipped_items > 0 then
+      table.sort(skipped_items, function(a, b)
+        if a.index ~= b.index then return a.index < b.index end
+        if a.name ~= b.name then return a.name < b.name end
+        return a.reason < b.reason
+      end)
+      local total_skipped = 0
+      for _, entry in ipairs(skipped_items) do total_skipped = total_skipped + entry.count end
+      summary[#summary + 1] = string.format(t("Skipped selected items: %d. These items will not be processed."), total_skipped)
+      for _, entry in ipairs(skipped_items) do
+        local label = entry.name ~= "" and entry.name or string.format(t("Track %s"), tostring(entry.index))
+        summary[#summary + 1] = string.format(t("  Track %d (%s): %d items skipped - %s"), entry.index, label, entry.count, entry.reason)
+      end
+    end
+    if #summary > 0 then table.insert(lines, 1, table.concat(summary, "\n") .. "\n") end
     return table.concat(lines, "\n")
   end
 end  --enf of "do --WORK WITH REAPER PROJ"
@@ -9974,6 +10004,7 @@ function UI.render_sts_preparation()
     Eleven.compute_sts_regions()
   end
   if busy then ImGui.EndDisabled(ctx) end
+  ImGui.TextWrapped(ctx, t("Items without audio and tracks without a matching voice are skipped."))
   ImGui.InputTextMultiline(ctx, "##render_regions_output", S.render_regions_output or "", 0, 140, ImGui.InputTextFlags_ReadOnly)
   local ready, reason = ReaperX.check_sts_preparation()
   if not ready then
@@ -10042,7 +10073,9 @@ function Eleven.run_el_speech_to_speech_for_selected_items()
     return
   end
 
+  local selection_report = S.render_regions_output
   Jobs.full_reset_state("auto reset: STS")
+  S.render_regions_output = selection_report
   S.ui_lock_network_buttons = true
 
   -- Importnat to store rendered regions for later use:
@@ -10115,6 +10148,8 @@ function Eleven.run_el_speech_to_speech_fast()
     return
   end
 
+  S.sts_preparation = nil
+  S.render_regions_output = ReaperX.format_render_regions_by_track(err_or_regions)
   S.status_text = t("Rendering regions...")
   local ok_render, render_err, records =
     ReaperX.render_regions_by_track_for_STS(err_or_regions, voice_choices)

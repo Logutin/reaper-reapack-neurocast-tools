@@ -1,15 +1,15 @@
 -- @description Neurocast Tools
--- @version 0.1.8
+-- @version 0.1.9
 -- @author Slava Logutin
 -- @metapackage
--- @changelog Add the illustrated Russian DOCX Import manual v1 and localized Help in DOCX v0.1.1. Rename canonical manual files and update ElevenLabs v2.1.6 Help wiring. Other runtime tools and binaries retain their previous bytes.
+-- @changelog ElevenLabs v2.1.7 skips empty/MIDI items and tracks without matching voices in ordinary and FAST STS. Eligible audio continues with a visible Russian/English skip report. Refresh the offline STS manual. Other tools and binaries are unchanged.
 -- @about
 --   Neurocast Tools for Windows x64, macOS x86_64, and macOS ARM64, including the local DOCX importer.
 --   ReaImGui is an external prerequisite and is not bundled. Package minimum: REAPER 7.72+.
---   Limited-internal delivery for selected team members. The 0.1.8 Windows release gate covers the update and DOCX and ElevenLabs startup and installed-manual Help smoke.
+--   Limited-internal delivery for selected team members. The 0.1.9 Windows release gate covers the update and ElevenLabs v2.1.7 startup and refreshed STS manual smoke.
 --   AutoMix v0.1.2 and MVSEP v0.2.1 have owner-accepted source happy paths. AutoMix production-host, difficult-network, and macOS qualification remain open.
 --   MVSEP telemetry delivery errors and Script Aligner ambiguous-create retry duplication remain documented limitations.
---   Script TOOLSET_VERSION values identify their source line; ReaPack 0.1.8 identifies this package.
+--   Script TOOLSET_VERSION values identify their source line; ReaPack 0.1.9 identifies this package.
 -- @link https://github.com/Logutin/reaper-reapack-neurocast-tools
 -- @provides
 --   [win64] modules-neurocast/offline_manual.lua

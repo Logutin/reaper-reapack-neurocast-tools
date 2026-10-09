@@ -3,19 +3,17 @@ schema_version: 1
 package:
   display_name: Neurocast Tools
   slug: Neurocast_Tools
-  version: 0.1.8
+  version: 0.1.9
   inventory: release-manifest.yml
 
 tracked_lua:
   repository: https://github.com/Logutin/auphonic-mt
-  commit: adbcf6fd7bf51460f990279f532f396edf2b5874
+  commit: 1f5ca2a87e0fc36e5cd621f1c86934fa85fd6a15
   count: 61
-  policy: All Lua inputs match the pinned source commit after its Git clean filter. Four updated Lua files are byte-exact source blobs; six unchanged files retain historical CRLF bytes. Source SCRIPT_VERSION and TOOLSET_VERSION values are independent of ReaPack version 0.1.8.
+  policy: All Lua inputs match the pinned source commit after its Git clean filter. Two updated Lua files are byte-exact source blobs; six unchanged files retain historical CRLF bytes. Source SCRIPT_VERSION and TOOLSET_VERSION values are independent of ReaPack version 0.1.9.
   byte_exact_changed_files:
-    - scr/modules-neurocast/offline_manual.lua
     - scr/elevenlabs_tool.lua
-    - scr/docx_import_tool.lua
-    - scr/modules-neurocast/docx_import_tool_languages.lua
+    - scr/modules-neurocast/elevenlabs_tool_languages.lua
   historical_crlf_preserved_distribution_files:
     - Neurocast_Tools/modules-neurocast/json.lua
     - Neurocast_Tools/modules-neurocast/neurocast_auth.lua
@@ -26,13 +24,13 @@ tracked_lua:
 
 tracked_assets:
   repository: https://github.com/Logutin/auphonic-mt
-  commit: adbcf6fd7bf51460f990279f532f396edf2b5874
+  commit: 1f5ca2a87e0fc36e5cd621f1c86934fa85fd6a15
   policy: Both directly maintained Russian HTML support assets match the committed source bytes exactly; embedded screenshots are unchanged.
   files:
     - source_path: scr/manuals/2026-09-28_elevenlabs_tool_manual_ru.html
       destination: Neurocast_Tools/manuals/2026-09-28_elevenlabs_tool_manual_ru.html
-      size_bytes: 3302877
-      sha256: fa7f878808bf6f59b40e060d5fd7d6549ca4b1c99b3314f81b595cb9771c00a0
+      size_bytes: 3305303
+      sha256: 92acf441fd662d8cd2c7007d2d0e9ed56ee073d5fb016d76f1c8ced7c4ceca05
     - source_path: scr/manuals/2026-10-05_docx_import_tool_manual_ru.html
       destination: Neurocast_Tools/manuals/2026-10-05_docx_import_tool_manual_ru.html
       size_bytes: 1862686
@@ -117,7 +115,7 @@ validated_toolchain:
   pandoc: 3.10.2
   git: 2.55.0.windows.3
 
-status: published_limited_internal_owner_smoke_passed_delivery_verified
+status: candidate_prepared_owner_packaged_smoke_pending
 
 seven_zip_upstream:
   version: "26.03"
