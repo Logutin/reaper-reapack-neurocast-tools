@@ -4,7 +4,8 @@
 > feed, source pins and installed state before relying on this snapshot.
 
 Published for limited-internal delivery after owner packaged acceptance and
-exact installed readback on 2026-10-09. Disposable public-feed switch is pending.
+exact installed readback on 2026-10-09. Disposable public-feed switch and final
+readback are complete; the limited-internal release routine is complete.
 The owner passed source v2.1.7 live testing and authorized release work using only
 C:/extra_Reapers/Reaper_Empty_01/reaper.exe, with minimal checks and no Computer Use.
 No agent-operated REAPER interaction is performed.
@@ -75,8 +76,12 @@ a5001379d3fdc2197caf0c7d29c6e5e17d3bdfa929a2fc3b3860a87e42394951.
 Publication commit: `a981011`. Public raw-GitHub download was verified equal
 to the committed root index and accepted candidate after push.
 
-The disposable still uses the candidate URL with manual-install policy 0.
-Its pre-update baseline used the public URL with default policy 2. Owner switch
-to the public URL and subsequent readback remain pending; do not call those
-settings restored yet. No Computer Use or direct edits to REAPER settings were
-performed.
+The owner completed the public-feed switch and supplied screenshots of
+installed 0.1.9 and the enabled public URL. Final read-only verification confirms
+the public URL and cache identical to the public/committed/accepted candidate
+feed, receipt 0.1.9, 71 exact Windows files and 14 exactly-once Main actions.
+Private telemetry hashes, global autoinstall=0/prereleases=0 and unrelated
+repositories remain unchanged. The owner-run helper retains manual-install
+policy 0; the pre-update baseline used default policy 2. Original repository
+policy restoration is not claimed. No Computer Use or direct settings-file
+edits were performed by the agent.

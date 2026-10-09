@@ -20,8 +20,9 @@ explanation/Help/normal-close checks on 2026-10-09. Independent readback
 verified receipt 0.1.9, all 71 exact Windows files and 14 exactly-once Main
 actions. The public feed promotes the unchanged accepted candidate and
 preserves all eight prior public versions. No Computer Use or repeated paid
-processing was performed. The disposable's switch from candidate to public
-feed remains an owner follow-up; its installed payload is already verified.
+processing was performed. The owner completed the disposable's switch to
+the public feed. Final URL/cache, installed-file/action and settings readback
+passed on 2026-10-09; the limited-internal release routine is complete.
 
 Runtime source: 1f5ca2a87e0fc36e5cd621f1c86934fa85fd6a15.
 Frozen distribution payload: ac23a1d76c45b297dd40b196ce50e2b320122389.

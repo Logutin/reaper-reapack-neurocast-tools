@@ -11,7 +11,7 @@
 > for limited-internal use. ElevenLabs v2.1.7 skips ineligible STS selections,
 > displays the skip report and ships refreshed manual guidance. The owner
 > passed the packaged Windows check; readback verified 71 exact files and
-> 14 Main actions. The disposable public-feed switch remains pending.
+> 14 Main actions. The disposable public-feed switch and final readback are complete.
 > See the [0.1.9 release record](2026-10-09_package_implementation_0.1.9.md).
 > The original design and lifecycle qualification below are historical;
 > broader platform/network/lifecycle checks were not repeated.
