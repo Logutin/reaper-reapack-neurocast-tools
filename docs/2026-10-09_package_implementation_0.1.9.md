@@ -46,3 +46,18 @@ and 14 exactly-once actions. The public repository is configured; original
 repository settings and private telemetry file hashes were retained locally
 outside Git. No installed files, running project or settings were changed by
 the agent. The owner-run helper performs the candidate repository setup.
+
+## Frozen candidate handoff
+
+Payload commit: `ac23a1d76c45b297dd40b196ce50e2b320122389`.
+Candidate feed: `qualification/Neurocast_Tools_0.1.9_candidate.xml`.
+SHA-256: `a5001379d3fdc2197caf0c7d29c6e5e17d3bdfa929a2fc3b3860a87e42394951`.
+All 201 new source URLs pin that payload; the eight historical public versions
+are unchanged. The public root index remains byte-identical to 0.1.8.
+
+Run `qualification/Neurocast_Tools_0_1_9_candidate_and_smoke.lua` through the
+disposable REAPER Action List. Apply 0.1.9, then rerun the helper for the small
+startup/STS-explanation/Help/normal-close checklist. Its path guard and setup,
+installed-state, missing-dependency and rejected-setup branches passed five
+headless scenarios. Installed receipt/byte verification and owner packaged
+acceptance are pending; the candidate must not be promoted before both pass.
