@@ -72,6 +72,9 @@ The root index promotes the exact accepted candidate, with 201 immutable 0.1.9
 source URLs and all eight historical public versions preserved. Feed SHA-256:
 a5001379d3fdc2197caf0c7d29c6e5e17d3bdfa929a2fc3b3860a87e42394951.
 
+Publication commit: `a981011`. Public raw-GitHub download was verified equal
+to the committed root index and accepted candidate after push.
+
 The disposable still uses the candidate URL with manual-install policy 0.
 Its pre-update baseline used the public URL with default policy 2. Owner switch
 to the public URL and subsequent readback remain pending; do not call those
