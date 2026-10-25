@@ -3,6 +3,11 @@
 The current published package is **Neurocast Tools 0.1.9**, a
 limited-internal release for selected team members.
 
+> **Vacation hold (2026-10-25):** keep 0.1.9 / ElevenLabs v2.1.7 and the existing
+> production backend in use. The next client/backend rollout is postponed until
+> the owner explicitly resumes it. Read the
+> [handoff](docs/2026-10-25_vacation_release_hold_handoff.md) before release work.
+
 Install/update through the repository
 [index.xml](https://raw.githubusercontent.com/Logutin/reaper-reapack-neurocast-tools/main/index.xml).
 ReaImGui remains an external prerequisite; package minimum remains REAPER 7.72+.

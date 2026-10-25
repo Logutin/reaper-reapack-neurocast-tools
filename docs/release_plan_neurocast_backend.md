@@ -1,5 +1,11 @@
 # Neurocast-backend ReaPack release plan
 
+> **Current owner decision (2026-10-25):** new client/backend rollout is on
+> vacation hold. Continue using 0.1.9 / ElevenLabs v2.1.7 and the existing
+> production backend. Future execution sections below are deferred until an
+> explicit owner instruction. See the
+> [vacation handoff](2026-10-25_vacation_release_hold_handoff.md).
+
 > Source snapshot: 2026-08-29, based on `auphonic-mt` commit
 > `238097e631e0cbf6e9c687dab09184649864fc6a`. The package source tree is
 > assembled, its Windows x64 local qualification passed, and its limited
