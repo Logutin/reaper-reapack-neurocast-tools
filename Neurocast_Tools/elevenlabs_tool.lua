@@ -1,5 +1,5 @@
 --========================================================
--- Elevenlabs Studio Neurocast tool script v2.1.7
+-- Elevenlabs Studio Neurocast tool script v2.1.8
 --========================================================
 
 -- Entrypoint-owned orchestration between the shared Voice Library API/state/
@@ -1208,7 +1208,7 @@ if ... == "__voice_library_add_controller_headless" then
 end
 
 local r = assert(reaper, "Reaper API not found. This script must be run within Reaper.")
-local SCRIPT_VERSION = "v2.1.7"
+local SCRIPT_VERSION = "v2.1.12"
 local TOOLSET_VERSION = SCRIPT_VERSION
 
 local active_locale = "eng"
@@ -1317,6 +1317,22 @@ if not ok_json then
   return
 end
 local json = json_or_err
+
+local ok_pronunciation, pronunciation_or_err = pcall(require, "modules-neurocast.pronunciation_controller")
+if not ok_pronunciation then
+  package.path = old_package_path
+  r.MB(t("Failed to load pronunciation support. Reinstall the complete Neurocast Tools package."), t("Error"), 0)
+  return
+end
+local PronunciationController = pronunciation_or_err
+local ok_pronunciation_context, pronunciation_context_or_err = pcall(require, "modules-neurocast.pronunciation_context")
+if not ok_pronunciation_context then
+  package.path = old_package_path
+  r.MB(t("Failed to load pronunciation support. Reinstall the complete Neurocast Tools package."), t("Error"), 0)
+  return
+end
+local PronunciationContext = pronunciation_context_or_err
+
 
 local ok_util, util_or_err = pcall(require, "modules-neurocast.Util")
 if not ok_util then
@@ -1531,7 +1547,9 @@ local ImGui = ImGuiOrErr
 -- we will also revert package.path to old_package_path on exit:
 local send_telemetry_closed_event = nil
 local shutdown_voice_library_controller = nil
+local shutdown_pronunciation_controller = nil
 r.atexit(function()
+  if shutdown_pronunciation_controller then shutdown_pronunciation_controller() end
   if type(shutdown_voice_library_controller) == "function" then
     shutdown_voice_library_controller()
   end
@@ -2664,8 +2682,18 @@ local submit_sensitive_studio_get_without_log = submit_without_preparation_log(
 )
 
 local voice_library_preview = VoicePreview.new({
-  submit = submit_sensitive_studio_get_without_log,
+  submit = function(req, done, opts, rec)
+    if rec.owner == "pronunciation" then return UI.submit_pronunciation_preview(req, done, opts, rec) end
+    return submit_sensitive_studio_get_without_log(req, done, opts, rec)
+  end,
   build_download_request = function(spec)
+    if tostring(spec and spec.owner or "") == "pronunciation" then
+      local req, err = Backend.client():text_to_speech_request(
+        spec.voice_id, "mp3_44100_192", spec.generation_payload,
+        spec.download_path, "IPA preview", 300)
+      if req then req.connect_timeout_sec = 10; req.owner = "pronunciation_preview"; req.blocking = false end
+      return req, err
+    end
     if tostring(spec and spec.owner or "") == "account_voices" then
       return Backend.client():account_voice_preview_request(
         spec.voice_id,
@@ -2705,7 +2733,7 @@ local voice_library_preview = VoicePreview.new({
   end,
   update_last_curl_state = Curl.update_last_curl_state,
   update_retry_state = Jobs.update_record_retry_state,
-  is_retryable = Jobs.is_retryable_result,
+  is_retryable = function(result) return Eleven.is_retryable_read(result) end,
   enqueue_retry = Jobs.enqueue_retry,
   format_attempt_label = Jobs.format_attempt_label,
   max_attempts = CFG.retry_max_attempts_misc,
@@ -2780,7 +2808,7 @@ S.el_voice_library_controller = create_voice_library_controller({
     })
   end,
   enqueue_retry = Jobs.enqueue_retry,
-  is_retryable = Jobs.is_retryable_result,
+  is_retryable = function(result) return Eleven.is_retryable_read(result) end,
   update_retry_state = Jobs.update_record_retry_state,
   update_transport_state = Curl.update_last_curl_state,
   format_attempt_label = Jobs.format_attempt_label,
@@ -2888,7 +2916,7 @@ S.el_voice_library_add_controller = create_voice_library_add_controller({
       catalog.by_id[tostring(voice_id or "")] ~= nil
   end,
   enqueue_retry = Jobs.enqueue_retry,
-  is_retryable = Jobs.is_retryable_result,
+  is_retryable = function(result) return Eleven.is_retryable_read(result) end,
   reconcile_max_attempts = CFG.retry_max_attempts_misc,
   reconcile_page_size = SharedVoicesApi.MAX_PAGE_SIZE,
   add_label = t("Add shared voice"),
@@ -3055,6 +3083,7 @@ function Eleven.refresh_voices_after_library_add()
 end
 
 function Eleven.notify_voice_library_account_changed()
+  if S.pronunciation then S.pronunciation:reset(); if S.pronunciation_item_context then S.pronunciation_item_context:reset() end; S.pronunciation_preview_session = nil; Eleven.stop_voice_preview("pronunciation") end
   Eleven.stop_voice_preview("account_voices")
   Eleven.stop_voice_preview("voice_library")
   S.el_voice_library_account_generation = S.el_voice_library_account_generation + 1
@@ -3380,6 +3409,7 @@ function Auth.apply_token_payload(payload)
 end --function Auth.apply_token_payload(payload)
 
 function Auth.clear_runtime_tokens()
+  if S.pronunciation then S.pronunciation:reset(); if S.pronunciation_item_context then S.pronunciation_item_context:reset() end; S.pronunciation_preview_session = nil; Eleven.stop_voice_preview("pronunciation") end
   S.access_token = ""
   S.refresh_token = ""
   S.password = ""
@@ -4836,8 +4866,62 @@ end  --enf of "do --WORK WITH REAPER PROJ"
 -- Called by `Eleven.summarize_el_error` and `Eleven.summarize_sts_error_body`; caller passes `body` and `max_len`.
 -- Called by `Eleven.summarize_el_error` and `Eleven.summarize_sts_error_body`; caller passes `val`.
 do --some API helpers (ElevenLabs, OpenAI) and curl somehow
-  -- Summarizes ElevenLabs error into a friendlier form for logs or UI.
-  -- Called by several helpers (for example `Eleven.fetch_el_models`, `Eleven.fetch_el_voices`, and `Eleven.submit_el_speech_to_speech_jobs_fast`); caller passes `result`.
+  -- BEGIN ELEVENLABS RETRY POLICY
+  -- Contract snapshot: backend acb84f8 / 1.14-provider-errors-20261009.
+  -- Only reads may use transport retries. A submitted mutation has no replay
+  -- guarantee, including when its result is empty or cannot be decoded/delivered.
+  function Eleven.error_envelope(result)
+    if type(result and result.body) ~= "string" then return {}, {} end
+    local ok, body = pcall(json.decode, result.body)
+    if not ok or type(body) ~= "table" then return {}, {} end
+    return body, type(body.details) == "table" and body.details or {}
+  end
+
+  function Eleven.is_retryable_read(result, invalid_output)
+    local body, details = Eleven.error_envelope(result)
+    if details.mutationOutcome ~= nil or body.code == "EXTERNAL_MUTATION_REJECTED" or
+       body.code == "EXTERNAL_MUTATION_OUTCOME_UNCERTAIN" then return false end
+    local upstream = tonumber(details.upstreamStatus)
+    if upstream and upstream >= 400 and upstream <= 499 and upstream ~= 408 and upstream ~= 429 then
+      return false
+    end
+    local http = tonumber(result and result.http_code)
+    if invalid_output and http and http >= 200 and http <= 299 then return true end
+    return Jobs.is_retryable_result(result)
+  end
+
+  function Eleven.finish_mutation_failure(rec, result, err_txt)
+    local body, details = Eleven.error_envelope(result)
+    local status = tonumber(details.upstreamStatus) or tonumber(result and result.http_code)
+    local uncertain = details.mutationOutcome == "uncertain" or
+      body.code == "EXTERNAL_MUTATION_OUTCOME_UNCERTAIN"
+    local rejected = not uncertain and (details.mutationOutcome == "definite_rejection" or
+      body.code == "EXTERNAL_MUTATION_REJECTED" or
+      (status and status >= 400 and status <= 499 and status ~= 408))
+    local next_step
+    if rejected then
+      next_step = t("Request rejected. No automatic retry. Correct the cause, then submit a new request.")
+    else
+      next_step = t("Outcome uncertain; the provider may already have processed this request. Retry is disabled. Check account/history or ask a manager before submitting again.")
+    end
+    local delay = tonumber(details.retryAfterSeconds)
+    if delay and delay >= 0 and delay < math.huge and delay == math.floor(delay) then
+      next_step = next_step .. " " .. string.format(t("Wait at least %s seconds before a new request."), tostring(delay))
+    end
+    local message = tostring(err_txt or t("Request failed.")) .. "\n" .. next_step
+    result.ok = false
+    result.err = message
+    Jobs.update_record_retry_state(rec, message, result, Util.clip_body_text(result.body or message, 512))
+    rec._state = "failed_final"
+    rec._next_retry_at = nil
+    -- Also remove the generic jobs-table replay path. A deliberate corrected
+    -- submission must go through its normal validation/confirmation workflow.
+    rec._retry_submit = nil
+    return message
+  end
+  -- END ELEVENLABS RETRY POLICY
+
+  -- Preserve the backend's readable explanation for visible UI and diagnostics.
   function Eleven.summarize_el_error(result)
     local base = result and result.err or nil
     local body = result and result.body or nil
@@ -4849,7 +4933,9 @@ do --some API helpers (ElevenLabs, OpenAI) and curl somehow
         local pieces = {}
         local status = Util.stringify_json_value(decoded.status or decoded.statusCode or decoded.code)
         local title = Util.stringify_json_value(decoded.error or decoded.title)
-        local msg_txt = Util.stringify_json_value(decoded.message or decoded.detail)
+        local details = type(decoded.details) == "table" and decoded.details or {}
+        local provider_error = type(details.providerError) == "table" and details.providerError or {}
+        local msg_txt = Util.stringify_json_value(decoded.message or decoded.detail or provider_error.message)
         if status and status ~= "" then table.insert(pieces, status) end
         if title and title ~= "" then table.insert(pieces, title) end
         if msg_txt and msg_txt ~= "" then table.insert(pieces, msg_txt) end
@@ -5428,6 +5514,7 @@ do --some API helpers (ElevenLabs, OpenAI) and curl somehow
   end
 
   function Auth.request_login(on_done)
+    if S.pronunciation then S.pronunciation:reset(); if S.pronunciation_item_context then S.pronunciation_item_context:reset() end; S.pronunciation_preview_session = nil; Eleven.stop_voice_preview("pronunciation") end
     local email = Util.trim(S.email or "")
     local password = tostring(S.password or "")
     if email == "" then
@@ -5745,7 +5832,7 @@ do --some API helpers (ElevenLabs, OpenAI) and curl somehow
         local err_txt = result.err or t("Models request failed.")
         local snippet = Util.clip_body_text(result.body or err_txt, 512)
         Jobs.update_record_retry_state(rec, err_txt, result, snippet)
-        local retryable = Jobs.is_retryable_result(result)
+        local retryable = Eleven.is_retryable_read(result)
         if rec._retry_generation ~= S.retry_generation then retryable = false end
         local attempt_now = rec._attempt or 1
         if retryable and attempt_now < max_attempts then
@@ -5794,6 +5881,7 @@ do --some API helpers (ElevenLabs, OpenAI) and curl somehow
     if type(catalog) ~= "table" or type(catalog.by_id) ~= "table" then
       return false, t("Voice catalog is invalid.")
     end
+    S.pronunciation_catalog_generation = S.el_voice_library_account_generation
     local previous_selected_id = tostring(S.el_voice_selected_id or "")
     local selected_id_before_commit = previous_selected_id
     S.el_voices = catalog
@@ -6127,7 +6215,7 @@ do --some API helpers (ElevenLabs, OpenAI) and curl somehow
         local snippet = aggregate_only and err_txt or
           Util.clip_body_text(result.body or err_txt, 512)
         Jobs.update_record_retry_state(rec, err_txt, result, snippet)
-        local retryable = Jobs.is_retryable_result(result)
+        local retryable = Eleven.is_retryable_read(result)
         if rec._retry_generation ~= S.retry_generation then retryable = false end
         local attempt_now = rec._attempt or 1
         if retryable and attempt_now < max_attempts then
@@ -6996,6 +7084,14 @@ function UI.format_record_progress(rec, job)
     return t("running")
   end
   return t("queued")
+end
+
+-- Show the record-owned failure outside the collapsible diagnostics panel.
+-- Unrelated successful callbacks may clear global status, but not this message.
+function UI.render_record_failure(rec, target_ctx)
+  if rec and rec._state == "failed_final" and rec._last_error_summary then
+    ImGui.TextWrapped(target_ctx or ctx, tostring(rec._last_error_summary))
+  end
 end
 
 -- Checks whether a record can be retried from the UI.
@@ -7986,8 +8082,7 @@ function Eleven.submit_el_voice_preview_job(rec)
         Curl.update_last_curl_state(result, job, "Voice preview stream")
         local snippet = Util.clip_body_text(body_txt or result.err_txt or err_txt, 512)
         Jobs.update_record_retry_state(rec, err_txt, result, snippet)
-        local retryable = Jobs.is_retryable_result(result)
-        if not ok_output then retryable = true end
+        local retryable = Eleven.is_retryable_read(result, not ok_output)
         if rec._retry_generation ~= S.retry_generation then retryable = false end
         local attempt_now = rec._attempt or 1
         if retryable and attempt_now < max_attempts then
@@ -8099,7 +8194,7 @@ function Eleven.add_voice_from_preview(rec)
     payload.played_not_selected_voice_ids = rec.played_not_selected_voice_ids
   end
 
-  local max_attempts = tonumber(CFG.retry_max_attempts_voice_design) or 3
+  local max_attempts = 1 -- Submitted mutations are never automatically replayed.
   create_rec._attempt = 1
   create_rec._max_attempts = max_attempts
   create_rec._auth_refresh_used_once = false
@@ -8145,26 +8240,9 @@ function Eleven.add_voice_from_preview(rec)
       local err_txt = Eleven.summarize_el_error(result)
       result.err = err_txt
       Curl.update_last_curl_state(result, job, "Voice create")
-      local snippet = Util.clip_body_text(result.body or err_txt, 512)
-      Jobs.update_record_retry_state(create_rec, err_txt, result, snippet)
-      local retryable = Jobs.is_retryable_result(result)
-      if create_rec._retry_generation ~= S.retry_generation then retryable = false end
-      local attempt_now = create_rec._attempt or 1
-      if retryable and attempt_now < max_attempts then
-        local next_attempt = attempt_now + 1
-        create_rec._attempt = next_attempt
-        Jobs.enqueue_retry(create_rec._retry_label or base_label, submit_once, next_attempt, max_attempts, err_txt, create_rec)
-        if snippet and snippet ~= "" then
-          Util.msg("Retry scheduled (Voice create): " .. snippet, 1)
-        end
-        S.last_api_error = err_txt
-        S.status_text = string.format(t("Voice create failed (retrying): %s"), err_txt)
-      else
-        create_rec._state = "failed_final"
-        create_rec._next_retry_at = nil
-        S.last_api_error = err_txt
-        S.status_text = string.format(t("Voice create failed: %s"), err_txt)
-      end
+      err_txt = Eleven.finish_mutation_failure(create_rec, result, err_txt)
+      S.last_api_error = err_txt
+      S.status_text = string.format(t("Voice create failed: %s"), err_txt)
     end
 
     local job, err = TelemetryBridge.submit_curl(req, on_done, opts, {
@@ -8238,7 +8316,7 @@ function Eleven.submit_el_ivc_create(file_path, meta)
   create_rec.remove_background_noise = remove_background_noise
   create_rec.labels = voice_labels
 
-  local max_attempts = tonumber(CFG.retry_max_attempts_ivc) or 3
+  local max_attempts = 1 -- Submitted mutations are never automatically replayed.
   create_rec._attempt = 1
   create_rec._max_attempts = max_attempts
   create_rec._auth_refresh_used_once = false
@@ -8316,26 +8394,9 @@ function Eleven.submit_el_ivc_create(file_path, meta)
       end
 
       local err_txt = result.err or t("IVC request failed.")
-      local snippet = Util.clip_body_text(result.body or err_txt, 512)
-      Jobs.update_record_retry_state(create_rec, err_txt, result, snippet)
-      local retryable = Jobs.is_retryable_result(result)
-      if create_rec._retry_generation ~= S.retry_generation then retryable = false end
-      local attempt_now = create_rec._attempt or 1
-      if retryable and attempt_now < max_attempts then
-        local next_attempt = attempt_now + 1
-        create_rec._attempt = next_attempt
-        Jobs.enqueue_retry(create_rec._retry_label or base_label, submit_once, next_attempt, max_attempts, err_txt, create_rec)
-        if snippet and snippet ~= "" then
-          Util.msg("Retry scheduled (IVC create): " .. snippet, 1)
-        end
-        S.last_api_error = err_txt
-        S.status_text = string.format(t("IVC create failed (retrying): %s"), err_txt)
-      else
-        create_rec._state = "failed_final"
-        create_rec._next_retry_at = nil
-        S.last_api_error = err_txt
-        S.status_text = string.format(t("IVC create failed: %s"), err_txt)
-      end
+      err_txt = Eleven.finish_mutation_failure(create_rec, result, err_txt)
+      S.last_api_error = err_txt
+      S.status_text = string.format(t("IVC create failed: %s"), err_txt)
     end
 
     local job, err = TelemetryBridge.submit_curl(req, on_done, opts, {
@@ -8651,7 +8712,7 @@ function Eleven.submit_el_voice_design_job(rec)
     return false, t("Design record missing.")
   end
 
-  local max_attempts = tonumber(CFG.retry_max_attempts_voice_design) or 3
+  local max_attempts = 1 -- Submitted mutations are never automatically replayed.
   rec._attempt = 1
   rec._max_attempts = max_attempts
   rec._auth_refresh_used_once = false
@@ -8699,9 +8760,15 @@ function Eleven.submit_el_voice_design_job(rec)
       Curl.update_last_curl_state(result, job, "Voice design")
       if result.ok and result.body and result.body ~= "" then
         local ok, decoded = pcall(json.decode, result.body)
-        if ok and type(decoded) == "table" then
-          local previews = decoded.previews
-          if type(previews) ~= "table" then previews = {} end
+        local previews = ok and type(decoded) == "table" and decoded.previews
+        local usable_previews = type(previews) == "table" and #previews > 0
+        if usable_previews then
+          for _, preview in ipairs(previews) do
+            local id = type(preview) == "table" and (preview.generated_voice_id or preview.generatedVoiceId or preview.id)
+            if type(id) ~= "string" or id == "" then usable_previews = false; break end
+          end
+        end
+        if usable_previews then
           Eleven.stop_voice_preview("voice_design")
           ensure_voice_design_records()
           S.voice_design_records.preview = {}
@@ -8744,7 +8811,7 @@ function Eleven.submit_el_voice_design_job(rec)
           end
           return
         end
-        local err_txt = t("Voice design response JSON decode failed.")
+        local err_txt = ok and t("Voice design response missing usable previews.") or t("Voice design response JSON decode failed.")
         result.ok = false
         result.err = err_txt
       else
@@ -8753,23 +8820,9 @@ function Eleven.submit_el_voice_design_job(rec)
       end
 
       local err_txt = result.err or t("Voice design request failed.")
-      local snippet = Util.clip_body_text(result.body or err_txt, 512)
-      Jobs.update_record_retry_state(rec, err_txt, result, snippet)
-      local retryable = Jobs.is_retryable_result(result)
-      if rec._retry_generation ~= S.retry_generation then retryable = false end
-      local attempt_now = rec._attempt or 1
-      if retryable and attempt_now < max_attempts then
-        local next_attempt = attempt_now + 1
-        rec._attempt = next_attempt
-        Jobs.enqueue_retry(rec._retry_label or base_label, submit_once, next_attempt, max_attempts, err_txt, rec)
-        S.last_api_error = err_txt
-        S.status_text = string.format(t("Voice design failed (retrying): %s"), err_txt)
-      else
-        rec._state = "failed_final"
-        rec._next_retry_at = nil
-        S.last_api_error = err_txt
-        S.status_text = string.format(t("Voice design failed: %s"), err_txt)
-      end
+      err_txt = Eleven.finish_mutation_failure(rec, result, err_txt)
+      S.last_api_error = err_txt
+      S.status_text = string.format(t("Voice design failed: %s"), err_txt)
     end
 
     local job, err = TelemetryBridge.submit_curl(req, on_done, opts, {
@@ -9339,7 +9392,7 @@ function Eleven.submit_el_speech_to_speech_jobs_fast(records)
   local track_map = {}
   local total = #records
   local submitted = 0
-  local max_attempts = tonumber(CFG.retry_max_attempts_sts) or 3
+  local max_attempts = 1 -- Submitted mutations are never automatically replayed.
   for i, rec in ipairs(records) do
     local rec_ref = rec
     local voice_id = rec_ref.voice_id or ""
@@ -9440,27 +9493,9 @@ function Eleven.submit_el_speech_to_speech_jobs_fast(records)
           result.ok = false
           result.err = err_txt
           Curl.update_last_curl_state(result, job, "Speech-to-speech")
-          local snippet = Util.clip_body_text(body_txt or result.err_txt or err_txt, 512)
-          Jobs.update_record_retry_state(rec_ref, err_txt, result, snippet)
-          local retryable = Jobs.is_retryable_result(result)
-          if not ok_output then retryable = true end
-          if rec_ref._retry_generation ~= S.retry_generation then retryable = false end
-          local attempt_now = rec_ref._attempt or 1
-          if retryable and attempt_now < max_attempts then
-            local next_attempt = attempt_now + 1
-            rec_ref._attempt = next_attempt
-            Jobs.enqueue_retry(rec_ref._retry_label or base_label, submit_once, next_attempt, max_attempts, err_txt, rec_ref)
-            if snippet and snippet ~= "" then
-              Util.msg("Retry scheduled (FAST STS): " .. snippet, 1)
-            end
-            S.last_api_error = err_txt
-            S.status_text = string.format(t("Speech-to-speech failed (retrying): %s"), err_txt)
-          else
-            rec_ref._state = "failed_final"
-            rec_ref._next_retry_at = nil
-            S.last_api_error = err_txt
-            S.status_text = string.format(t("Speech-to-speech failed: %s"), err_txt)
-          end
+          err_txt = Eleven.finish_mutation_failure(rec_ref, result, err_txt)
+          S.last_api_error = err_txt
+          S.status_text = string.format(t("Speech-to-speech failed: %s"), err_txt)
         end
       end
 
@@ -9505,7 +9540,7 @@ function Eleven.submit_el_speech_to_speech_jobs(records)
 
   local total = #records
   local submitted = 0
-  local max_attempts = tonumber(CFG.retry_max_attempts_sts) or 3
+  local max_attempts = 1 -- Submitted mutations are never automatically replayed.
   for i, rec in ipairs(records) do
     local voice_id = rec.voice_id or ""
     if voice_id == "" then
@@ -9596,27 +9631,9 @@ function Eleven.submit_el_speech_to_speech_jobs(records)
           result.ok = false
           result.err = err_txt
           Curl.update_last_curl_state(result, job, "Speech-to-speech")
-          local snippet = Util.clip_body_text(body_txt or result.err_txt or err_txt, 512)
-          Jobs.update_record_retry_state(rec, err_txt, result, snippet)
-          local retryable = Jobs.is_retryable_result(result)
-          if not ok_output then retryable = true end
-          if rec._retry_generation ~= S.retry_generation then retryable = false end
-          local attempt_now = rec._attempt or 1
-          if retryable and attempt_now < max_attempts then
-            local next_attempt = attempt_now + 1
-            rec._attempt = next_attempt
-            Jobs.enqueue_retry(rec._retry_label or base_label, submit_once, next_attempt, max_attempts, err_txt, rec)
-            if snippet and snippet ~= "" then
-              Util.msg("Retry scheduled (STS): " .. snippet, 1)
-            end
-            S.last_api_error = err_txt
-            S.status_text = string.format(t("Speech-to-speech failed (retrying): %s"), err_txt)
-          else
-            rec._state = "failed_final"
-            rec._next_retry_at = nil
-            S.last_api_error = err_txt
-            S.status_text = string.format(t("Speech-to-speech failed: %s"), err_txt)
-          end
+          err_txt = Eleven.finish_mutation_failure(rec, result, err_txt)
+          S.last_api_error = err_txt
+          S.status_text = string.format(t("Speech-to-speech failed: %s"), err_txt)
         end
       end
 
@@ -10188,7 +10205,7 @@ function Eleven.submit_el_text_to_speech_jobs_fast(records, model_id)
   local track_map = {}
   local total = #records
   local submitted = 0
-  local max_attempts = tonumber(CFG.retry_max_attempts_tts) or 3
+  local max_attempts = 1 -- Submitted mutations are never automatically replayed.
   for i, rec in ipairs(records) do
     local rec_ref = rec
     local voice_id = rec_ref.voice_id or ""
@@ -10288,27 +10305,9 @@ function Eleven.submit_el_text_to_speech_jobs_fast(records, model_id)
           result.ok = false
           result.err = err_txt
           Curl.update_last_curl_state(result, job, "Text-to-speech")
-          local snippet = Util.clip_body_text(body_txt or result.err_txt or err_txt, 512)
-          Jobs.update_record_retry_state(rec_ref, err_txt, result, snippet)
-          local retryable = Jobs.is_retryable_result(result)
-          if not ok_output then retryable = true end
-          if rec_ref._retry_generation ~= S.retry_generation then retryable = false end
-          local attempt_now = rec_ref._attempt or 1
-          if retryable and attempt_now < max_attempts then
-            local next_attempt = attempt_now + 1
-            rec_ref._attempt = next_attempt
-            Jobs.enqueue_retry(rec_ref._retry_label or base_label, submit_once, next_attempt, max_attempts, err_txt, rec_ref)
-            if snippet and snippet ~= "" then
-              Util.msg("Retry scheduled (FAST TTS): " .. snippet, 1)
-            end
-            S.last_api_error = err_txt
-            S.status_text = string.format(t("Text-to-speech failed (retrying): %s"), err_txt)
-          else
-            rec_ref._state = "failed_final"
-            rec_ref._next_retry_at = nil
-            S.last_api_error = err_txt
-            S.status_text = string.format(t("Text-to-speech failed: %s"), err_txt)
-          end
+          err_txt = Eleven.finish_mutation_failure(rec_ref, result, err_txt)
+          S.last_api_error = err_txt
+          S.status_text = string.format(t("Text-to-speech failed: %s"), err_txt)
         end
       end
 
@@ -10356,7 +10355,7 @@ function Eleven.submit_el_text_to_speech_jobs(records, model_id)
 
   local total = #records
   local submitted = 0
-  local max_attempts = tonumber(CFG.retry_max_attempts_tts) or 3
+  local max_attempts = 1 -- Submitted mutations are never automatically replayed.
   for i, rec in ipairs(records) do
     local voice_id = rec.voice_id or ""
     if voice_id == "" then
@@ -10446,27 +10445,9 @@ function Eleven.submit_el_text_to_speech_jobs(records, model_id)
           result.ok = false
           result.err = err_txt
           Curl.update_last_curl_state(result, job, "Text-to-speech")
-          local snippet = Util.clip_body_text(body_txt or result.err_txt or err_txt, 512)
-          Jobs.update_record_retry_state(rec, err_txt, result, snippet)
-          local retryable = Jobs.is_retryable_result(result)
-          if not ok_output then retryable = true end
-          if rec._retry_generation ~= S.retry_generation then retryable = false end
-          local attempt_now = rec._attempt or 1
-          if retryable and attempt_now < max_attempts then
-            local next_attempt = attempt_now + 1
-            rec._attempt = next_attempt
-            Jobs.enqueue_retry(rec._retry_label or base_label, submit_once, next_attempt, max_attempts, err_txt, rec)
-            if snippet and snippet ~= "" then
-              Util.msg("Retry scheduled (TTS): " .. snippet, 1)
-            end
-            S.last_api_error = err_txt
-            S.status_text = string.format(t("Text-to-speech failed (retrying): %s"), err_txt)
-          else
-            rec._state = "failed_final"
-            rec._next_retry_at = nil
-            S.last_api_error = err_txt
-            S.status_text = string.format(t("Text-to-speech failed: %s"), err_txt)
-          end
+          err_txt = Eleven.finish_mutation_failure(rec, result, err_txt)
+          S.last_api_error = err_txt
+          S.status_text = string.format(t("Text-to-speech failed: %s"), err_txt)
         end
       end
 
@@ -10844,7 +10825,7 @@ function OpenAI.submit_openai_text_rewrite_jobs(records)
   local track_map = {}
   local total = #records
   local submitted = 0
-  local max_attempts = tonumber(CFG.retry_max_attempts_openai) or 3
+  local max_attempts = 1 -- Paid rewrites follow the same no-replay boundary.
 
   local function insert_grouped_results(rec_ref, id_to_text)
     local items = rec_ref.items or {}
@@ -10948,8 +10929,7 @@ function OpenAI.submit_openai_text_rewrite_jobs(records)
           end
         end
 
-        local force_retry = false
-        local force_no_retry = false
+        if not result.ok then result.err = OpenAI.summarize_openai_error(result) end
         if result.ok then
           local ok_dec, decoded = pcall(json.decode, body_txt)
           if ok_dec and type(decoded) == "table" then
@@ -10968,7 +10948,6 @@ function OpenAI.submit_openai_text_rewrite_jobs(records)
                 else
                   result.ok = false
                   result.err = string.format(t("OpenAI insert failed: %s"), tostring(ins_err))
-                  force_no_retry = true
                 end
               else
                 local err_txt = batch_err or t("OpenAI batch response parse failed.")
@@ -10977,11 +10956,6 @@ function OpenAI.submit_openai_text_rewrite_jobs(records)
                 end
                 result.ok = false
                 result.err = err_txt
-                force_retry = true
-                if Jobs.is_openai_refusal_error(err_txt) then
-                  force_retry = false
-                  force_no_retry = true
-                end
               end
             else
               local out_text, out_err = OpenAI.extract_openai_output_text(decoded)
@@ -11010,46 +10984,21 @@ function OpenAI.submit_openai_text_rewrite_jobs(records)
                 end
                 result.ok = false
                 result.err = err_txt
-                force_retry = true
-                if Jobs.is_openai_refusal_error(err_txt) then
-                  force_retry = false
-                  force_no_retry = true
-                end
               end
             end
           else
             local err_txt = string.format(t("OpenAI response decode failed: %s"), tostring(decoded))
             result.ok = false
             result.err = err_txt
-            force_retry = true
           end
         end
 
         local err_txt = result.err or OpenAI.summarize_openai_error(result)
         result.err = err_txt
         Curl.update_last_curl_state(result, job, "OpenAI rewrite")
-        local snippet = Util.clip_body_text(body_txt or result.err_txt or err_txt, 512)
-        Jobs.update_record_retry_state(rec_ref, err_txt, result, snippet)
-        local retryable = Jobs.is_retryable_result(result)
-        if force_retry then retryable = true end
-        if force_no_retry then retryable = false end
-        if rec_ref._retry_generation ~= S.retry_generation then retryable = false end
-        local attempt_now = rec_ref._attempt or 1
-        if retryable and attempt_now < max_attempts then
-          local next_attempt = attempt_now + 1
-          rec_ref._attempt = next_attempt
-          Jobs.enqueue_retry(rec_ref._retry_label or base_label, submit_once, next_attempt, max_attempts, err_txt, rec_ref)
-          if snippet and snippet ~= "" then
-            Util.msg("Retry scheduled (OpenAI): " .. snippet, 1)
-          end
-          S.last_api_error = err_txt
-          S.status_text = string.format(t("OpenAI rewrite failed (retrying): %s"), err_txt)
-        else
-          rec_ref._state = "failed_final"
-          rec_ref._next_retry_at = nil
-          S.last_api_error = err_txt
-          S.status_text = string.format(t("OpenAI rewrite failed: %s"), err_txt)
-        end
+        err_txt = Eleven.finish_mutation_failure(rec_ref, result, err_txt)
+        S.last_api_error = err_txt
+        S.status_text = string.format(t("OpenAI rewrite failed: %s"), err_txt)
       end
 
       local job, err = TelemetryBridge.submit_curl(req, on_done, opts, {
@@ -11308,6 +11257,391 @@ do --adding results to project
 end --adding results to project
 
 -- Shared Audio tags actions so button and hotkey paths stay behavior-identical.
+-- BEGIN PRONUNCIATION UI
+-- Isolated free lookup/feedback lane. Do not attach payload/response contents to
+-- telemetry or the paid-generation retry queue. Auth refresh is shared.
+function UI.submit_pronunciation(req, done, rec)
+  local function auth_failed()
+    done({ ok = false, http_code = 401, body = "" })
+  end
+  local handled = Auth.refresh_proactively_if_due(rec, rec._retry_submit, auth_failed)
+  if handled then return { id = "pronunciation_auth_wait" } end
+  return submit_sensitive_mutation_without_log(req, function(result, job)
+    if job then Cleanup.enqueue_job_cleanup(job) end
+    if tonumber(result.http_code) == 401 and rec.is_current() and not rec._auth_refresh_used_once then
+      local refreshed = Auth.refresh_after_401(rec, rec._retry_submit, auth_failed)
+      if refreshed then return end
+    end
+    done(result)
+    if rec._state == "failed_final" then
+      Util.msg("Pronunciation operation failed (HTTP " .. tostring(tonumber(result.http_code) or 0) .. "). See the IPA panel.", 2)
+    end
+  end, { read_body = true, body_max_bytes = 2 * 1024 * 1024, keep_output = false,
+    owner = "pronunciation", blocking = false })
+end
+
+function UI.pronunciation_controller()
+  if S.pronunciation then return S.pronunciation end
+  local c = PronunciationController.new({
+    decode = json.decode, now = r.time_precise,
+    authenticated = Auth.has_access_token,
+    build_lookup = function(payload) return Backend.client():pronunciation_request(payload) end,
+    build_feedback = function(id, payload) return Backend.client():pronunciation_feedback_request(id, payload) end,
+    submit = UI.submit_pronunciation
+  })
+  local locale = Util.extstate_get_camo(extstate_sections_keys.EXT_SECTION_for_UI_state, "pronunciation_locale")
+  if locale == "fr-FR" or locale == "pt-BR" or locale == "pt-PT" then c:set_input("", locale) end
+  S.pronunciation = c
+  shutdown_pronunciation_controller = function() c:shutdown(); if S.pronunciation_item_context then S.pronunciation_item_context:reset() end; Eleven.stop_voice_preview("pronunciation") end
+  return c
+end
+
+function UI.pronunciation_locale_label(locale)
+  local labels = { ["fr-FR"] = t("French - France"), ["pt-BR"] = t("Portuguese - Brazil"),
+    ["pt-PT"] = t("Portuguese - Portugal"), fr = t("French - region unspecified") }
+  return labels[locale] or t("Choose language and accent")
+end
+
+function UI.pronunciation_error_message(code)
+  local messages = {
+    locale = t("Choose France, Brazil or Portugal before finding IPA."),
+    word = t("Enter one word (up to 128 characters), with no spaces or numbers. Internal apostrophes and hyphens are allowed."),
+    login = t("Pronunciation requires login. Log in in Settings, then try again."),
+    forbidden = t("This login cannot use pronunciation. Ask your administrator for employee access."),
+    validation = t("The backend rejected this word or feedback context. Check the word, language, model and voice, then try again."),
+    not_found = t("No eligible pronunciation was found for this word and region. Check the spelling or try another word."),
+    candidate_missing = t("This pronunciation is no longer available for feedback. Find IPA again."),
+    unsupported = t("Pronunciation is unavailable on the selected backend. Choose the local development backend in Settings for testing."),
+    storage = t("The backend could not read or save pronunciation data. Try again after storage recovers."),
+    busy = t("A pronunciation request is already running or the backend is busy. Wait, then try again."),
+    unavailable = t("Pronunciation sources are temporarily unavailable. Keep any displayed alternatives and try again later."),
+    transport = t("The pronunciation request could not complete. Check your connection and backend, then retry explicitly."),
+    response = t("The backend returned an unexpected pronunciation response. Retry; if it continues, ask your administrator to check compatibility."),
+    context = t("Choose a TTS model and select a track with a unique account voice name, then wait for matching feedback to load."),
+    clipboard = t("IPA could not be copied. Try Copy IPA again."),
+    preference = t("The language choice could not be remembered. It is still selected for this session.")
+  }
+  return messages[code] or messages.response
+end
+
+function UI.pronunciation_time(value)
+  if type(value) ~= "number" then return t("No saved observation") end
+  local ok, date = pcall(os.date, "!%Y-%m-%d %H:%M UTC", math.floor(value / 1000))
+  if not ok then return t("Unknown time") end
+  return string.format(t("%s (%s min ago)"), date, tostring(math.floor(math.max(0, os.time() - value / 1000) / 60)))
+end
+
+function UI.pronunciation_outcome(outcome)
+  local labels = { worked = t("Worked"), did_not_work = t("Did not work"), unsure = t("Unsure") }
+  return labels[outcome] or t("No feedback for this model and voice")
+end
+
+-- The selected track is read afresh before rendering, submission and completion.
+-- Catalog filters do not change name resolution; duplicate names are rejected.
+function UI.pronunciation_track_voice()
+  if S.pronunciation_catalog_generation ~= S.el_voice_library_account_generation or
+      not S.el_voices or not S.el_voices.voices or #S.el_voices.voices == 0 then
+    return "", "", nil, t("Fetch account voices to enable preview and feedback. IPA lookup works without them.")
+  end
+  if r.CountSelectedTracks(0) ~= 1 then
+    return "", "", nil, t("Select exactly one track for preview and feedback.")
+  end
+  local track = r.GetSelectedTrack(0, 0)
+  local ok, name = r.GetTrackName(track)
+  if not ok or not name or name:match("^%s*$") then
+    return "", "", track, t("The selected track name is empty. Rename it to an account voice name.")
+  end
+  local resolution = VoiceCatalog.resolve_name(S.el_voices, name)
+  if resolution.status == "ambiguous" then
+    return "", name, track, t("Multiple account voices have this track name. Use a unique voice name and refresh account voices.")
+  end
+  if resolution.status ~= "unique" then
+    return "", name, track, t("No account voice matches the selected track name. Rename the track or refresh account voices.")
+  end
+  return resolution.selected_voice_id, name, track
+end
+
+-- Capture only the active project and selected item's notes. No take text,
+-- project selection, or transport state is changed by reading this snapshot.
+function UI.read_pronunciation_item()
+  local project = r.EnumProjects(-1, "")
+  if not project then return { reason = "read" } end
+  if r.CountSelectedMediaItems(project) ~= 1 then return { project = project, reason = "selection" } end
+  local item = r.GetSelectedMediaItem(project, 0)
+  if not item or not r.ValidatePtr2(project, item, "MediaItem*") then return { project = project, reason = "read" } end
+  local guid_ok, id = r.GetSetMediaItemInfo_String(item, "GUID", "", false)
+  local notes_ok, notes = r.GetSetMediaItemInfo_String(item, "P_NOTES", "", false)
+  if not guid_ok or not notes_ok or id == "" then return { project = project, reason = "read" } end
+  local track = r.GetMediaItemTrack(item)
+  local _, track_name = r.GetTrackName(track)
+  local label = string.format(t("Text item: track %s (%s), item %s"),
+    tostring(math.floor(r.GetMediaTrackInfo_Value(track, "IP_TRACKNUMBER"))), tostring(track_name or ""),
+    tostring(math.floor(r.GetMediaItemInfo_Value(item, "IP_ITEMNUMBER")) + 1))
+  return { project = project, item = item, id = id, text = notes, label = label }
+end
+
+function UI.write_pronunciation_item(snapshot, text)
+  -- Revalidate at the mutation boundary, independently of the display/controller.
+  local current = UI.read_pronunciation_item()
+  if current.reason or current.project ~= snapshot.project or current.item ~= snapshot.item or
+      current.id ~= snapshot.id or current.text ~= snapshot.expected then return false, "stale" end
+  if current.text == text then return true end
+  r.Undo_BeginBlock2(snapshot.project)
+  local ok, written, reason = pcall(function()
+    if not r.GetSetMediaItemInfo_String(snapshot.item, "P_NOTES", text, true) then return false, "write" end
+    r.UpdateItemInProject(snapshot.item)
+    local read_ok, actual = r.GetSetMediaItemInfo_String(snapshot.item, "P_NOTES", "", false)
+    if not read_ok or actual ~= text then return false, "readback" end
+    return true
+  end)
+  r.Undo_EndBlock2(snapshot.project, t("Apply IPA to item text"), 4)
+  if not ok then return false, "write" end
+  return written, reason
+end
+
+function UI.pronunciation_item_controller()
+  if not S.pronunciation_item_context then
+    S.pronunciation_item_context = PronunciationContext.new({ read = UI.read_pronunciation_item, write = UI.write_pronunciation_item })
+  end
+  return S.pronunciation_item_context
+end
+
+function UI.pronunciation_item_message(code)
+  local messages = {
+    selection = t("Word preview: select exactly one text item to preview its full text."),
+    empty = t("Word preview: the selected item's notes are empty."),
+    not_found = t("Word preview: no whole-word match was found in the selected item."),
+    read = t("The selected item's text could not be read. Select the item again and retry."),
+    encoding = t("The selected item's text contains invalid UTF-8. Correct its text before previewing or applying IPA."),
+    stale = t("The item or selection changed since this text was shown. Review the updated text and try again."),
+    write = t("The item's text could not be written. Check the item, then try Apply to item again."),
+    readback = t("The item's updated text could not be verified. Check its notes and use REAPER Undo if needed.")
+  }
+  return messages[code] or messages.read
+end
+
+function UI.apply_pronunciation_candidate(snapshot)
+  local c = S.pronunciation
+  local state = UI.pronunciation_item_controller()
+  if not c or c:ipa(snapshot.candidate_id) ~= snapshot.ipa then state.error = "stale"; return false end
+  local applied = state:apply(snapshot)
+  UI.sync_pronunciation_context()
+  return applied
+end
+
+function UI.sync_pronunciation_context()
+  local c = S.pronunciation
+  if not c then return end
+  local voice, name, track, warning = UI.pronunciation_track_voice()
+  c:set_context(S.el_tts_model_selected or "", voice)
+  local item_context = UI.pronunciation_item_controller()
+  item_context:sync(c.word)
+  local key = table.concat({ tostring(c.generation), tostring(track), name,
+    tostring(S.el_voice_library_account_generation), tostring(Auth.has_access_token()), tostring(item_context.revision) }, "\31")
+  if S.pronunciation_preview_context ~= key then
+    Eleven.stop_voice_preview("pronunciation")
+    S.pronunciation_preview_context = key
+    S.pronunciation_preview_error = nil
+  end
+  local pending = S.pronunciation_preview_pending
+  if pending and pending.pronunciation_snapshot and (c:ipa(pending.preview_id) ~= pending.pronunciation_snapshot.ipa or
+      not item_context:is_current(pending.pronunciation_snapshot)) then
+    Eleven.stop_voice_preview("pronunciation")
+  end
+  return name, warning
+end
+
+-- Paid previews bypass the GET retry/auth-replay lane. Keep the pending lock
+-- until curl completes even if playback was canceled or another source wins.
+function UI.submit_pronunciation_preview(req, done, opts, rec)
+  UI.sync_pronunciation_context()
+  if rec.canceled or rec.finished then return nil, "stale preview" end
+  if S.pronunciation_preview_pending then return nil, "IPA preview is still pending" end
+  local snapshot = S.pronunciation_preview_snapshot
+  if not UI.pronunciation_item_controller():is_current(snapshot) or
+      snapshot.text ~= req.json_payload_tbl.text then return nil, "stale preview" end
+  rec.pronunciation_snapshot = snapshot
+  S.pronunciation_preview_pending = rec
+  rec.started_at = r.time_precise()
+  local job, err = submit_sensitive_mutation_without_log(req, function(result, completed_job)
+    UI.sync_pronunciation_context()
+    if S.pronunciation_preview_pending == rec then S.pronunciation_preview_pending = nil end
+    if result.ok then result.body = "" end
+    done(result, completed_job)
+    if completed_job then Cleanup.enqueue_job_cleanup(completed_job) end
+  end, { read_body = true, body_max_bytes = 64 * 1024, keep_output = true,
+    owner = "pronunciation_preview", blocking = false })
+  if not job and S.pronunciation_preview_pending == rec then S.pronunciation_preview_pending = nil end
+  return job, err
+end
+
+function UI.request_pronunciation_preview(candidate, snapshot)
+  UI.sync_pronunciation_context()
+  local c = S.pronunciation
+  if not c or not c:has_context() or not Auth.has_access_token() or
+      S.pronunciation_preview_pending or c:ipa(candidate.id) ~= candidate.ipa then return end
+  local item_context = UI.pronunciation_item_controller()
+  snapshot = snapshot or item_context:preview(candidate)
+  if not item_context:is_current(snapshot) then item_context.error = "stale"; return end
+  if snapshot.mode == "error" then item_context.error = snapshot.reason; return end
+  S.pronunciation_preview_snapshot = snapshot
+  S.pronunciation_preview_error = nil
+  S.pronunciation_preview_session = S.pronunciation_preview_session or tostring(r.time_precise())
+  local context = S.pronunciation_preview_context
+  local function on_error(message)
+    if S.pronunciation_preview_context == context then
+      S.pronunciation_preview_error = { id = candidate.id, message = sanitize_voice_library_error(message) }
+    end
+  end
+  local token, err = voice_library_preview:request({ id = c.voice_id, name = "IPA" }, {
+    on_error = on_error
+  }, {
+    owner = "pronunciation", preview_id = candidate.id,
+    cache_identity = json.encode({ S.pronunciation_preview_session, S.el_voice_library_account_generation or 0, c.locale, candidate.id, snapshot.mode, snapshot.text, c.model_id, c.voice_id }),
+    generation_payload = { text = snapshot.text, model_id = c.model_id },
+    max_attempts = 1, timeout_sec = 300, gain = S.el_voice_library_preview_gain or 1.0
+  })
+  if not token then on_error(err) end
+end
+
+function UI.render_pronunciation_panel(model_label)
+  local c = UI.pronunciation_controller()
+  local voice_label, track_warning = UI.sync_pronunciation_context()
+  c:tick()
+  ImGui.SetNextItemOpen(ctx, false, ImGui.Cond_Once)
+  if not ImGui.CollapsingHeader(ctx, t("Pronunciation / IPA") .. "##pronunciation") then return end
+  ImGui.TextWrapped(ctx, t("Ranking is an order to try, not a guarantee of pronunciation accuracy."))
+  ImGui.Text(ctx, t("Word:"))
+  ImGui.SetNextItemWidth(ctx, -1)
+  local changed, word = ImGui.InputText(ctx, "##pronunciation_word", c.word)
+  if changed then c:set_input(word, c.locale) end
+  ImGui.SetNextItemWidth(ctx, -1)
+  if ImGui.BeginCombo(ctx, "##pronunciation_locale", UI.pronunciation_locale_label(c.locale)) then
+    for _,locale in ipairs({ "fr-FR", "pt-BR", "pt-PT" }) do
+      if ImGui.Selectable(ctx, UI.pronunciation_locale_label(locale), c.locale == locale) then
+        c:set_input(c.word, locale)
+        local ok = Util.extstate_set_camo(extstate_sections_keys.EXT_SECTION_for_UI_state, "pronunciation_locale", locale, true)
+        if not ok then c.error = { code = "preference", operation = "preference" } end
+      end
+    end
+    ImGui.EndCombo(ctx)
+  end
+  local logged_in = Auth.has_access_token()
+  local lookup_disabled = c.busy ~= nil or not logged_in
+  if lookup_disabled then ImGui.BeginDisabled(ctx, true) end
+  if ImGui.Button(ctx, t("Find IPA") .. "##pronunciation_find") then c:lookup(false) end
+  ImGui.SameLine(ctx)
+  if ImGui.Button(ctx, t("Refresh sources") .. "##pronunciation_refresh") then c:lookup(true) end
+  if lookup_disabled then ImGui.EndDisabled(ctx) end
+  if not logged_in then ImGui.TextWrapped(ctx, UI.pronunciation_error_message("login")) end
+  if c.busy then
+    ImGui.TextWrapped(ctx, string.format(t("Waiting for pronunciation backend: %.1f s. Other results remain available to copy."), c:elapsed()))
+  end
+  ImGui.TextWrapped(ctx, string.format(t("TTS model: %s"), model_label or t("(none)")))
+  if track_warning then UI.ui_warning(track_warning)
+  else ImGui.TextWrapped(ctx, string.format(t("Selected track voice: %s"), voice_label)) end
+  if not c:has_context() and not track_warning then ImGui.TextWrapped(ctx, UI.pronunciation_error_message("context")) end
+  local item_context = UI.pronunciation_item_controller()
+  item_context:sync(c.word)
+  if item_context.sample and item_context.sample.label then ImGui.TextWrapped(ctx, item_context.sample.label) end
+  if item_context.reason then ImGui.TextWrapped(ctx, UI.pronunciation_item_message(item_context.reason)) end
+  if item_context.error then UI.ui_warning(UI.pronunciation_item_message(item_context.error)) end
+  UI.render_voice_preview_volume("pronunciation")
+  local preview_status = Eleven.voice_preview_status()
+  if not preview_status.available then UI.ui_warning(t("Native preview is unavailable. Install the required cyr_essentials extension and restart REAPER.")) end
+  if S.pronunciation_preview_pending then
+    ImGui.TextWrapped(ctx, string.format(t("Waiting for IPA preview: %.1f s."), r.time_precise() - S.pronunciation_preview_pending.started_at))
+  end
+  if c.error then
+    if c.error.operation == "feedback" then ImGui.TextWrapped(ctx, t("Feedback was not confirmed saved. Previous confirmed feedback is shown below; retrying the same outcome is safe.")) end
+    ImGui.TextWrapped(ctx, UI.pronunciation_error_message(c.error.code))
+  end
+  if c.notice == "copied" then ImGui.TextWrapped(ctx, t("IPA copied to clipboard.")) end
+  if c.notice == "saved" then ImGui.TextWrapped(ctx, t("Personal listening feedback saved.")) end
+  if not c.result then return end
+  if c.retained then ImGui.TextWrapped(ctx, t("The latest request failed. Previously displayed alternatives are retained; check their dates.")) end
+  local d = c.result
+  ImGui.TextWrapped(ctx, string.format(t("Suggestions for %s - %s"), d.word, UI.pronunciation_locale_label(d.locale)))
+  ImGui.TextWrapped(ctx, d.cache.hit and t("Reused saved backend observations.") or t("Collected pronunciation observations."))
+  if not d.cache.complete then ImGui.TextWrapped(ctx, t("Partial results: some sources failed. You can still copy the available alternatives.")) end
+  local source_names = { espeak = "eSpeak NG", wiktionary = "Wiktionary", gruut = "gruut" }
+  local status_names = { success = t("Available"), not_found = t("No eligible pronunciation"),
+    failed = t("Temporarily unavailable"), not_applicable = t("Not used for this language") }
+  for _,source in ipairs(d.sources) do
+    ImGui.TextWrapped(ctx, string.format(t("%s: %s. %s"), source_names[source.source], status_names[source.status], UI.pronunciation_time(source.evidenceAt)))
+    if source.warning then ImGui.TextWrapped(ctx, source.warning) end
+    if source.stale then ImGui.TextWrapped(ctx, t("Saved evidence is stale after a failed refresh.")) end
+    if source.nextRetryAt and source.nextRetryAt > os.time() * 1000 then
+      ImGui.TextWrapped(ctx, string.format(t("Source retry available in %s seconds; Refresh sources respects this limit."), tostring(math.ceil(source.nextRetryAt / 1000 - os.time()))))
+    end
+  end
+  local reasons = {
+    MATCHING_DICTIONARY_REGION = t("Dictionary pronunciation explicitly matches the requested region."),
+    REGIONAL_ESPEAK_PROFILE = t("eSpeak used the selected regional profile."),
+    FRENCH_GRUUT = t("French gruut pronunciation is a fallback alternative."),
+    FRENCH_REGION_UNSPECIFIED = t("French dictionary pronunciation has no explicit regional label.")
+  }
+  for _,candidate in ipairs(d.candidates) do
+    ImGui.PushID(ctx, candidate.id)
+    ImGui.Separator(ctx)
+    ImGui.TextWrapped(ctx, string.format(t("Rank %s - %s"), tostring(candidate.rank), UI.pronunciation_locale_label(candidate.regionalScope)))
+    ImGui.TextWrapped(ctx, candidate.ipa)
+    local snapshot = item_context:preview(candidate)
+    ImGui.TextWrapped(ctx, string.format(t("Replacements: %s"), tostring(snapshot.count)))
+    ImGui.TextWrapped(ctx, t("Preview text:"))
+    ImGui.TextWrapped(ctx, snapshot.text)
+    if ImGui.Button(ctx, t("Copy IPA")) then c:copy(candidate.id, function(ipa) ImGui.SetClipboardText(ctx, ipa) end) end
+    ImGui.SameLine(ctx)
+    local preview_disabled = snapshot.mode == "error" or not logged_in or not c:has_context() or not preview_status.available or S.pronunciation_preview_pending ~= nil
+    if UI.voice_preview_play_button("pronunciation_preview_" .. candidate.id, t("Preview"), "pronunciation", candidate.id, preview_disabled) then
+      UI.request_pronunciation_preview(candidate, snapshot)
+    end
+    ImGui.SameLine(ctx)
+    local can_stop = preview_status.owner == "pronunciation" and preview_status.preview_id == candidate.id
+    if not can_stop then ImGui.BeginDisabled(ctx, true) end
+    if ImGui.Button(ctx, t("Stop")) then Eleven.stop_voice_preview("pronunciation") end
+    if not can_stop then ImGui.EndDisabled(ctx) end
+    if snapshot.mode == "item" then
+      if snapshot.applied then ImGui.BeginDisabled(ctx, true) end
+      if ImGui.Button(ctx, t("Apply to item")) then UI.apply_pronunciation_candidate(snapshot) end
+      if snapshot.applied then ImGui.EndDisabled(ctx) end
+      if snapshot.applied then ImGui.TextWrapped(ctx, t("Applied to item")) end
+    end
+    local preview_error = S.pronunciation_preview_error
+    if preview_error and preview_error.id == candidate.id then
+      ImGui.TextWrapped(ctx, string.format(t("IPA preview failed: %s"), preview_error.message))
+      ImGui.TextWrapped(ctx, t("Check login, voice/model access and connection. Generation may have been charged; retry Preview explicitly when ready."))
+    end
+    for _,reason in ipairs(candidate.reasons) do ImGui.TextWrapped(ctx, reasons[reason.code] or reason.message) end
+    for index,evidence in ipairs(candidate.evidence) do
+      ImGui.TextWrapped(ctx, string.format(t("Source: %s - %s"), source_names[evidence.source], UI.pronunciation_locale_label(evidence.regionalScope)))
+      ImGui.TextWrapped(ctx, string.format(t("Original transcription: %s"), evidence.ipa))
+      if #evidence.meanings > 0 then ImGui.TextWrapped(ctx, string.format(t("Source meanings: %s"), table.concat(evidence.meanings, "; "))) end
+      if evidence.labels and #evidence.labels > 0 then ImGui.TextWrapped(ctx, string.format(t("Source labels: %s"), table.concat(evidence.labels, "; "))) end
+      ImGui.TextWrapped(ctx, UI.pronunciation_time(evidence.observedAt))
+      if evidence.stale then ImGui.TextWrapped(ctx, t("Saved evidence is stale after a failed refresh.")) end
+      local a = evidence.attribution
+      if a then
+        ImGui.TextWrapped(ctx, string.format(t("Attribution: %s; revision %s; %s"), a.title, a.revision, a.license))
+        if a.url:match("^https://en%.wiktionary%.org/wiki/[^%s]+$") then
+          ImGui.TextLinkOpenURL(ctx, t("Wiktionary entry") .. "##attribution" .. index, a.url)
+        end
+      end
+    end
+    ImGui.TextWrapped(ctx, t("Your listening feedback:") .. " " .. UI.pronunciation_outcome(candidate.feedback and candidate.feedback.outcome))
+    if candidate.feedback then ImGui.TextWrapped(ctx, UI.pronunciation_time(candidate.feedback.updatedAt)) end
+    local disabled = c.busy ~= nil or c.reload_context or not c.feedback_ready or not c:has_context() or not logged_in
+    if disabled then ImGui.BeginDisabled(ctx, true) end
+    for index,outcome in ipairs({ "worked", "did_not_work", "unsure" }) do
+      if index > 1 then ImGui.SameLine(ctx) end
+      if ImGui.Button(ctx, UI.pronunciation_outcome(outcome)) then c:feedback(candidate.id, outcome) end
+    end
+    if disabled then ImGui.EndDisabled(ctx) end
+    ImGui.PopID(ctx)
+  end
+end
+-- END PRONUNCIATION UI
+
 function UI.run_audio_tags_insert_selected_notes()
   local telemetry_started_at = TelemetryBridge.now()
   TelemetryBridge.operation_started("elevenlabs_audio_tags_insert", {
@@ -13057,6 +13391,7 @@ function UI.render_header()
 end
 
 local function GuiLoop()
+  UI.sync_pronunciation_context()
   --ImGui.SetNextWindowBgAlpha( ctx, 1 )
   local now_t = TelemetryBridge.now()
   TelemetryBridge.safe_tick(now_t)
@@ -14328,6 +14663,8 @@ Adjusts the output volume level.
         UI.ui_warning(t("No TTS models available. Fetch models first."))
       end
 
+      UI.render_pronunciation_panel(tts_preview)
+
       local tts_disabled = Jobs.network_busy() or S.ui_lock_network_buttons
       if UI.guard_with_timer_button_clicked("el_tts_fast_run_btn", t("FAST TTS FLOW (auto insert)"), nil, tts_disabled) then
         local scheduled = Jobs.schedule_job(t("Fast text-to-speech"), function()
@@ -14524,6 +14861,7 @@ Adjusts the output volume level.
           ImGui.Text(ctx, row.flow)
           ImGui.TableSetColumnIndex(ctx, 3)
           ImGui.Text(ctx, progress_txt)
+          UI.render_record_failure(rec, ctx)
           ImGui.TableSetColumnIndex(ctx, 4)
           local retry_enabled = UI.can_retry_record(rec)
           if not retry_enabled then ImGui.BeginDisabled(ctx, true) end

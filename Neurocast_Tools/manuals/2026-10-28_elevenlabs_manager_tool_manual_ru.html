@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="ElevenLabs Manager: русское офлайн-руководство оператора, рабочий процесс, результаты и восстановление.">
+  <meta name="manual-script" content="elevenlabs_manager_tool.lua">
+  <meta name="manual-script-version" content="v0.2.3">
+  <meta name="manual-source-snapshot" content="2026-10-28">
+  <meta name="manual-revision" content="v2-text-first">
+  <meta name="manual-status" content="content-complete-awaiting-owner-review">
+  <title>ElevenLabs Manager — Рабочее руководство</title>
+  <style>
+    :root { --paper:#faf9f5; --ink:#202e32; --muted:#536367; --line:#d7dfda; --green:#176351; --pale:#edf4ee; --rail:236px; }
+    * { box-sizing:border-box; }
+    html { scroll-padding-top:20px; }
+    body { margin:0; background:var(--paper); color:var(--ink); font:16px/1.5 "Segoe UI",Arial,sans-serif; }
+    a { color:var(--green); text-underline-offset:3px; }
+    a:hover { text-decoration-thickness:2px; }
+    a:focus-visible, [tabindex]:focus-visible { outline:3px solid #b56c14; outline-offset:4px; }
+    .skip { position:fixed; top:-100px; left:16px; z-index:10; padding:10px 16px; background:#fff; }
+    .skip:focus { top:10px; }
+    .sidebar { position:fixed; inset:0 auto 0 0; width:var(--rail); overflow:auto; padding:24px 18px; background:#f0f2ed; border-right:1px solid var(--line); }
+    .brand { margin:0 0 18px; font-size:17px; line-height:1.4; }
+    .brand small { display:block; margin-top:3px; color:var(--muted); font-size:12px; font-weight:400; }
+    .sidebar nav a { display:block; padding:6px 8px; font-size:14px; text-decoration:none; border-radius:4px; }
+    .sidebar nav a:hover { background:#e1e9e1; }
+    .side-label { margin:20px 8px 6px; font-size:12px; color:var(--muted); }
+    .main { margin-left:var(--rail); padding:24px 32px 36px; max-width:1180px; }
+    .topline { font-size:13px; color:var(--muted); margin-bottom:16px; }
+    h1 { font-size:36px; line-height:1.15; margin:0 0 12px; letter-spacing:-0.6px; }
+    h2 { font-size:25px; line-height:1.25; margin:0 0 16px; }
+    h3 { font-size:19px; line-height:1.35; margin:26px 0 10px; }
+    p { margin:10px 0; }
+    section { padding:28px 0; border-top:1px solid var(--line); }
+    li { margin:7px 0; }
+    .draft-note, .small { font-size:13px; color:var(--muted); }
+    .draft-note { margin:0 0 22px; }
+    .toc { margin:16px 0; padding:16px 20px; background:var(--pale); border:1px solid var(--line); border-radius:6px; }
+    .toc ol { margin:10px 0 0; padding-left:24px; }
+    .callout { margin:18px 0; padding:14px 18px; border-left:4px solid var(--green); background:var(--pale); }
+    .warning { border-left-color:#b56c14; background:#fff3dd; }
+    .table-wrap { overflow-x:auto; margin:14px 0; }
+    table { border-collapse:collapse; width:100%; font-size:14px; }
+    th, td { padding:10px 12px; text-align:left; vertical-align:top; border:1px solid var(--line); overflow-wrap:anywhere; }
+    th { background:#edf1eb; font-weight:600; }
+    .ui { font:inherit; font-weight:600; color:var(--green); }
+    code { font:0.9em/1.4 Consolas,"Courier New",monospace; overflow-wrap:anywhere; }
+    pre { padding:14px 18px; margin:12px 0; border:1px solid var(--line); border-radius:4px; background:#f0f2ed; white-space:pre-wrap; overflow-wrap:anywhere; font:14px/1.5 Consolas,"Courier New",monospace; }
+    kbd { font:0.9em "Segoe UI",Arial,sans-serif; border:1px solid #aebdb6; border-radius:3px; padding:1px 5px; background:#fff; white-space:nowrap; }
+    .footer { margin-top:12px; padding-top:14px; border-top:1px solid var(--line); font-size:13px; text-align:right; }
+    @media(max-width:760px) { .sidebar { position:static; width:auto; padding:16px 20px; border-right:0; border-bottom:1px solid var(--line); } .brand { margin-bottom:10px; } .sidebar nav { display:flex; flex-wrap:wrap; gap:3px 7px; } .sidebar nav a { padding:4px 6px; font-size:13px; } .side-label { flex-basis:100%; margin:8px 6px 3px; } .main { margin-left:0; padding:20px; } h1 { font-size:28px; } }
+    @media(max-width:480px) { .main { padding:18px 14px; } th,td { padding:8px; } h2 { font-size:23px; } }
+    @media print { @page { margin:14mm; } body { background:#fff; color:#000; font-size:10pt; } .sidebar,.skip,.topline,.footer { display:none; } .main { margin:0; padding:0; max-width:none; } section { padding:14px 0; } h1 { font-size:23pt; } h2 { font-size:16pt; } h3 { font-size:12pt; } h1,h2,h3 { break-after:avoid; } p,li { orphans:3; widows:3; } table { font-size:9pt; } tr { break-inside:avoid; } thead { display:table-header-group; } .table-wrap { overflow:visible; } .toc,.callout { padding:8px 12px; } pre { white-space:pre-wrap; } .draft-note,.small { font-size:8pt; } a,.ui { color:inherit; } }
+    .screenshot { margin:18px 0 24px; }
+    .screenshot-grid { display:grid; grid-template-columns:minmax(0,1fr); gap:6px; }
+    .figure-graphic { overflow-x:auto; border:1px solid var(--line); border-radius:5px; background:#fff; }
+    .figure-graphic svg { display:block; width:100%; min-width:var(--min-width); height:auto; }
+    .screenshot-zoom { margin:0 5px 8px 0; }
+    .screenshot-zoom-label { font-size:13px; cursor:pointer; }
+    .screenshot-zoom:checked ~ .figure-graphic svg { width:var(--native-width); min-width:var(--native-width); }
+    .annotations { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 16px; margin:6px 0 0; padding:0; list-style:none; font-size:14px; }
+    .annotations li { display:grid; grid-template-columns:22px 1fr; gap:7px; margin:5px 0; }
+    .annotation-number { display:inline-grid; place-items:center; width:21px; height:21px; border:2px solid #d71920; border-radius:50%; color:#d71920; background:#fff; font-size:12px; font-weight:700; line-height:1; }
+    .annotations strong { font-weight:600; }
+    figcaption { margin-top:7px; color:var(--muted); font-size:13px; }
+    @media(max-width:760px) { .annotations { grid-template-columns:1fr; } }
+    @media print { .screenshot { break-inside:avoid; } .screenshot-grid { display:block; } .figure-graphic { overflow:visible; border:0; } .figure-graphic svg, .screenshot-zoom:checked ~ .figure-graphic svg { width:100%; min-width:0; height:auto; } .screenshot-zoom,.screenshot-zoom-label { display:none; } .annotations { display:block; font-size:9pt; } .annotations li { margin:3px 0; } figcaption { font-size:8pt; } }
+
+    .placeholder { border:1px dashed #81988d; padding:16px; background:#f0f2ed; break-inside:avoid; }
+    .placeholder p { font-size:14px; }
+    .ui-en { color:var(--muted); font-weight:400; }
+    .back { margin-top:18px; font-size:13px; }
+    @media print { .placeholder { padding:7px 10px; } .placeholder p { font-size:8pt; } .back { display:none; } }
+  </style>
+</head>
+<body>
+<a class="skip" href="#overview">К содержанию</a>
+<aside class="sidebar"><p class="brand"><strong>ElevenLabs Manager</strong><small>Рабочее руководство · REAPER<br>Руководство v1 · 28.10.2026</small></p><nav aria-label="Главы руководства"><a href="#overview">Назначение и короткий маршрут</a>
+<a href="#connect">01 · Вход и подключение Manager</a>
+<a href="#users">02 · Пользователь и назначение аккаунта</a>
+<a href="#balance">03 · Баланс и доступ</a>
+<a href="#history">04 · История, ожидание и общие кредиты</a>
+<a href="#recovery">05 · Ошибки и восстановление</a>
+<a href="#settings">06 · Настройки и помощь</a>
+<a href="#review">Версия и проверка</a></nav></aside>
+<main class="main" id="manual-start">
+<div class="topline">Neurocast Tools / ElevenLabs Manager</div>
+<h1>ElevenLabs Manager · Рабочее руководство</h1>
+<p class="draft-note">Готово к проверке владельцем · исходник v0.2.3 · состояние на 28.10.2026. После обновления инструмента сведения могут устареть. Текстовая редакция от 11.11.2026: иллюстрации отложены по решению владельца; инструкции доступны без них. Новая проверка установленного Help остаётся отдельным шагом.</p>
+
+<section id="overview"><h2>Назначение и короткий маршрут</h2>
+<p><strong>ElevenLabs Manager управляет назначением общего ElevenLabs-аккаунта, индивидуальным балансом и доступом пользователей Neurocast.</strong> Он предназначен для менеджера с соответствующими правами. Для генерации речи, выбора/создания голосов и работы с аудио используется отдельный ElevenLabs Tool.</p>
+<p>Интерфейс Manager остаётся английским. Русские пояснения ниже используют точные английские названия кнопок. Дорожки, айтемы и временной диапазон выбирать не требуется; инструмент не создаёт медиа и не изменяет проект REAPER. Его подтверждённые изменения относятся к серверным учётным данным пользователей и не отменяются через Undo REAPER.</p>
+<div class="toc"><strong>Обычная работа</strong><ol><li>Войдите в Neurocast через <span class="ui" data-ui-key="Settings" data-ui-label="Settings">Settings</span> → <span class="ui" data-ui-key="Login" data-ui-label="Login">Login</span>.</li><li>Отдельно нажмите <span class="ui" data-ui-key="Connect Manager" data-ui-label="Connect Manager">Connect Manager</span>.</li><li>В <span class="ui" data-ui-key="Users" data-ui-label="Users">Users</span> найдите нужного человека и проверьте его Email.</li><li>При необходимости назначьте <span class="ui" data-ui-key="el_1" data-ui-label="el_1">el_1</span> или <span class="ui" data-ui-key="el_2" data-ui-label="el_2">el_2</span>; для баланса/доступа откройте <span class="ui" data-ui-key="Open" data-ui-label="Open">Open</span>.</li><li>Введите нужный итоговый баланс и состояние доступа, нажмите <span class="ui" data-ui-key="Save balance / access" data-ui-label="Save balance / access">Save balance / access</span> и проверьте подтверждение.</li><li>Дождитесь чтения состояния и истории; сверяйте итог, а не только отправку запроса.</li><li>По окончании нажмите <span class="ui" data-ui-key="Disconnect Manager" data-ui-label="Disconnect Manager">Disconnect Manager</span>.</li></ol></div><p class="back"><a href="#manual-start">К началу руководства</a></p></section>
+
+<section id="connect"><h2>01 · Вход и подключение Manager</h2>
+<p>Запустите <code>elevenlabs_manager_tool.lua</code> из списка действий REAPER. Нужны Neurocast Tools с ReaImGui и вспомогательными файлами, выданная идентификация установки и учётная запись с разрешением управлять пользователями. Обычный пользовательский вход сам по себе не даёт права менеджера.</p>
+<ol><li>Откройте <span class="ui" data-ui-key="Settings" data-ui-label="Settings">Settings</span> → <span class="ui" data-ui-key="Account / Credentials" data-ui-label="Account / Credentials">Account / Credentials</span>. Введите <span class="ui" data-ui-key="Email" data-ui-label="Email">Email</span> и <span class="ui" data-ui-key="Password" data-ui-label="Password">Password</span>, при необходимости включите <span class="ui" data-ui-key="Remember me" data-ui-label="Remember me">Remember me</span>, нажмите <span class="ui" data-ui-key="Login" data-ui-label="Login">Login</span>. Используются данные Neurocast; ключи ElevenLabs сюда не вводятся.</li><li>Проверьте <span class="ui" data-ui-key="Active backend:" data-ui-label="Active backend:">Active backend:</span>: для обычной работы используется производственный сервер. Если ранее был включён режим разработки, до входа/подключения вернитесь через <span class="ui" data-ui-key="Use production" data-ui-label="Use production">Use production</span>.</li><li>В разделе <span class="ui" data-ui-key="Manager connection" data-ui-label="Manager connection">Manager connection</span> нажмите <span class="ui" data-ui-key="Connect Manager" data-ui-label="Connect Manager">Connect Manager</span>. Успешное восстановление сохранённого входа не выполняет этот шаг автоматически.</li><li>Дождитесь загрузки данных пользователей и аккаунтов. Сверьте сообщение подключения и время <span class="ui" data-ui-key="Expires:" data-ui-label="Expires:">Expires:</span>. Если данные ещё загружаются, дождитесь окончания запроса, не повторяя подключение.</li></ol>
+<div class="callout warning">У одного менеджера активно одно подключение: новый вход через Connect Manager заменяет его прежнее подключение в браузере или другом окне REAPER. Подключение действует 30 минут без автоматического продления. Обычное обновление входа не продлевает его. После истечения, замены или перезапуска сервера подключитесь явно.</div>
+<p>Во время простоя состояние подключения проверяется примерно каждые 20 секунд; занятые запросы могут отложить проверку. <span class="ui" data-ui-key="Disconnect Manager" data-ui-label="Disconnect Manager">Disconnect Manager</span> завершает соединение Manager, но не является выходом из обычной сессии Neurocast. Для очистки сохранённого входа сначала отключите Manager, затем используйте <span class="ui" data-ui-key="Forget stored login" data-ui-label="Forget stored login">Forget stored login</span>.</p>
+<aside class="callout" id="shot-EM-01" data-screenshot-placeholder="EM-01" aria-labelledby="shot-EM-01-caption"><strong id="shot-EM-01-caption">Подключение и общие кредиты</strong><p>Перед изменениями проверьте Manager connection и Expires. Shared account credits показывает общий счёт провайдера.</p></aside>
+<p class="back"><a href="#manual-start">К началу руководства</a></p></section>
+
+<section id="users"><h2>02 · Пользователь и назначение аккаунта</h2>
+<p>В <span class="ui" data-ui-key="Users" data-ui-label="Users">Users</span> нажмите <span class="ui" data-ui-key="Refresh users" data-ui-label="Refresh users">Refresh users</span>, если нужен свежий список. <span class="ui" data-ui-key="Filter" data-ui-label="Filter">Filter</span> ищет по имени, username и email; поиск локальный и не меняет данные. <kbd>Esc</kbd> очищает активное поле. Счётчик <code>Users: найдено / всего</code> позволяет отличить пустой результат фильтра от отсутствия загруженного справочника. Заголовки Name, Username, Email и Current позволяют менять сортировку.</p>
+<p>Проверьте Email конкретной строки, особенно при одинаковых именах. <span class="ui" data-ui-key="Current" data-ui-label="Current">Current</span> показывает назначенный общий аккаунт или <code>Unassigned</code>. Колонка <span class="ui" data-ui-key="Balance / Access" data-ui-label="Balance / Access">Balance / Access</span> отдельно показывает баланс и <code>On</code>/<code>Off</code>. Это разные условия допуска к генерации.</p>
+<div class="table-wrap"><table><thead><tr><th>Действие</th><th>Результат</th></tr></thead><tbody>
+<tr><td><span class="ui" data-ui-key="el_1" data-ui-label="el_1">el_1</span> / <span class="ui" data-ui-key="el_2" data-ui-label="el_2">el_2</span></td><td>Назначает пользователю соответствующий настроенный общий аккаунт. В подтверждении проверьте получателя и цель. Недоступный аккаунт выбрать нельзя; текущий вариант подсвечен и отключён.</td></tr>
+<tr><td><span class="ui" data-ui-key="Unassign" data-ui-label="Unassign">Unassign</span></td><td>Снимает назначение аккаунта после подтверждения. Баланс, отдельный флаг доступа и ожидающие списания сохраняются. Это не удаление пользователя и не обнуление его счёта.</td></tr>
+<tr><td><span class="ui" data-ui-key="Open" data-ui-label="Open">Open</span></td><td>Открывает подробности пользователя, редактор баланса/доступа и загружает первую страницу истории.</td></tr>
+</tbody></table></div>
+<p>Для нового использования ElevenLabs одновременно нужны назначенный аккаунт, включённый доступ и положительный индивидуальный баланс. Один большой баланс без назначения или с отключённым доступом не разрешает работу. Переназначение не переносит старые ожидающие операции на новый аккаунт.</p>
+<aside class="callout" id="shot-EM-02" data-screenshot-placeholder="EM-02" aria-labelledby="shot-EM-02-caption"><strong id="shot-EM-02-caption">Поиск и назначения</strong><p>Для назначения найдите нужного пользователя и проверьте Current. Действия el_1/el_2/Unassign меняют назначение; Open открывает детали.</p></aside>
+<p class="back"><a href="#manual-start">К началу руководства</a></p></section>
+
+<section id="balance"><h2>03 · Баланс и доступ</h2>
+<ol><li>Нажмите <span class="ui" data-ui-key="Open" data-ui-label="Open">Open</span> в нужной строке. Ещё раз проверьте <span class="ui" data-ui-key="Selected user:" data-ui-label="Selected user:">Selected user:</span> и текущие Account, Balance, Access и Revision.</li><li>В <span class="ui" data-ui-key="Balance (absolute)" data-ui-label="Balance (absolute)">Balance (absolute)</span> введите <strong>новое итоговое значение</strong>. Это замена, не прибавление. Например, при текущем 1000 ввод 200 означает итог 200; чтобы получить итог 1200, нужно ввести 1200 и проверить актуальное состояние перед сохранением.</li><li><span class="ui" data-ui-key="Access enabled" data-ui-label="Access enabled">Access enabled</span> разрешает или запрещает новые операции независимо от назначенного аккаунта. Можно изменить только этот флаг, оставив баланс прежним.</li><li>Нажмите <span class="ui" data-ui-key="Save balance / access" data-ui-label="Save balance / access">Save balance / access</span>. В подтверждении сверьте пользователя, итоговый Balance и Access enabled. При ошибке выбора отмените диалог.</li><li>Дождитесь автоматического чтения текущего состояния и истории. Успех отправки не заменяет сверку результата. При несовпадении ожидаемого значения не нажимайте сохранение повторно без разбора истории.</li></ol>
+<p>Числа вводите с точкой как десятичным разделителем, без разделителей тысяч. Допускаются положительные, нулевые и отрицательные значения, до девяти значащих знаков после запятой в пределах представимости. Нулевой или отрицательный баланс блокирует новые операции пользователя. Технический предел модуля значения — <code>9007199.25474099</code>; это ограничение представления, а не рекомендация размера баланса. Не каждое дробное число внутри диапазона представимо: отвергнутое значение нужно исправить по сообщению.</p>
+<p>Баланс не является банковским счётом или суммой в рублях: используйте единицы внутреннего учёта сервиса, согласованные в вашей работе. Не выводите индивидуальный баланс из общих кредитов ElevenLabs простым копированием.</p>
+<div class="callout warning">Изменение баланса или доступа не обнуляет расход и не отменяет ожидающие списания. Позднее завершившаяся задача может снова изменить баланс. Сохранение проверяет Revision: при конфликте загружаются свежие значения, а прежняя запись не повторяется автоматически.</div>
+<aside class="callout" id="shot-EM-03" data-screenshot-placeholder="EM-03" aria-labelledby="shot-EM-03-caption"><strong id="shot-EM-03-caption">Редактор и подтверждение</strong><p>Balance (absolute) задаёт итоговый баланс. Проверьте Access enabled и выбранного пользователя перед подтверждением Save balance/access.</p></aside>
+<p class="back"><a href="#manual-start">К началу руководства</a></p></section>
+
+<section id="history"><h2>04 · История, ожидание и общие кредиты</h2>
+<h3>История и незавершённые операции пользователя</h3>
+<p>В <span class="ui" data-ui-key="Balance / access history" data-ui-label="Balance / access history">Balance / access history</span> доступны <span class="ui" data-ui-key="Refresh" data-ui-label="Refresh">Refresh</span> и, при наличии продолжения, <span class="ui" data-ui-key="Load more" data-ui-label="Load more">Load more</span>. История показывает изменение (Delta), остаток, изменение доступа, Revision, инициатора и время. <span class="ui" data-ui-key="Pending jobs" data-ui-label="Pending jobs">Pending jobs</span> содержит ожидающие задачи с исходным аккаунтом, операцией и причиной неопределённости. В верхней сводке <span class="ui" data-ui-key="Consumed:" data-ui-label="Consumed:">Consumed:</span> — накопленный расход, <span class="ui" data-ui-key="Pending:" data-ui-label="Pending:">Pending:</span> — число ожидающих задач, <span class="ui" data-ui-key="Uncertain:" data-ui-label="Uncertain:">Uncertain:</span> — число неопределённых.</p>
+<p>Открытие истории и Pending ничего не отменяет и не завершает принудительно. Если ожидающая операция долго не меняется, передайте её безопасный идентификатор администратору. Не пытайтесь «исправить» неизвестное списание случайной правкой баланса.</p>
+<p>Страницы отражают живое состояние, а не зафиксированный снимок на один момент. Используйте Refresh для нового просмотра, Load more — для продолжения текущего списка. Пустая страница или Not loaded после сбоя не доказывает отсутствие операций. Не суммируйте обновлённые и старые страницы как полный отчёт.</p>
+<h3>Кредиты общих аккаунтов</h3>
+<p><span class="ui" data-ui-key="Shared account credits" data-ui-label="Shared account credits">Shared account credits</span> → <span class="ui" data-ui-key="Refresh credits" data-ui-label="Refresh credits">Refresh credits</span> запрашивает текущее состояние каждого общего аккаунта: Used, Allowance, Remaining, Reset и Checked. Общие цифры включают работу других приложений и <strong>не пополняют</strong> пользовательские балансы.</p>
+<p>Сбой одного провайдера показывается отдельной строкой Unavailable; другой аккаунт может загрузиться успешно. Unavailable — отсутствие подтверждённого значения, не ноль. При указании Retry after дождитесь этого срока и обновите явно. Проверяйте Checked: старое число не является текущим обещанием доступного ресурса.</p>
+<aside class="callout" id="shot-EM-04" data-screenshot-placeholder="EM-04" aria-labelledby="shot-EM-04-caption"><strong id="shot-EM-04-caption">История и Pending</strong><p>Историю операций используйте для проверки подтверждённых изменений. Состояние пользователя и общий счёт провайдера проверяйте отдельно.</p></aside>
+<p class="back"><a href="#manual-start">К началу руководства</a></p></section>
+
+<section id="recovery"><h2>05 · Ошибки и восстановление</h2>
+<div class="table-wrap"><table><thead><tr><th>Ситуация</th><th>Что делать</th></tr></thead><tbody>
+<tr><td>Обычный вход выполнен, но редактор недоступен.</td><td>Нажмите <span class="ui" data-ui-key="Connect Manager" data-ui-label="Connect Manager">Connect Manager</span> и дождитесь загрузки. При отказе прав обратитесь к администратору; повтор ввода баланса права не меняет.</td></tr>
+<tr><td>Подключение истекло или заменено.</td><td>Согласуйте, какое окно будет рабочим. Нажмите <span class="ui" data-ui-key="Connect Manager" data-ui-label="Connect Manager">Connect Manager</span> явно. Не запускайте бесконечное переподключение нескольких окон, вытесняющих друг друга.</td></tr>
+<tr><td>Ошибка рядом с балансом: Cannot save.</td><td>Прочитайте причину. Исправьте числовой формат, точность или диапазон. Для неизменённых полей сохранять нечего. Сообщение не должно исчезать только из-за успешной фоновой проверки соединения.</td></tr>
+<tr><td>Конфликт Revision или результат записи неизвестен.</td><td>Сохранённое действие не отправляется повторно. Дождитесь чтения состояния и истории. Если показана блокировка, используйте <span class="ui" data-ui-key="Read current state and history" data-ui-label="Read current state and history">Read current state and history</span>; при потере соединения сначала явно подключитесь.</td></tr>
+<tr><td>Чтение после записи снова не удалось.</td><td>Оставьте окно открытым, восстановите соединение и повторите только <span class="ui" data-ui-key="Read current state and history" data-ui-label="Read current state and history">Read current state and history</span>. Дальнейшие записи остаются заблокированными до сверки. Не сменяйте сервер и не перезапускайте окно ради обхода блокировки.</td></tr>
+<tr><td>Сервер отклонил точную арифметику, например CREDIT_ARITHMETIC_UNREPRESENTABLE.</td><td>Это отказ без частичной правки. Сверьте текущие значения и историю, передайте безопасный код администратору. Не делите желаемую правку на случайные промежуточные записи.</td></tr>
+<tr><td>Один общий аккаунт показывает Unavailable.</td><td>Проверьте код и время проверки, дождитесь Retry after при наличии, затем <span class="ui" data-ui-key="Refresh credits" data-ui-label="Refresh credits">Refresh credits</span>. Не считайте баланс равным нулю и не переназначайте всех пользователей только из-за отсутствия ответа.</td></tr>
+</tbody></table></div>
+<p>Кнопки могут быть временно отключены из-за текущего запроса, проверки результата, отсутствия подключения или уже выбранного назначения. Перезапуск не восстанавливает гарантированно контекст незавершённой правки: если окно уже закрыто, перед новой записью заново найдите пользователя и внимательно прочитайте его состояние и историю.</p>
+<p>Ошибочно подтверждённая запись исправляется новой осознанной серверной правкой после сверки. История сохраняет прежнее действие. Не используйте Undo REAPER как способ отменить баланс или назначение.</p>
+<aside class="callout" id="shot-EM-05" data-screenshot-placeholder="EM-05" aria-labelledby="shot-EM-05-caption"><strong id="shot-EM-05-caption">Ошибка и чтение после неопределённого ответа</strong><p>При истечении или замене Manager connection подключитесь явно. Неподтверждённую операцию сначала сверяйте с текущими данными.</p></aside>
+<p class="back"><a href="#manual-start">К началу руководства</a></p></section>
+
+<section id="settings"><h2>06 · Настройки и помощь</h2>
+<p><span class="ui" data-ui-key="Status window" data-ui-label="Status window">Status window</span> включает отдельное окно статуса. <span class="ui" data-ui-key="Request progress" data-ui-label="Request progress">Request progress</span> показывает этап, попытку, HTTP и ошибку запроса. <span class="ui" data-ui-key="Settings" data-ui-label="Settings">Settings</span> → <span class="ui" data-ui-key="Diagnostics" data-ui-label="Diagnostics">Diagnostics</span> содержит уровни журналирования и <span class="ui" data-ui-key="Copy log folder" data-ui-label="Copy log folder">Copy log folder</span>; журналы могут включать данные пользователей, поэтому перед передачей проверяйте их содержимое. Настройки <span class="ui" data-ui-key="Telemetry" data-ui-label="Telemetry">Telemetry</span> относятся к диагностике, не к учёту кредитов.</p>
+<p><span class="ui" data-ui-key="Use local development" data-ui-label="Use local development">Use local development</span> предназначена только для согласованной работы с тестовым сервером. При смене сервера теряется текущий рабочий контекст; это не средство восстановления после неопределённой правки. Сначала завершите сверку.</p>
+<p><span class="ui" data-ui-key="Help" data-ui-label="Help">Help</span> открывает это русское руководство без входа и независимо от блокировки серверных действий. Если HTML отсутствовал на старте, кнопка скрыта: восстановите руководство из комплекта и перезапустите скрипт. При ошибке открытия используйте путь из сообщения вручную. Интернет для чтения и печати не нужен; для чтения/изменения серверных данных нужен.</p><p class="back"><a href="#manual-start">К началу руководства</a></p></section>
+<section id="review"><h2>Версия и проверка</h2>
+<p>Состояние исходников: <strong>28.10.2026</strong>. Руководство v1 описывает <code>elevenlabs_manager_tool.lua v0.2.3</code>. Основа рабочего процесса — опубликованный скрипт <strong>v0.2.2</strong> в Neurocast Tools <strong>0.1.9</strong>; новая версия исходника добавляет кнопку открытия этого офлайн-руководства. Новое руководство и эта интеграция ещё не опубликованы в пакете. Номер пакета не равен версии отдельного скрипта.</p>
+<p>После обновления скрипта сведения могут устареть. Если версия или подписи отличаются, сверьте руководство с вашей установкой. Иллюстрации будут добавлены отдельно; все основные действия уже описаны текстом. Файл можно читать без подключения к интернету.</p>
+<div class="table-wrap"><table><thead><tr><th>Проверка</th><th>Состояние</th></tr></thead><tbody><tr><td>Содержание</td><td>Написано и сверено с текущей реализацией; готово к проверке владельцем.</td></tr><tr><td>Иллюстрации и внешний вид</td><td>Иллюстрации отложены для этой текстовой редакции. Проверка в обычном/узком окне браузера и печати не заявлена как пройденная.</td></tr><tr><td>Принятие владельцем</td><td>Ожидается; ранее принятые рабочие сценарии не означают принятия нового текста.</td></tr><tr><td>Живой запуск Help и платформы</td><td>Новая интеграция требует отдельной проверки Windows/macOS. При подготовке руководства реальные проекты и серверные операции не запускались.</td></tr></tbody></table></div>
+<p class="small">Техническая сверка использует активные исходники Neurocast Tools и документацию работающего сервиса, полученную 28.10.2026. Это не новая проверка обработки на сервере. Оставшиеся проверки и перечень снимков ведутся отдельно от выпуска пакета.</p>
+<p class="back"><a href="#manual-start">К началу руководства</a></p></section>
+<footer class="footer">Neurocast Tools · Русское офлайн-руководство · 2026-10-28</footer>
+</main>
+<script id="manual-manifest" type="application/json">
+{
+  "schema_version": 1,
+  "title": "ElevenLabs Manager",
+  "language": "ru",
+  "manual_revision": "v2-text-first",
+  "canonical_file": "2026-10-28_elevenlabs_manager_tool_manual_ru.html",
+  "maintenance": "Directly maintained HTML; no generator or secondary source of truth.",
+  "source_snapshot_date": "2026-10-28",
+  "source_base_commit": "14d022bc7b215c9e4527dfaca519c1a6f88a9f79",
+  "source_scope": "working tree: offline Help only added to the published workflow",
+  "script_version": "v0.2.3",
+  "source_toolset_version": null,
+  "published_package_version": "0.1.9",
+  "published_script_version": "v0.2.2",
+  "release_status": "Text-first release preparation authorized 2026-11-11; missing captures are not release blockers. Publication and packaged owner Help checks remain separate.",
+  "source_files_sha256": {
+    "scr/elevenlabs_manager_tool.lua": "e1dac58cb2ef203bbc7e4b0901ab5414a3a14094ae256980469357340a837d48",
+    "scr/modules-neurocast/reaper_manager_elevenlabs_api.lua": "11218181987d1ee4431701a869b4c844ddc602e0d0d57a5a76a9486c01902ca1",
+    "scr/modules-neurocast/elevenlabs_manager_user_view.lua": "d1538387e6bad92ccae4236c5293b38b22652e3cc69348190065fdf43d9b0f18",
+    "scr/modules-neurocast/offline_manual.lua": "ad986d8e48c502d4f60fccf420d82d0f549c40ff2a94e898a2bf4dd70d727f2c"
+  },
+  "backend_documentation": {
+    "target": "https://reaper.neurocast.tech",
+    "retrieved_date": "2026-10-28",
+    "openapi_info_version": "1.9-manager-balance-precision-20260913",
+    "evidence": "documentation GET only; no authenticated product or provider calls"
+  },
+  "sections": [
+    "overview",
+    "connect",
+    "users",
+    "balance",
+    "history",
+    "recovery",
+    "settings",
+    "review"
+  ],
+  "screenshots": [
+    {
+      "id": "EM-01",
+      "title": "Подключение и общие кредиты",
+      "capture_request": "Показать Manager connection, Expires и Shared account credits на учебной установке без логина, адресов сотрудников и рабочих остатков. Состояние должно быть реальным.",
+      "status": "owner_capture_pending",
+      "original_filename": null,
+      "sha256": null,
+      "annotations": "separate HTML/SVG layer only",
+      "release_blocking": false
+    },
+    {
+      "id": "EM-02",
+      "title": "Поиск и назначения",
+      "capture_request": "Показать только учебных пользователей: фильтр, найдено/всего, Current, el_1/el_2/Unassign, Balance / Access и Open.",
+      "status": "owner_capture_pending",
+      "original_filename": null,
+      "sha256": null,
+      "annotations": "separate HTML/SVG layer only",
+      "release_blocking": false
+    },
+    {
+      "id": "EM-03",
+      "title": "Редактор и подтверждение",
+      "capture_request": "Показать учебного пользователя, Balance (absolute), Access enabled, расход/ожидание и диалог Save balance/access. До снимка убрать реальные персональные и финансовые данные выбором учебной записи.",
+      "status": "owner_capture_pending",
+      "original_filename": null,
+      "sha256": null,
+      "annotations": "separate HTML/SVG layer only",
+      "release_blocking": false
+    },
+    {
+      "id": "EM-04",
+      "title": "История и Pending",
+      "capture_request": "Показать учебную историю с Revision и Delta, Pending jobs с исходным аккаунтом, Refresh и Load more, если есть следующая страница.",
+      "status": "owner_capture_pending",
+      "original_filename": null,
+      "sha256": null,
+      "annotations": "separate HTML/SVG layer only",
+      "release_blocking": false
+    },
+    {
+      "id": "EM-05",
+      "title": "Ошибка и чтение после неопределённого ответа",
+      "capture_request": "Нужны реальные состояния: сообщение Cannot save у поля и блокировка с Read current state and history. Можно два кадра; не выполнять сомнительную серверную правку специально ради иллюстрации.",
+      "status": "owner_capture_pending",
+      "original_filename": null,
+      "sha256": null,
+      "annotations": "separate HTML/SVG layer only",
+      "release_blocking": false
+    }
+  ],
+  "embedded_image_count": 0,
+  "validation": {
+    "content": "complete; implementation-inspected; ready for owner review",
+    "html": "passed 2026-10-28: structure, anchors, offline references, exact UI labels, source hashes and privacy",
+    "visual": "Not claimed; illustrations deferred by owner for text-first release; normal/narrow browser and print review remain separate.",
+    "owner_review": "pending",
+    "live_help": "pending Windows and macOS; headless is separate",
+    "live_workflow": "No live workflow run for this manual; dated prior evidence in engineering verification record"
+  },
+  "freshness_policy": "Any change to workflow, labels, defaults, limits, results, recovery, backend or source version requires a manual impact review in the same change. Update text/manifest and request replacement screenshots; do not silently mark stale material current.",
+  "source_hash_format": "UTF-8 bytes with CRLF normalized to LF",
+  "manual_revision_date": "2026-11-11",
+  "illustration_policy": {
+    "owner_decision_date": "2026-11-11",
+    "release_blocking": false,
+    "status": "Deferred; capture IDs and requests retained as editorial backlog. Visible slots now contain operator reminders."
+  }
+}
+</script>
+</body>
+</html>

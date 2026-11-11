@@ -53,7 +53,7 @@ end
 local t = Locale.t
 
 local r = assert(reaper, t("Reaper API not found. This script must be run within Reaper."))
-local SCRIPT_VERSION = "v0.1.2"
+local SCRIPT_VERSION = "v0.1.3"
 local TOOLSET_VERSION = "v0.1.0"
 
 function Locale.current_main_window_title_text()
@@ -211,6 +211,16 @@ if not ok_telemetry_init then
   r.MB(string.format(t("Telemetry initialization failed:\n%s"), tostring(telemetry_init_err)), t("Telemetry Error"), 0)
   return
 end
+
+-- Offline Help bootstrap: require while the installation module path is active.
+local ok_offline_manual, offline_manual_or_err = pcall(require, "modules-neurocast.offline_manual")
+if not ok_offline_manual then
+  package.path = old_package_path
+  r.MB("Failed to load offline manual helper: " .. tostring(offline_manual_or_err), "Error", 0)
+  return
+end
+local OfflineManual = offline_manual_or_err
+-- End offline Help bootstrap.
 
 package.path = r.ImGui_GetBuiltinPath() .. "/?.lua"
 local ok_imgui, imgui_or_err = pcall(function()
@@ -4921,25 +4931,45 @@ function MainUI.render_debug_section()
   end
 end
 
-function MainUI.gui_loop()
-  local now_t = r.time_precise()
-  TelemetryBridge.safe_tick(now_t)
-  Jobs.tick_all(now_t)
-  Automix.tick_production_poll(now_t)
-  MainUI.render_status_window()
+-- Offline Help has independent error state; unrelated success must not clear it.
+local OfflineHelp = {}
+function OfflineHelp.init()
+  if S.help_path then return end
+  S.help_path = OfflineManual.path(script_path, "manuals/2026-10-28_automix_tool_manual_ru.html")
+  S.help_available = r.file_exists(S.help_path)
+  if not S.help_available then
+    Util.msg("!SHOW:Offline manual not found; Help hidden until script restart: " .. S.help_path, 2)
+  end
+end
 
-  ImGui.SetNextWindowSize(ctx, 840, 900, ImGui.Cond_FirstUseEver)
-  local visible, open = ImGui.Begin(ctx, MainUI.current_main_window_label(), true, ImGui.WindowFlags_NoCollapse)
-  if visible then
-    if ImGui.GetWindowPos and ImGui.GetWindowSize then
-      S.main_window_pos_x, S.main_window_pos_y = ImGui.GetWindowPos(ctx)
-      S.main_window_size_w, S.main_window_size_h = ImGui.GetWindowSize(ctx)
-    end
-    ImGui.PushFont(ctx, FONT, font_size)
+function OfflineHelp.open()
+  if not S.help_available then return end
+  local ok, reason = OfflineManual.open(r, S.help_path)
+  if ok then S.help_error = nil else S.help_error = reason end
+end
 
+function OfflineHelp.render_error()
+  if not S.help_error then return end
+  if S.help_error == "unsupported" then
+    ImGui.TextWrapped(ctx, t("Automatic Help opening is unavailable on this platform. Open the file below manually."))
+  else
+    ImGui.TextWrapped(ctx, t("Could not open Help. Check the default application for HTML files, or open the file below manually."))
+  end
+  ImGui.TextWrapped(ctx, S.help_path)
+end
+
+function OfflineHelp.render_header()
+    local row_right = ImGui.GetCursorPosX(ctx) + ImGui.GetContentRegionAvail(ctx)
+    local help_label = t("Help")
+    local frame_padding = ImGui.GetStyleVar(ctx, ImGui.StyleVar_FramePadding)
+    local spacing = ImGui.GetStyleVar(ctx, ImGui.StyleVar_ItemSpacing)
+    local help_width = S.help_available and (ImGui.CalcTextSize(ctx, help_label) + 2 * frame_padding) or 0
+    ImGui.AlignTextToFramePadding(ctx)
     ImGui.Text(ctx, t("Language") .. ":")
     ImGui.SameLine(ctx)
-    ImGui.SetNextItemWidth(ctx, 160)
+    local remaining = ImGui.GetContentRegionAvail(ctx)
+    local status_width = ImGui.GetFrameHeight(ctx) + ImGui.CalcTextSize(ctx, t("Status window")) + spacing
+    ImGui.SetNextItemWidth(ctx, math.max(60, math.min(160, remaining - status_width - help_width - 3 * spacing)))
     local locale_combo_disabled = not Locale.translated_locale_available("rus")
     if locale_combo_disabled then ImGui.BeginDisabled(ctx, true) end
     local locale_combo_open = ImGui.BeginCombo(
@@ -4969,7 +4999,7 @@ function MainUI.gui_loop()
     if locale_combo_disabled then ImGui.EndDisabled(ctx) end
 
     ImGui.SameLine(ctx)
-    local changed_show_status, new_show_status = ImGui.Checkbox(ctx, t("Show status in dedicated window"), S.show_status_window)
+    local changed_show_status, new_show_status = ImGui.Checkbox(ctx, t("Status window") .. "##status_window_toggle", S.show_status_window)
     if changed_show_status then
       S.show_status_window = new_show_status
       RuntimeState.persist_show_status_window(new_show_status)
@@ -4982,6 +5012,40 @@ function MainUI.gui_loop()
         status = new_show_status and "enabled" or "disabled"
       })
     end
+    if ImGui.BeginItemTooltip(ctx) then
+      ImGui.Text(ctx, t("Show status in dedicated window"))
+      ImGui.EndTooltip(ctx)
+    end
+    if S.help_available then
+      ImGui.SameLine(ctx)
+      ImGui.SetCursorPosX(ctx, math.max(ImGui.GetCursorPosX(ctx), row_right - help_width))
+      if ImGui.Button(ctx, help_label .. "##automix_tool_offline_help", help_width) then OfflineHelp.open() end
+      if ImGui.BeginItemTooltip(ctx) then
+        ImGui.Text(ctx, t("Open the offline manual (Russian)."))
+        ImGui.EndTooltip(ctx)
+      end
+    end
+    OfflineHelp.render_error()
+end
+-- End offline Help controller.
+
+function MainUI.gui_loop()
+  local now_t = r.time_precise()
+  TelemetryBridge.safe_tick(now_t)
+  Jobs.tick_all(now_t)
+  Automix.tick_production_poll(now_t)
+  MainUI.render_status_window()
+
+  ImGui.SetNextWindowSize(ctx, 840, 900, ImGui.Cond_FirstUseEver)
+  local visible, open = ImGui.Begin(ctx, MainUI.current_main_window_label(), true, ImGui.WindowFlags_NoCollapse)
+  if visible then
+    if ImGui.GetWindowPos and ImGui.GetWindowSize then
+      S.main_window_pos_x, S.main_window_pos_y = ImGui.GetWindowPos(ctx)
+      S.main_window_size_w, S.main_window_size_h = ImGui.GetWindowSize(ctx)
+    end
+    ImGui.PushFont(ctx, FONT, font_size)
+
+    OfflineHelp.render_header()
 
     if not S.show_status_window then
       UI.render_status_panel(ctx, "_inline")
@@ -5015,6 +5079,7 @@ CFG.base_url = S.use_local_backend and AuphonicAPI.DEVELOPMENT_BASE or AuphonicA
 ProductionFlow.load_email_on_startup()
 RuntimeState.load_show_status_window_on_startup()
 RuntimeState.load_locale_on_startup()
+OfflineHelp.init()
 RuntimeState.load_dia_wav_bit_depth_on_startup()
 RuntimeState.sync_stored_refresh_flag()
 RuntimeState.rebuild_warnings()

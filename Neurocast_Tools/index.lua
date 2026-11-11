@@ -1,15 +1,15 @@
 -- @description Neurocast Tools
--- @version 0.1.9
+-- @version 0.1.10
 -- @author Slava Logutin
 -- @metapackage
--- @changelog ElevenLabs v2.1.7 skips empty/MIDI items and tracks without matching voices in ordinary and FAST STS. Eligible audio continues with a visible Russian/English skip report. Refresh the offline STS manual. Other tools and binaries are unchanged.
+-- @changelog ElevenLabs v2.1.12 adds regional IPA lookup, track-based contextual previews and undoable slash-delimited replacements. Include the prior safe TTS retry controls and four new text-first Help manuals. Requires the pronunciation backend before publication. Native components unchanged.
 -- @about
 --   Neurocast Tools for Windows x64, macOS x86_64, and macOS ARM64, including the local DOCX importer.
---   ReaImGui is an external prerequisite and is not bundled. Package minimum: REAPER 7.72+.
---   Limited-internal delivery for selected team members. The 0.1.9 Windows release gate covers the update and ElevenLabs v2.1.7 startup and refreshed STS manual smoke.
---   AutoMix v0.1.2 and MVSEP v0.2.1 have owner-accepted source happy paths. AutoMix production-host, difficult-network, and macOS qualification remain open.
---   MVSEP telemetry delivery errors and Script Aligner ambiguous-create retry duplication remain documented limitations.
---   Script TOOLSET_VERSION values identify their source line; ReaPack 0.1.9 identifies this package.
+--   ReaImGui is an external prerequisite. Package minimum: REAPER 7.72+.
+--   Limited-internal candidate. The owner passed ElevenLabs v2.1.12 source live; packaged update/Help acceptance is separate.
+--   Production pronunciation backend must be deployed before this candidate is promoted. Missing screenshots are deferred by owner for text-first manuals.
+--   Other-platform, difficult-network, MVSEP telemetry and Script Aligner ambiguous-create retry limitations remain separate.
+--   Source SCRIPT_VERSION/TOOLSET_VERSION values are independent of ReaPack 0.1.10.
 -- @link https://github.com/Logutin/reaper-reapack-neurocast-tools
 -- @provides
 --   [win64] modules-neurocast/offline_manual.lua
@@ -83,6 +83,12 @@
 --   [win64] licenses/zlib-LICENSE.txt
 --   [win64] licenses/7-Zip-License.txt
 --   [win64] licenses/Unicode-License.txt
+--   [win64] modules-neurocast/pronunciation_context.lua
+--   [win64] modules-neurocast/pronunciation_controller.lua
+--   [win64] manuals/2026-10-28_automix_tool_manual_ru.html
+--   [win64] manuals/2026-10-28_mvsep_tool_manual_ru.html
+--   [win64] manuals/2026-10-28_neurocast_script_aligner_tool_manual_ru.html
+--   [win64] manuals/2026-10-28_elevenlabs_manager_tool_manual_ru.html
 --   [darwin64] modules-neurocast/offline_manual.lua
 --   [darwin64] manuals/2026-09-28_elevenlabs_tool_manual_ru.html
 --   [darwin64] manuals/2026-10-05_docx_import_tool_manual_ru.html
@@ -148,6 +154,12 @@
 --   [darwin64] modules-neurocast/ReaperX_render_settings_helper.lua
 --   [darwin64 extension] native/darwin64/reaper_cyr_essentials.dylib > reaper_cyr_essentials.dylib
 --   [darwin64] licenses/Unicode-License.txt
+--   [darwin64] modules-neurocast/pronunciation_context.lua
+--   [darwin64] modules-neurocast/pronunciation_controller.lua
+--   [darwin64] manuals/2026-10-28_automix_tool_manual_ru.html
+--   [darwin64] manuals/2026-10-28_mvsep_tool_manual_ru.html
+--   [darwin64] manuals/2026-10-28_neurocast_script_aligner_tool_manual_ru.html
+--   [darwin64] manuals/2026-10-28_elevenlabs_manager_tool_manual_ru.html
 --   [darwin-arm64] modules-neurocast/offline_manual.lua
 --   [darwin-arm64] manuals/2026-09-28_elevenlabs_tool_manual_ru.html
 --   [darwin-arm64] manuals/2026-10-05_docx_import_tool_manual_ru.html
@@ -213,3 +225,9 @@
 --   [darwin-arm64] modules-neurocast/ReaperX_render_settings_helper.lua
 --   [darwin-arm64 extension] native/darwin-arm64/reaper_cyr_essentials.dylib > reaper_cyr_essentials.dylib
 --   [darwin-arm64] licenses/Unicode-License.txt
+--   [darwin-arm64] modules-neurocast/pronunciation_context.lua
+--   [darwin-arm64] modules-neurocast/pronunciation_controller.lua
+--   [darwin-arm64] manuals/2026-10-28_automix_tool_manual_ru.html
+--   [darwin-arm64] manuals/2026-10-28_mvsep_tool_manual_ru.html
+--   [darwin-arm64] manuals/2026-10-28_neurocast_script_aligner_tool_manual_ru.html
+--   [darwin-arm64] manuals/2026-10-28_elevenlabs_manager_tool_manual_ru.html

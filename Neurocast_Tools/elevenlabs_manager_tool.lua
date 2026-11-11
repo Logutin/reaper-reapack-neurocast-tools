@@ -2,7 +2,7 @@
 -- English-only maintained ReaImGui entrypoint.
 
 local r = assert(reaper, "REAPER API not found. This script must run inside REAPER.")
-local SCRIPT_VERSION = "v0.2.2"
+local SCRIPT_VERSION = "v0.2.3"
 local APP_NAME = "ElevenLabs Manager"
 local ENTRYPOINT = "elevenlabs_manager_tool"
 local PRODUCTION_BACKEND_URL = "https://reaper.neurocast.tech"
@@ -64,6 +64,16 @@ if not ok_telemetry then
   r.MB("Telemetry initialization failed:\n" .. tostring(telemetry_err), APP_NAME, 0)
   return
 end
+
+-- Offline Help bootstrap: require while the installation module path is active.
+local ok_offline_manual, offline_manual_or_err = pcall(require, "modules-neurocast.offline_manual")
+if not ok_offline_manual then
+  package.path = old_package_path
+  r.MB("Failed to load offline manual helper: " .. tostring(offline_manual_or_err), "Error", 0)
+  return
+end
+local OfflineManual = offline_manual_or_err
+-- End offline Help bootstrap.
 
 package.path = r.ImGui_GetBuiltinPath() .. "/?.lua"
 local ok_imgui, ImGuiOrErr = pcall(function()
@@ -1791,6 +1801,61 @@ local function draw_status_window()
   end
 end
 
+-- Offline Help has independent error state; unrelated success must not clear it.
+local OfflineHelp = {}
+function OfflineHelp.init()
+  if S.help_path then return end
+  S.help_path = OfflineManual.path(script_path, "manuals/2026-10-28_elevenlabs_manager_tool_manual_ru.html")
+  S.help_available = r.file_exists(S.help_path)
+  if not S.help_available then
+    Util.msg("!SHOW:Offline manual not found; Help hidden until script restart: " .. S.help_path, 2)
+  end
+end
+
+function OfflineHelp.open()
+  if not S.help_available then return end
+  local ok, reason = OfflineManual.open(r, S.help_path)
+  if ok then S.help_error = nil else S.help_error = reason end
+end
+
+function OfflineHelp.render_error()
+  if not S.help_error then return end
+  if S.help_error == "unsupported" then
+    ImGui.TextWrapped(ctx, "Automatic Help opening is unavailable on this platform. Open the file below manually.")
+  else
+    ImGui.TextWrapped(ctx, "Could not open Help. Check the default application for HTML files, or open the file below manually.")
+  end
+  ImGui.TextWrapped(ctx, S.help_path)
+end
+
+function OfflineHelp.render_header()
+    local row_right = ImGui.GetCursorPosX(ctx) + ImGui.GetContentRegionAvail(ctx)
+    local help_label = "Help"
+    local frame_padding = ImGui.GetStyleVar(ctx, ImGui.StyleVar_FramePadding)
+    local spacing = ImGui.GetStyleVar(ctx, ImGui.StyleVar_ItemSpacing)
+    local help_width = S.help_available and (ImGui.CalcTextSize(ctx, help_label) + 2 * frame_padding) or 0
+    local changed_status, show_status = ImGui.Checkbox(ctx, "Status window##status_window_toggle", S.show_status_window)
+    if changed_status then
+      S.show_status_window = show_status
+      Util.extstate_set(EXT.UI_SECTION, EXT.UI_SHOW_STATUS, show_status and "1" or "0", true)
+    end
+    if ImGui.BeginItemTooltip(ctx) then
+      ImGui.Text(ctx, "Show status in dedicated window")
+      ImGui.EndTooltip(ctx)
+    end
+    if S.help_available then
+      ImGui.SameLine(ctx)
+      ImGui.SetCursorPosX(ctx, math.max(ImGui.GetCursorPosX(ctx), row_right - help_width))
+      if ImGui.Button(ctx, help_label .. "##elevenlabs_manager_tool_offline_help", help_width) then OfflineHelp.open() end
+      if ImGui.BeginItemTooltip(ctx) then
+        ImGui.Text(ctx, "Open the offline manual (Russian).")
+        ImGui.EndTooltip(ctx)
+      end
+    end
+    OfflineHelp.render_error()
+end
+-- End offline Help controller.
+
 local function gui_frame()
   local now_t = Jobs.now()
   TelemetryBridge.safe_tick(now_t)
@@ -1813,11 +1878,8 @@ local function gui_frame()
   observe_main_window_after_begin(visible)
   if visible then
     ImGui.PushFont(ctx, FONT, 16)
-    local changed_status, show_status = ImGui.Checkbox(ctx, "Show status in dedicated window", S.show_status_window)
-    if changed_status then
-      S.show_status_window = show_status
-      Util.extstate_set(EXT.UI_SECTION, EXT.UI_SHOW_STATUS, show_status and "1" or "0", true)
-    end
+    OfflineHelp.render_header()
+
     draw_status_panel(ctx)
     draw_settings()
     draw_manager_connection()
@@ -1857,6 +1919,7 @@ local function defer_loop()
 end
 
 load_persisted_ui()
+OfflineHelp.init()
 TelemetryBridge.safe_event("script_started", {
   operation = "elevenlabs_manager_lifecycle",
   status = "started",

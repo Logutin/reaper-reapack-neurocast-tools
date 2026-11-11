@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="AutoMix: русское офлайн-руководство оператора, рабочий процесс, результаты и восстановление.">
+  <meta name="manual-script" content="automix_tool.lua">
+  <meta name="manual-script-version" content="v0.1.3">
+  <meta name="manual-source-snapshot" content="2026-10-28">
+  <meta name="manual-revision" content="v2-text-first">
+  <meta name="manual-status" content="content-complete-awaiting-owner-review">
+  <title>AutoMix — Рабочее руководство</title>
+  <style>
+    :root { --paper:#faf9f5; --ink:#202e32; --muted:#536367; --line:#d7dfda; --green:#176351; --pale:#edf4ee; --rail:236px; }
+    * { box-sizing:border-box; }
+    html { scroll-padding-top:20px; }
+    body { margin:0; background:var(--paper); color:var(--ink); font:16px/1.5 "Segoe UI",Arial,sans-serif; }
+    a { color:var(--green); text-underline-offset:3px; }
+    a:hover { text-decoration-thickness:2px; }
+    a:focus-visible, [tabindex]:focus-visible { outline:3px solid #b56c14; outline-offset:4px; }
+    .skip { position:fixed; top:-100px; left:16px; z-index:10; padding:10px 16px; background:#fff; }
+    .skip:focus { top:10px; }
+    .sidebar { position:fixed; inset:0 auto 0 0; width:var(--rail); overflow:auto; padding:24px 18px; background:#f0f2ed; border-right:1px solid var(--line); }
+    .brand { margin:0 0 18px; font-size:17px; line-height:1.4; }
+    .brand small { display:block; margin-top:3px; color:var(--muted); font-size:12px; font-weight:400; }
+    .sidebar nav a { display:block; padding:6px 8px; font-size:14px; text-decoration:none; border-radius:4px; }
+    .sidebar nav a:hover { background:#e1e9e1; }
+    .side-label { margin:20px 8px 6px; font-size:12px; color:var(--muted); }
+    .main { margin-left:var(--rail); padding:24px 32px 36px; max-width:1180px; }
+    .topline { font-size:13px; color:var(--muted); margin-bottom:16px; }
+    h1 { font-size:36px; line-height:1.15; margin:0 0 12px; letter-spacing:-0.6px; }
+    h2 { font-size:25px; line-height:1.25; margin:0 0 16px; }
+    h3 { font-size:19px; line-height:1.35; margin:26px 0 10px; }
+    p { margin:10px 0; }
+    section { padding:28px 0; border-top:1px solid var(--line); }
+    li { margin:7px 0; }
+    .draft-note, .small { font-size:13px; color:var(--muted); }
+    .draft-note { margin:0 0 22px; }
+    .toc { margin:16px 0; padding:16px 20px; background:var(--pale); border:1px solid var(--line); border-radius:6px; }
+    .toc ol { margin:10px 0 0; padding-left:24px; }
+    .callout { margin:18px 0; padding:14px 18px; border-left:4px solid var(--green); background:var(--pale); }
+    .warning { border-left-color:#b56c14; background:#fff3dd; }
+    .table-wrap { overflow-x:auto; margin:14px 0; }
+    table { border-collapse:collapse; width:100%; font-size:14px; }
+    th, td { padding:10px 12px; text-align:left; vertical-align:top; border:1px solid var(--line); overflow-wrap:anywhere; }
+    th { background:#edf1eb; font-weight:600; }
+    .ui { font:inherit; font-weight:600; color:var(--green); }
+    code { font:0.9em/1.4 Consolas,"Courier New",monospace; overflow-wrap:anywhere; }
+    pre { padding:14px 18px; margin:12px 0; border:1px solid var(--line); border-radius:4px; background:#f0f2ed; white-space:pre-wrap; overflow-wrap:anywhere; font:14px/1.5 Consolas,"Courier New",monospace; }
+    kbd { font:0.9em "Segoe UI",Arial,sans-serif; border:1px solid #aebdb6; border-radius:3px; padding:1px 5px; background:#fff; white-space:nowrap; }
+    .footer { margin-top:12px; padding-top:14px; border-top:1px solid var(--line); font-size:13px; text-align:right; }
+    @media(max-width:760px) { .sidebar { position:static; width:auto; padding:16px 20px; border-right:0; border-bottom:1px solid var(--line); } .brand { margin-bottom:10px; } .sidebar nav { display:flex; flex-wrap:wrap; gap:3px 7px; } .sidebar nav a { padding:4px 6px; font-size:13px; } .side-label { flex-basis:100%; margin:8px 6px 3px; } .main { margin-left:0; padding:20px; } h1 { font-size:28px; } }
+    @media(max-width:480px) { .main { padding:18px 14px; } th,td { padding:8px; } h2 { font-size:23px; } }
+    @media print { @page { margin:14mm; } body { background:#fff; color:#000; font-size:10pt; } .sidebar,.skip,.topline,.footer { display:none; } .main { margin:0; padding:0; max-width:none; } section { padding:14px 0; } h1 { font-size:23pt; } h2 { font-size:16pt; } h3 { font-size:12pt; } h1,h2,h3 { break-after:avoid; } p,li { orphans:3; widows:3; } table { font-size:9pt; } tr { break-inside:avoid; } thead { display:table-header-group; } .table-wrap { overflow:visible; } .toc,.callout { padding:8px 12px; } pre { white-space:pre-wrap; } .draft-note,.small { font-size:8pt; } a,.ui { color:inherit; } }
+    .screenshot { margin:18px 0 24px; }
+    .screenshot-grid { display:grid; grid-template-columns:minmax(0,1fr); gap:6px; }
+    .figure-graphic { overflow-x:auto; border:1px solid var(--line); border-radius:5px; background:#fff; }
+    .figure-graphic svg { display:block; width:100%; min-width:var(--min-width); height:auto; }
+    .screenshot-zoom { margin:0 5px 8px 0; }
+    .screenshot-zoom-label { font-size:13px; cursor:pointer; }
+    .screenshot-zoom:checked ~ .figure-graphic svg { width:var(--native-width); min-width:var(--native-width); }
+    .annotations { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 16px; margin:6px 0 0; padding:0; list-style:none; font-size:14px; }
+    .annotations li { display:grid; grid-template-columns:22px 1fr; gap:7px; margin:5px 0; }
+    .annotation-number { display:inline-grid; place-items:center; width:21px; height:21px; border:2px solid #d71920; border-radius:50%; color:#d71920; background:#fff; font-size:12px; font-weight:700; line-height:1; }
+    .annotations strong { font-weight:600; }
+    figcaption { margin-top:7px; color:var(--muted); font-size:13px; }
+    @media(max-width:760px) { .annotations { grid-template-columns:1fr; } }
+    @media print { .screenshot { break-inside:avoid; } .screenshot-grid { display:block; } .figure-graphic { overflow:visible; border:0; } .figure-graphic svg, .screenshot-zoom:checked ~ .figure-graphic svg { width:100%; min-width:0; height:auto; } .screenshot-zoom,.screenshot-zoom-label { display:none; } .annotations { display:block; font-size:9pt; } .annotations li { margin:3px 0; } figcaption { font-size:8pt; } }
+
+    .placeholder { border:1px dashed #81988d; padding:16px; background:#f0f2ed; break-inside:avoid; }
+    .placeholder p { font-size:14px; }
+    .ui-en { color:var(--muted); font-weight:400; }
+    .back { margin-top:18px; font-size:13px; }
+    @media print { .placeholder { padding:7px 10px; } .placeholder p { font-size:8pt; } .back { display:none; } }
+  </style>
+</head>
+<body>
+<a class="skip" href="#overview">К содержанию</a>
+<aside class="sidebar"><p class="brand"><strong>AutoMix</strong><small>Рабочее руководство · REAPER<br>Руководство v1 · 28.10.2026</small></p><nav aria-label="Главы руководства"><a href="#overview">Назначение и короткий маршрут</a>
+<a href="#prepare">01 · Подготовка проекта</a>
+<a href="#mix">02 · Сведение</a>
+<a href="#results">03 · Результаты и повторная загрузка</a>
+<a href="#dia">04 · DIA из стемов</a>
+<a href="#recovery">05 · Ошибки и восстановление</a>
+<a href="#settings">06 · Настройки и помощь</a>
+<a href="#review">Версия и проверка</a></nav></aside>
+<main class="main" id="manual-start">
+<div class="topline">Neurocast Tools / AutoMix</div>
+<h1>AutoMix · Рабочее руководство</h1>
+<p class="draft-note">Готово к проверке владельцем · исходник v0.1.3 · состояние на 28.10.2026. После обновления инструмента сведения могут устареть. Текстовая редакция от 11.11.2026: иллюстрации отложены по решению владельца; инструкции доступны без них. Новая проверка установленного Help остаётся отдельным шагом.</p>
+
+<section id="overview"><h2>Назначение и короткий маршрут</h2>
+<p><strong>AutoMix отправляет подготовленные дорожки в Auphonic через Neurocast и возвращает обработанный микс и, при необходимости, отдельные стемы.</strong> Используйте его для проекта с уже смонтированной речью и другими компонентами, для которых есть подходящий многодорожечный пресет. Характер обработки задаёт пресет. Скрипт не выбирает за оператора правильную дорожку и не исправляет монтаж.</p>
+<p>Стем — отдельный обработанный компонент микса. После импорта стемов можно локально собрать DIA, например только из голосовых дорожек. Для разделения готовой фонограммы на речь, музыку и эффекты предназначен MVSEP.</p>
+<div class="toc"><strong>Обычная работа</strong><ol>
+<li>Сохраните проект, задайте временное выделение и войдите в Neurocast.</li>
+<li>Нажмите <span class="ui" data-ui-key="(Re)Connect" data-ui-label="(Пере)подключиться">(Пере)подключиться <span class="ui-en">((Re)Connect)</span></span>, выберите пресет и проверьте соответствие каждого его входа дорожке проекта.</li>
+<li>Включите <span class="ui" data-ui-key="Create stems archive" data-ui-label="Create stems archive">Create stems archive</span>, если нужны стемы, и выполните локальный рендер.</li>
+<li>Нажмите <span class="ui" data-ui-key="Create production and upload" data-ui-label="Создать production и загрузить">Создать production и загрузить <span class="ui-en">(Create production and upload)</span></span>. Дождитесь окончания настройки и загрузок.</li>
+<li>После загрузки выберите <span class="ui" data-ui-key="Start now" data-ui-label="Запустить сейчас">Запустить сейчас <span class="ui-en">(Start now)</span></span> в предложении платного запуска либо <span class="ui" data-ui-key="Start later" data-ui-label="Запустить позже">Запустить позже <span class="ui-en">(Start later)</span></span>, чтобы вернуться к нему через <span class="ui" data-ui-key="Start production (paid)" data-ui-label="Старт автосведения (платно)">Старт автосведения (платно) <span class="ui-en">(Start production (paid))</span></span>.</li>
+<li>После готовности скачайте микс или стемы кнопкой <span class="ui" data-ui-key="Download and add to project" data-ui-label="Скачать и добавить в проект">Скачать и добавить в проект <span class="ui-en">(Download and add to project)</span></span>. Прослушайте результат.</li>
+</ol></div>
+<p>В руководстве сначала приведена фактическая подпись в русском интерфейсе, затем английская. Часть надписей остаётся английской даже при выборе русского языка. В кнопках с переменными значениями <code>%s</code> означает имя/длительность, <code>%d</code> — число.</p><p class="back"><a href="#manual-start">К началу руководства</a></p></section>
+
+<section id="prepare"><h2>01 · Подготовка проекта</h2>
+<ul><li>Запустите установленный <code>automix_tool.lua</code> из списка действий REAPER. Нужны комплект Neurocast Tools с ReaImGui и рабочими вспомогательными файлами, выданная администратором идентификация установки и учётная запись Neurocast с доступом к Auphonic и положительным балансом.</li>
+<li>Сохраните проект. Убедитесь, что папка записи проекта доступна для записи и на диске достаточно места для временных рендеров, микса и стемов. Итоговое аудио попадает прямо в папку записи текущего проекта; она может отличаться от папки файла проекта.</li>
+<li>Сделайте непустое <strong>временное выделение</strong> от начала до конца нужного фрагмента. Выделение отдельных айтемов не заменяет его. Дорожки для рендера выбираются в таблице соответствий AutoMix; полагаться только на выделение дорожек REAPER не нужно.</li>
+<li>Проверьте монтаж, FX, громкости и маршрутизацию до рендера. После правок заново выполните рендер перед созданием задания: уже подготовленные файлы сами не обновляются.</li></ul>
+<p>В <span class="ui" data-ui-key="Settings" data-ui-label="Настройки">Настройки <span class="ui-en">(Settings)</span></span> → <span class="ui" data-ui-key="Account / Credentials" data-ui-label="Учетная запись / Учетные данные">Учетная запись / Учетные данные <span class="ui-en">(Account / Credentials)</span></span> заполните <span class="ui" data-ui-key="Email:" data-ui-label="Email:">Email:</span> и <span class="ui" data-ui-key="Password:" data-ui-label="Пароль:">Пароль: <span class="ui-en">(Password:)</span></span>, при необходимости включите <span class="ui" data-ui-key="Remember me" data-ui-label="Запомнить">Запомнить <span class="ui-en">(Remember me)</span></span>, затем нажмите <span class="ui" data-ui-key="Login" data-ui-label="Логин">Логин <span class="ui-en">(Login)</span></span>. Это вход в Neurocast. Получать и вводить ключ Auphonic в этом инструменте не требуется.</p>
+<p>В <span class="ui" data-ui-key="Settings" data-ui-label="Настройки">Настройки <span class="ui-en">(Settings)</span></span> → <span class="ui" data-ui-key="Result insertion" data-ui-label="Вставка результатов">Вставка результатов <span class="ui-en">(Result insertion)</span></span> выберите место будущей вставки. По умолчанию <span class="ui" data-ui-key="At edit cursor" data-ui-label="У курсора редактирования">У курсора редактирования <span class="ui-en">(At edit cursor)</span></span> использует позицию курсора при импорте. Вариант <span class="ui" data-ui-key="At selection start captured when creating the job" data-ui-label="В начало выделения, сохранённое при создании задания">В начало выделения, сохранённое при создании задания <span class="ui-en">(At selection start captured when creating the job)</span></span> использует начало выделения, запомненное при нажатии <span class="ui" data-ui-key="Create production and upload" data-ui-label="Создать production и загрузить">Создать production и загрузить <span class="ui-en">(Create production and upload)</span></span>. Если выделение меняется после рендера, убедитесь, что в момент создания задания оно задаёт нужную точку вставки.</p>
+<div class="callout warning">До завершения загрузки и вставки оставляйте открытыми этот проект и окно AutoMix. Состояние текущего задания не восстанавливается автоматически после закрытия окна. Не переключайтесь в другой проект во время загрузки результата.</div>
+<aside class="callout" id="shot-AM-01" data-screenshot-placeholder="AM-01" aria-labelledby="shot-AM-01-caption"><strong id="shot-AM-01-caption">Пресет и соответствие дорожек</strong><p>Перед рендером проверьте временное выделение, выбранные дорожки и соответствие входам пресета.</p></aside>
+<p class="back"><a href="#manual-start">К началу руководства</a></p></section>
+
+<section id="mix"><h2>02 · Сведение</h2>
+<h3>Выберите пресет и входы</h3>
+<p>Нажмите <span class="ui" data-ui-key="(Re)Connect" data-ui-label="(Пере)подключиться">(Пере)подключиться <span class="ui-en">((Re)Connect)</span></span> в разделе <span class="ui" data-ui-key="Processing" data-ui-label="Обработка">Обработка <span class="ui-en">(Processing)</span></span>, дождитесь списка и выберите <span class="ui" data-ui-key="Select preset:" data-ui-label="Выберите пресет:">Выберите пресет: <span class="ui-en">(Select preset:)</span></span>. Доступны только пресеты, явно обозначенные сервером как многодорожечные. Список отражает полученные сервером данные; отсутствие пресета не доказывает его отсутствие во всём аккаунте.</p>
+<p>У каждого входа в <span class="ui" data-ui-key="Track matching:" data-ui-label="Мэтчинг дорожек:">Мэтчинг дорожек: <span class="ui-en">(Track matching:)</span></span> выберите соответствующую дорожку проекта. Автоматическое совпадение имени — подсказка, которую нужно проверить. Красное сообщение означает отсутствие совпадения; жёлтое предупреждает об одинаковых именах. <span class="ui" data-ui-key="Copy name" data-ui-label="Копировать имя">Копировать имя <span class="ui-en">(Copy name)</span></span> копирует имя входа. После переименования или добавления дорожек нажмите <span class="ui" data-ui-key="Rebuild track list" data-ui-label="Перестроить список дорожек">Перестроить список дорожек <span class="ui-en">(Rebuild track list)</span></span> и проверьте таблицу снова. Делайте это до создания production: команда также сбрасывает подготовленное состояние.</p>
+<h3>Подготовьте и загрузите аудио</h3>
+<ol><li>Включите <span class="ui" data-ui-key="Create stems archive" data-ui-label="Create stems archive">Create stems archive</span> до создания задания, если нужны отдельные компоненты. Без архива не рассчитывайте на доступность стемов в результате.</li>
+<li>Нажмите <span class="ui" data-ui-key="Render %d tracks (duration %s)" data-ui-label="Рендер 3 дорожек (длительность 00:01:00:00)" data-ui-example="[3, &quot;00:01:00:00&quot;]">Рендер 3 дорожек (длительность 00:01:00:00) <span class="ui-en">(Render 3 tracks (duration 00:01:00:00))</span></span> <small>(пример; значения зависят от проекта)</small>. Число дорожек и длительность должны соответствовать задаче. Если вместо этого показано <span class="ui" data-ui-key="Render unavailable!" data-ui-label="Рендер недоступен!">Рендер недоступен! <span class="ui-en">(Render unavailable!)</span></span>, устраните указанную причину: выделение времени, соответствия дорожек или недоступную временную папку.</li>
+<li>В <span class="ui" data-ui-key="Mixdown" data-ui-label="Микс">Микс <span class="ui-en">(Mixdown)</span></span> задайте <span class="ui" data-ui-key="Mix name:" data-ui-label="Имя микса:">Имя микса: <span class="ui-en">(Mix name:)</span></span>, затем <span class="ui" data-ui-key="Create production and upload" data-ui-label="Создать production и загрузить">Создать production и загрузить <span class="ui-en">(Create production and upload)</span></span>. Создаётся сохранённая production, настраиваются выходы и последовательно загружаются файлы. Это ещё не запуск платной обработки.</li>
+<li>Дождитесь состояния готовности к явному платному запуску. Сохраните отображаемый <span class="ui" data-ui-key="Production UUID:" data-ui-label="UUID production:">UUID production: <span class="ui-en">(Production UUID:)</span></span> для обращения к поддержке при сбое. Не создавайте второе задание из-за медленного ответа первого.</li>
+<li>После загрузки появляется предложение платного запуска: <span class="ui" data-ui-key="Start now" data-ui-label="Запустить сейчас">Запустить сейчас <span class="ui-en">(Start now)</span></span> запускает обработку, <span class="ui" data-ui-key="Start later" data-ui-label="Запустить позже">Запустить позже <span class="ui-en">(Start later)</span></span> оставляет задание подготовленным. Позже <span class="ui" data-ui-key="Start production (paid)" data-ui-label="Старт автосведения (платно)">Старт автосведения (платно) <span class="ui-en">(Start production (paid))</span></span> в главном окне запускает его напрямую; не рассчитывайте на второе подтверждение. После запуска таблица показывает запросы, ход передачи и ожидание следующей проверки.</li>
+<li>Дождитесь <span class="ui" data-ui-key="Production status: DONE" data-ui-label="Статус автосведения: DONE">Статус автосведения: DONE <span class="ui-en">(Production status: DONE)</span></span>. <span class="ui" data-ui-key="Check status" data-ui-label="Проверить статус">Проверить статус <span class="ui-en">(Check status)</span></span> запрашивает состояние уже существующей production; сама успешная загрузка файлов ещё не означает готовность микса.</li></ol>
+<aside class="callout" id="shot-AM-02" data-screenshot-placeholder="AM-02" aria-labelledby="shot-AM-02-caption"><strong id="shot-AM-02-caption">Загрузка и платный запуск</strong><p>После загрузки выберите запуск сейчас или позже. Start production (paid) запускает платную обработку; нажимайте её только когда готовы.</p></aside>
+<p class="back"><a href="#manual-start">К началу руководства</a></p></section>
+
+<section id="results"><h2>03 · Результаты и повторная загрузка</h2>
+<p>У готовой production нажмите <span class="ui" data-ui-key="Download and add to project" data-ui-label="Скачать и добавить в проект">Скачать и добавить в проект <span class="ui-en">(Download and add to project)</span></span> для микса либо <span class="ui" data-ui-key="Download and add to project stems" data-ui-label="Download and add to project stems">Download and add to project stems</span> для архива стемов. Когда сервер вернул имя файла, кнопка выглядит как <span class="ui" data-ui-key="Download and add to project %s" data-ui-label="Скачать и добавить в проект mix.wav" data-ui-example="[&quot;mix.wav&quot;]">Скачать и добавить в проект mix.wav <span class="ui-en">(Download and add to project mix.wav)</span></span> <small>(пример; значения зависят от проекта)</small>; выбирайте нужный выход по этому имени.</p>
+<p><strong>Каждое нажатие скачивает и сразу добавляет результат в проект.</strong> Микс появляется как аудио на новой дорожке, стемы — на отдельных дорожках. Проверьте <span class="ui" data-ui-key="Inserted mix path:" data-ui-label="Путь к миксу:">Путь к миксу: <span class="ui-en">(Inserted mix path:)</span></span>, число импортированных стемов, позицию относительно исходного материала и отсутствие лишнего смещения. Прослушайте начало, конец и места монтажа; статус готовности не заменяет контроль качества.</p>
+<p>Аудиофайлы лежат непосредственно в папке записи проекта. При совпадении имени выбирается свободное имя, существующие файлы сохраняются; для переименованных стемов выводится сообщение. Временный архив и служебные файлы не являются медиа проекта.</p>
+<p>После успешной вставки микса появится предложение очистить временные исходные рендеры. <span class="ui" data-ui-key="Delete rendered temp files" data-ui-label="Удалить отрендеренные временные файлы">Удалить отрендеренные временные файлы <span class="ui-en">(Delete rendered temp files)</span></span> удаляет эти промежуточные файлы; <span class="ui" data-ui-key="Keep them" data-ui-label="Оставить их">Оставить их <span class="ui-en">(Keep them)</span></span> оставляет их. Это не удаление исходных айтемов проекта или итогового микса. Если ещё разбираете проблему, оставьте промежуточные файлы до завершения проверки.</p>
+<p>Обе кнопки можно использовать повторно, пока в этом окне доступна готовая production. Повтор скачивает новую копию и <strong>повторно вставляет</strong> её: ранее добавленные айтемы не заменяются. Отдельной кнопки «скачать без вставки» здесь нет. Перед повтором проверьте курсор или выбранный режим вставки, а после — уберите ненужный дубль через обычный Undo REAPER. Undo отменяет изменения проекта, но не серверную обработку и не скачивание файлов.</p>
+<aside class="callout" id="shot-AM-03" data-screenshot-placeholder="AM-03" aria-labelledby="shot-AM-03-caption"><strong id="shot-AM-03-caption">Готовые результаты и место вставки</strong><p>Перед вставкой готовых результатов проверьте выбранное место на таймлайне и нужные выходные файлы.</p></aside>
+<p class="back"><a href="#manual-start">К началу руководства</a></p></section>
+
+<section id="dia"><h2>04 · DIA из стемов</h2>
+<p>После успешного импорта стемов появляется <span class="ui" data-ui-key="Create DIA mix" data-ui-label="Create DIA mix">Create DIA mix</span>. Это локальный рендер уже импортированных айтемов, без нового платного задания Auphonic.</p>
+<ol><li>Откройте раздел и отметьте компоненты в списке кандидатов. <span class="ui" data-ui-key="Voice" data-ui-label="Voice">Voice</span> выбирает их по именам, содержащим признак голоса; это не анализ звука. Проверьте каждую галочку. <span class="ui" data-ui-key="All" data-ui-label="All">All</span> выбирает всё, <span class="ui" data-ui-key="None" data-ui-label="None">None</span> снимает все отметки.</li>
+<li>Выберите <span class="ui" data-ui-key="DIA WAV bit depth" data-ui-label="DIA WAV bit depth">DIA WAV bit depth</span>: <span class="ui" data-ui-key="24-bit WAV" data-ui-label="24-bit WAV">24-bit WAV</span> по умолчанию либо <span class="ui" data-ui-key="16-bit WAV" data-ui-label="16-bit WAV">16-bit WAV</span>. Используется частота проекта. Если требуется 48 кГц, заранее проверьте настройки проекта; предупреждение о другой частоте не выполняет преобразование за вас.</li>
+<li>Нажмите <span class="ui" data-ui-key="Render DIA mix (%s)" data-ui-label="Render DIA mix (24-bit WAV)" data-ui-example="[&quot;24-bit WAV&quot;]">Render DIA mix (24-bit WAV)</span> <small>(пример; значения зависят от проекта)</small>. Получится стерео WAV, который скрипт добавит в проект с выравниванием по выбранным стемам. Путь показан в <span class="ui" data-ui-key="DIA mix path:" data-ui-label="DIA mix path:">DIA mix path:</span>.</li>
+<li>Прослушайте DIA отдельно от исходных стемов, чтобы не оценивать одновременно звучащие копии. При совпадении имени файла добавляется числовой суффикс.</li></ol>
+<p>Не удаляйте исходные импортированные айтемы до сборки DIA: недействительный кандидат помечается <span class="ui" data-ui-key="item missing" data-ui-label="item missing">item missing</span>. При таком сообщении сначала проверьте проект или заново импортируйте нужные стемы. Скрипт проверяет поддержку DIA в установленном REAPER и показывает причину, если функция недоступна.</p>
+<aside class="callout" id="shot-AM-04" data-screenshot-placeholder="AM-04" aria-labelledby="shot-AM-04-caption"><strong id="shot-AM-04-caption">Сборка DIA</strong><p>Для DIA выберите нужные голосовые компоненты и разрядность, затем проверьте готовый результат на отдельной дорожке.</p></aside>
+<p class="back"><a href="#manual-start">К началу руководства</a></p></section>
+
+<section id="recovery"><h2>05 · Ошибки и восстановление</h2>
+<div class="table-wrap"><table><thead><tr><th>Ситуация</th><th>Что делать</th></tr></thead><tbody>
+<tr><td>Вход не восстановился; пресеты не загружаются.</td><td>Прочитайте статус в настройках. Для доступного сохранённого входа используйте <span class="ui" data-ui-key="Retry login refresh" data-ui-label="Повторить обновление входа">Повторить обновление входа <span class="ui-en">(Retry login refresh)</span></span>, иначе снова <span class="ui" data-ui-key="Login" data-ui-label="Логин">Логин <span class="ui-en">(Login)</span></span>. При запрете доступа или недостаточном балансе обратитесь к администратору. Переключение на локальный сервер не исправляет рабочую учётную запись.</td></tr>
+<tr><td>Не завершилась настройка выходов либо загрузка входов.</td><td>Не закрывайте окно. Используйте появившуюся <span class="ui" data-ui-key="Check and continue output setup" data-ui-label="Проверить и продолжить настройку выходных файлов">Проверить и продолжить настройку выходных файлов <span class="ui-en">(Check and continue output setup)</span></span> или <span class="ui" data-ui-key="Check and continue uploads" data-ui-label="Проверить и продолжить загрузку">Проверить и продолжить загрузку <span class="ui-en">(Check and continue uploads)</span></span>. Они проверяют существующую production перед продолжением; не начинайте другую только ради повторной загрузки.</td></tr>
+<tr><td>После создания нет подтверждения и UUID неизвестен.</td><td>Считайте результат неопределённым. Сначала попросите администратора проверить существующую production. В этом инструменте нет списка серверных production для поиска потерянного UUID. Не повторяйте создание вслепую.</td></tr>
+<tr><td>Ответ на платный старт потерян.</td><td>Используйте <span class="ui" data-ui-key="Check status" data-ui-label="Проверить статус">Проверить статус <span class="ui-en">(Check status)</span></span>. Не создавайте новую production и не пытайтесь обойти блокировку повторного старта: обработка могла уже начаться.</td></tr>
+<tr><td>Скачать не удалось или передача оборвалась.</td><td>Прочитайте ошибку, восстановите соединение, проверьте свободное место и доступ к папке записи. У той же готовой production повторите нужную кнопку загрузки. Она повторяет загрузку/вставку, а не платную обработку. Проверьте, не появились ли уже части результата в проекте.</td></tr>
+<tr><td>Во время загрузки сменился проект или папка записи.</td><td>Вставка останавливается, файл остаётся в исходной папке записи. Вернитесь к нужному проекту, проверьте файл и состояние. Не считайте отсутствие айтема доказательством отсутствия скачанного аудио.</td></tr>
+<tr><td>Нужно начать следующее задание.</td><td>После сохранения и проверки результатов используйте <span class="ui" data-ui-key="New production" data-ui-label="Новая продукция">Новая продукция <span class="ui-en">(New production)</span></span>. Подтверждение сбрасывает состояние окна, но не отменяет работу на сервере. При неопределённом исходе создания сначала сверяйтесь с администратором.</td></tr>
+</tbody></table></div>
+<p>При медленном интернете следите за прогрессом передачи и следующей проверкой состояния. Работа без разрывов соединения ранее проверялась владельцем, но полный набор сценариев нестабильной сети и всех платформ не подтверждён. Сохраняйте код ошибки и этап, не пересылайте пароли, токены или полный необработанный сетевой журнал.</p>
+<aside class="callout" id="shot-AM-05" data-screenshot-placeholder="AM-05" aria-labelledby="shot-AM-05-caption"><strong id="shot-AM-05-caption">Восстановление существующей production</strong><p>При ошибке прочитайте причину и используйте предложенное продолжение существующей задачи. Не создавайте новую обработку автоматически.</p></aside>
+<p class="back"><a href="#manual-start">К началу руководства</a></p></section>
+
+<section id="settings"><h2>06 · Настройки и помощь</h2>
+<p><span class="ui" data-ui-key="Language" data-ui-label="Язык">Язык <span class="ui-en">(Language)</span></span> меняет язык; <span class="ui" data-ui-key="Status window" data-ui-label="Окно статуса">Окно статуса <span class="ui-en">(Status window)</span></span> переносит статус в отдельное окно. <span class="ui" data-ui-key="Settings" data-ui-label="Настройки">Настройки <span class="ui-en">(Settings)</span></span> → <span class="ui" data-ui-key="Paths" data-ui-label="Пути">Пути <span class="ui-en">(Paths)</span></span> показывает папку временных файлов: <span class="ui" data-ui-key="Refresh checks" data-ui-label="Перепроверить">Перепроверить <span class="ui-en">(Refresh checks)</span></span> повторяет локальную проверку, <span class="ui" data-ui-key="Copy temp folder path" data-ui-label="Копировать путь к временной папке">Копировать путь к временной папке <span class="ui-en">(Copy temp folder path)</span></span> копирует путь. <span class="ui" data-ui-key="Diagnostics" data-ui-label="Диагностика">Диагностика <span class="ui-en">(Diagnostics)</span></span> содержит уровни журналирования и сообщений; не выключайте сообщения при диагностике проблемы. Локальные журналы могут включать имена файлов и пути.</p>
+<p><span class="ui" data-ui-key="Use local development backend (localhost:3002)" data-ui-label="Использовать локальный сервер разработки (localhost:3002)">Использовать локальный сервер разработки (localhost:3002) <span class="ui-en">(Use local development backend (localhost:3002))</span></span> предназначен для согласованных тестов разработчиков. Для обычной работы оставляйте производственный сервер. Настройки <span class="ui" data-ui-key="Telemetry" data-ui-label="Телеметрия">Телеметрия <span class="ui-en">(Telemetry)</span></span> и команды отправки диагностических событий не запускают и не восстанавливают production.</p>
+<p><span class="ui" data-ui-key="Help" data-ui-label="Помощь">Помощь <span class="ui-en">(Help)</span></span> открывает именно этот локальный HTML в системном браузере и доступна до входа. Интернет нужен обработке, но не чтению руководства. Если HTML отсутствовал при запуске, кнопка скрыта: восстановите файл из комплекта и перезапустите скрипт. При ошибке открытия используйте показанный в окне путь и откройте файл вручную. Для печати используйте команду печати браузера.</p>
+<p class="back"><a href="#manual-start">К началу руководства</a></p></section>
+<section id="review"><h2>Версия и проверка</h2>
+<p>Состояние исходников: <strong>28.10.2026</strong>. Руководство v1 описывает <code>automix_tool.lua v0.1.3</code>. Основа рабочего процесса — опубликованный скрипт <strong>v0.1.2</strong> в Neurocast Tools <strong>0.1.9</strong>; новая версия исходника добавляет кнопку открытия этого офлайн-руководства. Новое руководство и эта интеграция ещё не опубликованы в пакете. Номер пакета не равен версии отдельного скрипта.</p>
+<p>После обновления скрипта сведения могут устареть. Если версия или подписи отличаются, сверьте руководство с вашей установкой. Иллюстрации будут добавлены отдельно; все основные действия уже описаны текстом. Файл можно читать без подключения к интернету.</p>
+<div class="table-wrap"><table><thead><tr><th>Проверка</th><th>Состояние</th></tr></thead><tbody><tr><td>Содержание</td><td>Написано и сверено с текущей реализацией; готово к проверке владельцем.</td></tr><tr><td>Иллюстрации и внешний вид</td><td>Иллюстрации отложены для этой текстовой редакции. Проверка в обычном/узком окне браузера и печати не заявлена как пройденная.</td></tr><tr><td>Принятие владельцем</td><td>Ожидается; ранее принятые рабочие сценарии не означают принятия нового текста.</td></tr><tr><td>Живой запуск Help и платформы</td><td>Новая интеграция требует отдельной проверки Windows/macOS. При подготовке руководства реальные проекты и серверные операции не запускались.</td></tr></tbody></table></div>
+<p class="small">Техническая сверка использует активные исходники Neurocast Tools и документацию работающего сервиса, полученную 28.10.2026. Это не новая проверка обработки на сервере. Оставшиеся проверки и перечень снимков ведутся отдельно от выпуска пакета.</p>
+<p class="back"><a href="#manual-start">К началу руководства</a></p></section>
+<footer class="footer">Neurocast Tools · Русское офлайн-руководство · 2026-10-28</footer>
+</main>
+<script id="manual-manifest" type="application/json">
+{
+  "schema_version": 1,
+  "title": "AutoMix",
+  "language": "ru",
+  "manual_revision": "v2-text-first",
+  "canonical_file": "2026-10-28_automix_tool_manual_ru.html",
+  "maintenance": "Directly maintained HTML; no generator or secondary source of truth.",
+  "source_snapshot_date": "2026-10-28",
+  "source_base_commit": "14d022bc7b215c9e4527dfaca519c1a6f88a9f79",
+  "source_scope": "working tree: offline Help only added to the published workflow",
+  "script_version": "v0.1.3",
+  "source_toolset_version": "v0.1.0",
+  "published_package_version": "0.1.9",
+  "published_script_version": "v0.1.2",
+  "release_status": "Text-first release preparation authorized 2026-11-11; missing captures are not release blockers. Publication and packaged owner Help checks remain separate.",
+  "source_files_sha256": {
+    "scr/automix_tool.lua": "4ecf39755d777cca4baee1ffb5fd3740c3ee1f3c26fb1b8ea774e330ec7c1f57",
+    "scr/modules-neurocast/auphonic_api_via_neurocast.lua": "c16048707c4826d2a616248a847c0617f7d39b765fac2671473e443e52c2e955",
+    "scr/modules-neurocast/ReaperX_render_settings_helper.lua": "53feb649962c9117559993f094e53edb78f1c6d07ca6d734531622d3fac53fb6",
+    "scr/modules-neurocast/ReaperX_Import_Media_Manually.lua": "a7bdaf266e741bf0161cdc44b37f02286b216106776100f2e022fdcc9242cb85",
+    "scr/modules-neurocast/zip_archive.lua": "0e0efdcbdb86c4c53e26f6e0b4bf7fcf7d881a56c3a00291281d421f73d3f3fd",
+    "scr/modules-neurocast/automix_tool_languages.lua": "c3e9313451b6fc87d2dcbe29bce86a2d80a01dad1e4b2f87ea84f5223ffc2157",
+    "scr/modules-neurocast/offline_manual.lua": "ad986d8e48c502d4f60fccf420d82d0f549c40ff2a94e898a2bf4dd70d727f2c"
+  },
+  "backend_documentation": {
+    "target": "https://reaper.neurocast.tech",
+    "retrieved_date": "2026-10-28",
+    "openapi_info_version": "1.9-manager-balance-precision-20260913",
+    "evidence": "documentation GET only; no authenticated product or provider calls"
+  },
+  "sections": [
+    "overview",
+    "prepare",
+    "mix",
+    "results",
+    "dia",
+    "recovery",
+    "settings",
+    "review"
+  ],
+  "screenshots": [
+    {
+      "id": "AM-01",
+      "title": "Пресет и соответствие дорожек",
+      "capture_request": "Показать временное выделение, список входов пресета, выбранные дорожки и разрешённую кнопку рендера. Имена проекта и файлов должны быть учебными.",
+      "status": "owner_capture_pending",
+      "original_filename": null,
+      "sha256": null,
+      "annotations": "separate HTML/SVG layer only",
+      "release_blocking": false
+    },
+    {
+      "id": "AM-02",
+      "title": "Загрузка и платный запуск",
+      "capture_request": "Показать завершённые загрузки и настоящее предложение Start now / Start later. Дополнительный кадр может показать позднюю кнопку Start production (paid): она запускает обработку без второго подтверждения. Не нажимать её ради снимка.",
+      "status": "owner_capture_pending",
+      "original_filename": null,
+      "sha256": null,
+      "annotations": "separate HTML/SVG layer only",
+      "release_blocking": false
+    },
+    {
+      "id": "AM-03",
+      "title": "Готовые результаты и место вставки",
+      "capture_request": "Показать готовую production с двумя выходами, настройку места вставки и результат на таймлайне. UUID и пути не должны содержать рабочие данные.",
+      "status": "owner_capture_pending",
+      "original_filename": null,
+      "sha256": null,
+      "annotations": "separate HTML/SVG layer only",
+      "release_blocking": false
+    },
+    {
+      "id": "AM-04",
+      "title": "Сборка DIA",
+      "capture_request": "Показать список стемов с выбранными голосовыми компонентами, разрядность, кнопку рендера и готовый DIA на отдельной дорожке.",
+      "status": "owner_capture_pending",
+      "original_filename": null,
+      "sha256": null,
+      "annotations": "separate HTML/SVG layer only",
+      "release_blocking": false
+    },
+    {
+      "id": "AM-05",
+      "title": "Восстановление существующей production",
+      "capture_request": "Показать реальное безопасное сообщение о прерванной настройке/загрузке и соответствующую кнопку продолжения. Если такого кадра нет, оставить этот заполнитель.",
+      "status": "owner_capture_pending",
+      "original_filename": null,
+      "sha256": null,
+      "annotations": "separate HTML/SVG layer only",
+      "release_blocking": false
+    }
+  ],
+  "embedded_image_count": 0,
+  "validation": {
+    "content": "complete; implementation-inspected; ready for owner review",
+    "html": "passed 2026-10-28: structure, anchors, offline references, exact UI labels, source hashes and privacy",
+    "visual": "Not claimed; illustrations deferred by owner for text-first release; normal/narrow browser and print review remain separate.",
+    "owner_review": "pending",
+    "live_help": "pending Windows and macOS; headless is separate",
+    "live_workflow": "No live workflow run for this manual; dated prior evidence in engineering verification record"
+  },
+  "freshness_policy": "Any change to workflow, labels, defaults, limits, results, recovery, backend or source version requires a manual impact review in the same change. Update text/manifest and request replacement screenshots; do not silently mark stale material current.",
+  "source_hash_format": "UTF-8 bytes with CRLF normalized to LF",
+  "manual_revision_date": "2026-11-11",
+  "illustration_policy": {
+    "owner_decision_date": "2026-11-11",
+    "release_blocking": false,
+    "status": "Deferred; capture IDs and requests retained as editorial backlog. Visible slots now contain operator reminders."
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="Neurocast Script Aligner: русское офлайн-руководство оператора, рабочий процесс, результаты и восстановление.">
+  <meta name="manual-script" content="neurocast_script_aligner_tool.lua">
+  <meta name="manual-script-version" content="v0.1.1">
+  <meta name="manual-source-snapshot" content="2026-10-28">
+  <meta name="manual-revision" content="v2-text-first">
+  <meta name="manual-status" content="content-complete-awaiting-owner-review">
+  <title>Neurocast Script Aligner — Рабочее руководство</title>
+  <style>
+    :root { --paper:#faf9f5; --ink:#202e32; --muted:#536367; --line:#d7dfda; --green:#176351; --pale:#edf4ee; --rail:236px; }
+    * { box-sizing:border-box; }
+    html { scroll-padding-top:20px; }
+    body { margin:0; background:var(--paper); color:var(--ink); font:16px/1.5 "Segoe UI",Arial,sans-serif; }
+    a { color:var(--green); text-underline-offset:3px; }
+    a:hover { text-decoration-thickness:2px; }
+    a:focus-visible, [tabindex]:focus-visible { outline:3px solid #b56c14; outline-offset:4px; }
+    .skip { position:fixed; top:-100px; left:16px; z-index:10; padding:10px 16px; background:#fff; }
+    .skip:focus { top:10px; }
+    .sidebar { position:fixed; inset:0 auto 0 0; width:var(--rail); overflow:auto; padding:24px 18px; background:#f0f2ed; border-right:1px solid var(--line); }
+    .brand { margin:0 0 18px; font-size:17px; line-height:1.4; }
+    .brand small { display:block; margin-top:3px; color:var(--muted); font-size:12px; font-weight:400; }
+    .sidebar nav a { display:block; padding:6px 8px; font-size:14px; text-decoration:none; border-radius:4px; }
+    .sidebar nav a:hover { background:#e1e9e1; }
+    .side-label { margin:20px 8px 6px; font-size:12px; color:var(--muted); }
+    .main { margin-left:var(--rail); padding:24px 32px 36px; max-width:1180px; }
+    .topline { font-size:13px; color:var(--muted); margin-bottom:16px; }
+    h1 { font-size:36px; line-height:1.15; margin:0 0 12px; letter-spacing:-0.6px; }
+    h2 { font-size:25px; line-height:1.25; margin:0 0 16px; }
+    h3 { font-size:19px; line-height:1.35; margin:26px 0 10px; }
+    p { margin:10px 0; }
+    section { padding:28px 0; border-top:1px solid var(--line); }
+    li { margin:7px 0; }
+    .draft-note, .small { font-size:13px; color:var(--muted); }
+    .draft-note { margin:0 0 22px; }
+    .toc { margin:16px 0; padding:16px 20px; background:var(--pale); border:1px solid var(--line); border-radius:6px; }
+    .toc ol { margin:10px 0 0; padding-left:24px; }
+    .callout { margin:18px 0; padding:14px 18px; border-left:4px solid var(--green); background:var(--pale); }
+    .warning { border-left-color:#b56c14; background:#fff3dd; }
+    .table-wrap { overflow-x:auto; margin:14px 0; }
+    table { border-collapse:collapse; width:100%; font-size:14px; }
+    th, td { padding:10px 12px; text-align:left; vertical-align:top; border:1px solid var(--line); overflow-wrap:anywhere; }
+    th { background:#edf1eb; font-weight:600; }
+    .ui { font:inherit; font-weight:600; color:var(--green); }
+    code { font:0.9em/1.4 Consolas,"Courier New",monospace; overflow-wrap:anywhere; }
+    pre { padding:14px 18px; margin:12px 0; border:1px solid var(--line); border-radius:4px; background:#f0f2ed; white-space:pre-wrap; overflow-wrap:anywhere; font:14px/1.5 Consolas,"Courier New",monospace; }
+    kbd { font:0.9em "Segoe UI",Arial,sans-serif; border:1px solid #aebdb6; border-radius:3px; padding:1px 5px; background:#fff; white-space:nowrap; }
+    .footer { margin-top:12px; padding-top:14px; border-top:1px solid var(--line); font-size:13px; text-align:right; }
+    @media(max-width:760px) { .sidebar { position:static; width:auto; padding:16px 20px; border-right:0; border-bottom:1px solid var(--line); } .brand { margin-bottom:10px; } .sidebar nav { display:flex; flex-wrap:wrap; gap:3px 7px; } .sidebar nav a { padding:4px 6px; font-size:13px; } .side-label { flex-basis:100%; margin:8px 6px 3px; } .main { margin-left:0; padding:20px; } h1 { font-size:28px; } }
+    @media(max-width:480px) { .main { padding:18px 14px; } th,td { padding:8px; } h2 { font-size:23px; } }
+    @media print { @page { margin:14mm; } body { background:#fff; color:#000; font-size:10pt; } .sidebar,.skip,.topline,.footer { display:none; } .main { margin:0; padding:0; max-width:none; } section { padding:14px 0; } h1 { font-size:23pt; } h2 { font-size:16pt; } h3 { font-size:12pt; } h1,h2,h3 { break-after:avoid; } p,li { orphans:3; widows:3; } table { font-size:9pt; } tr { break-inside:avoid; } thead { display:table-header-group; } .table-wrap { overflow:visible; } .toc,.callout { padding:8px 12px; } pre { white-space:pre-wrap; } .draft-note,.small { font-size:8pt; } a,.ui { color:inherit; } }
+    .screenshot { margin:18px 0 24px; }
+    .screenshot-grid { display:grid; grid-template-columns:minmax(0,1fr); gap:6px; }
+    .figure-graphic { overflow-x:auto; border:1px solid var(--line); border-radius:5px; background:#fff; }
+    .figure-graphic svg { display:block; width:100%; min-width:var(--min-width); height:auto; }
+    .screenshot-zoom { margin:0 5px 8px 0; }
+    .screenshot-zoom-label { font-size:13px; cursor:pointer; }
+    .screenshot-zoom:checked ~ .figure-graphic svg { width:var(--native-width); min-width:var(--native-width); }
+    .annotations { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 16px; margin:6px 0 0; padding:0; list-style:none; font-size:14px; }
+    .annotations li { display:grid; grid-template-columns:22px 1fr; gap:7px; margin:5px 0; }
+    .annotation-number { display:inline-grid; place-items:center; width:21px; height:21px; border:2px solid #d71920; border-radius:50%; color:#d71920; background:#fff; font-size:12px; font-weight:700; line-height:1; }
+    .annotations strong { font-weight:600; }
+    figcaption { margin-top:7px; color:var(--muted); font-size:13px; }
+    @media(max-width:760px) { .annotations { grid-template-columns:1fr; } }
+    @media print { .screenshot { break-inside:avoid; } .screenshot-grid { display:block; } .figure-graphic { overflow:visible; border:0; } .figure-graphic svg, .screenshot-zoom:checked ~ .figure-graphic svg { width:100%; min-width:0; height:auto; } .screenshot-zoom,.screenshot-zoom-label { display:none; } .annotations { display:block; font-size:9pt; } .annotations li { margin:3px 0; } figcaption { font-size:8pt; } }
+
+    .placeholder { border:1px dashed #81988d; padding:16px; background:#f0f2ed; break-inside:avoid; }
+    .placeholder p { font-size:14px; }
+    .ui-en { color:var(--muted); font-weight:400; }
+    .back { margin-top:18px; font-size:13px; }
+    @media print { .placeholder { padding:7px 10px; } .placeholder p { font-size:8pt; } .back { display:none; } }
+  </style>
+</head>
+<body>
+<a class="skip" href="#overview">К содержанию</a>
+<aside class="sidebar"><p class="brand"><strong>Neurocast Script Aligner</strong><small>Рабочее руководство · REAPER<br>Руководство v1 · 28.10.2026</small></p><nav aria-label="Главы руководства"><a href="#overview">Назначение и короткий маршрут</a>
+<a href="#prepare">01 · Документ и аудио</a>
+<a href="#run">02 · Запуск и ожидание</a>
+<a href="#results">03 · JSON и импорт</a>
+<a href="#advanced">04 · Параметры и смещение</a>
+<a href="#recovery">05 · Ошибки и ограничения</a>
+<a href="#settings">06 · Настройки и помощь</a>
+<a href="#review">Версия и проверка</a></nav></aside>
+<main class="main" id="manual-start">
+<div class="topline">Neurocast Tools / Neurocast Script Aligner</div>
+<h1>Neurocast Script Aligner · Рабочее руководство</h1>
+<p class="draft-note">Готово к проверке владельцем · исходник v0.1.1 · состояние на 28.10.2026. После обновления инструмента сведения могут устареть. Текстовая редакция от 11.11.2026: иллюстрации отложены по решению владельца; инструкции доступны без них. Новая проверка установленного Help остаётся отдельным шагом.</p>
+
+<section id="overview"><h2>Назначение и короткий маршрут</h2>
+<p><strong>Neurocast Script Aligner сопоставляет сценарий DOCX с аудио и переносит результат в текстовые айтемы REAPER по персонажам.</strong> Используйте его, когда нужен тайминг реплик по звучащему материалу. Это серверная обработка, для которой отправляются документ и выбранный фрагмент аудио. Сам инструмент не озвучивает текст и не заменяет исходную фонограмму.</p>
+<p>Если документ уже содержит пригодные таймкоды и нужно только перенести реплики, используйте локальный DOCX Import. У Aligner нет такого же пошагового редактора столбцов и персонажей: документ должен быть заранее подготовлен для сервиса.</p>
+<div class="toc"><strong>Обычная работа</strong><ol><li>Сохраните проект и подготовьте DOCX, соответствующий аудио.</li><li>Выделите ровно одну дорожку и нужный интервал времени.</li><li>Войдите в Neurocast, откройте <span class="ui" data-ui-key="Script Aligner" data-ui-label="Script Aligner">Script Aligner</span> и нажмите <span class="ui" data-ui-key="Select DOCX" data-ui-label="Select DOCX">Select DOCX</span>.</li><li>Проверьте параметры и нажмите <span class="ui" data-ui-key="Start script aligner" data-ui-label="Start script aligner">Start script aligner</span>.</li><li>Дождитесь успешной обработки, скачивания и разбора JSON.</li><li>Проверьте сводку и смещение, затем <span class="ui" data-ui-key="Import parsed JSON to project" data-ui-label="Import parsed JSON to project">Import parsed JSON to project</span>.</li><li>Проверьте текст, дорожки и синхронность по звуку; при необходимости используйте Undo.</li></ol></div>
+<p>Большая часть текущего интерфейса остаётся английской даже при выборе русского языка. Ниже приведены точные подписи, а русское пояснение объясняет действие. <code>%s</code> и <code>%d</code> в подписях означают подставляемое значение и число.</p><p class="back"><a href="#manual-start">К началу руководства</a></p></section>
+
+<section id="prepare"><h2>01 · Документ и аудио</h2>
+<ul><li>Запустите <code>neurocast_script_aligner_tool.lua</code> из списка действий REAPER. Нужны Neurocast Tools с ReaImGui и вспомогательными файлами, выданная идентификация установки и учётная запись с доступом к Script Aligner.</li><li>Сохраните проект и проверьте запись во временную папку. Несохранённый проект блокирует элементы сценарного потока.</li><li>Подготовьте настоящий файл <code>.docx</code> с репликами, персонажами и исходным таймингом в формате, принятом вашим процессом работы с сервисом. Простое переименование <code>.doc</code> не конвертирует файл. Скрипт не предлагает выбор столбцов и не гарантирует поддержку произвольного Word-макета.</li><li>Проверьте, что документ соответствует выбранной версии фонограммы. Сопоставление текста другой редакции с аудио может дать пропуски и резервный тайминг.</li><li>Выделите ровно одну дорожку с нужным звуком и непустой временной интервал. Выделения айтемов недостаточно. Прослушайте интервал, проверьте Mute и FX: перед отправкой будет создан временный <strong>post-FX FLAC</strong>, то есть звук после обработки дорожки.</li></ul>
+<p>В <span class="ui" data-ui-key="Settings" data-ui-label="Настройки">Настройки <span class="ui-en">(Settings)</span></span> → <span class="ui" data-ui-key="Account / Credentials" data-ui-label="Учетная запись / Учетные данные">Учетная запись / Учетные данные <span class="ui-en">(Account / Credentials)</span></span> введите <span class="ui" data-ui-key="Email" data-ui-label="Email">Email</span> и <span class="ui" data-ui-key="Password" data-ui-label="Password">Password</span>, при необходимости включите <span class="ui" data-ui-key="Remember me" data-ui-label="Remember me">Remember me</span>, затем <span class="ui" data-ui-key="Login" data-ui-label="Login">Login</span>. <span class="ui" data-ui-key="Load current user" data-ui-label="Load current user">Load current user</span> позволяет проверить, под какой учётной записью выполнен вход. Инструмент использует отдельный сервис Script Aligner; менять сервер для обычной работы не нужно.</p>
+<p>Откройте <span class="ui" data-ui-key="Script Aligner" data-ui-label="Script Aligner">Script Aligner</span>, нажмите <span class="ui" data-ui-key="Select DOCX" data-ui-label="Select DOCX">Select DOCX</span> и проверьте <span class="ui" data-ui-key="Selected DOCX" data-ui-label="Selected DOCX">Selected DOCX</span>. Рядом должны быть указаны правильная исходная дорожка в <span class="ui" data-ui-key="Track mode source" data-ui-label="Track mode source">Track mode source</span> и <span class="ui" data-ui-key="Time selection" data-ui-label="Time selection">Time selection</span>. Путь должен вести к доступному документу, а не к перемещённому файлу.</p>
+<aside class="callout" id="shot-SA-01" data-screenshot-placeholder="SA-01" aria-labelledby="shot-SA-01-caption"><strong id="shot-SA-01-caption">Готовность к запуску</strong><p>Перед Start script aligner проверьте DOCX, выбранную дорожку, временной диапазон и параметры.</p></aside>
+<p class="back"><a href="#manual-start">К началу руководства</a></p></section>
+
+<section id="run"><h2>02 · Запуск и ожидание</h2>
+<ol><li>Для обычного первого прохода оставьте <span class="ui" data-ui-key="Match threshold (0-1)" data-ui-label="Match threshold (0-1)">Match threshold (0-1)</span> равным <strong>0.65</strong>, <span class="ui" data-ui-key="Time window (sec)" data-ui-label="Time window (sec)">Time window (sec)</span> — <strong>5</strong>, если ваша задача не требует других настроек.</li><li>Нажмите <span class="ui" data-ui-key="Start script aligner" data-ui-label="Start script aligner">Start script aligner</span> один раз. Скрипт запоминает начало временного выделения, рендерит аудио, подготавливает и загружает DOCX и FLAC, затем создаёт серверную задачу.</li><li>Следите за таблицей запросов и состоянием <span class="ui" data-ui-key="Run" data-ui-label="Run">Run</span>. Различайте отправку файлов, создание задачи, ожидание результата и скачивание. Во время опроса виден отсчёт до следующей проверки.</li><li>После успешной задачи запоминается <span class="ui" data-ui-key="Last successful job id" data-ui-label="Last successful job id">Last successful job id</span>, результат JSON автоматически скачивается и разбирается. Готовый JSON ещё не вставлен в проект.</li><li>Оставайтесь в исходном проекте и держите окно открытым до проверки и импорта. Не запускайте второй проход только потому, что первый выполняется долго.</li></ol>
+<div class="callout warning"><strong>Потерянный ответ при создании задачи опасен повтором.</strong> У текущего инструмента есть общий механизм повторов, который может повторно создать уже принятую сервером задачу. Даже автоматический повтор не гарантированно безопасен. При неопределённом исходе создания проверьте существующие задания в Studio с администратором до ручного Retry или нового запуска. Этот недостаток в данной версии не исправлен.</div>
+<p><span class="ui" data-ui-key="Stop polling" data-ui-label="Stop polling">Stop polling</span> останавливает только локальный опрос. Серверное задание этим не отменяется. Отдельной обычной кнопки возобновления опроса нет; не нажимайте <span class="ui" data-ui-key="Start script aligner" data-ui-label="Start script aligner">Start script aligner</span> как замену «продолжить». Если успешный результат ещё не был запомнен, сначала выясните его состояние в Studio.</p>
+<aside class="callout" id="shot-SA-02" data-screenshot-placeholder="SA-02" aria-labelledby="shot-SA-02-caption"><strong id="shot-SA-02-caption">Обработка и опрос</strong><p>Во время обработки следите за этапами, состоянием Run и временем следующего опроса.</p></aside>
+<p class="back"><a href="#manual-start">К началу руководства</a></p></section>
+
+<section id="results"><h2>03 · JSON и импорт</h2>
+<p>Путь показан в <span class="ui" data-ui-key="Last downloaded JSON" data-ui-label="Last downloaded JSON">Last downloaded JSON</span>. Проверьте сводку числа строк, строк с исправленным таймингом, резервным таймингом, проблемами исправленного времени и неиспользованными сегментами. <span class="ui" data-ui-key="Statuses" data-ui-label="Statuses">Statuses</span> показывает распределение серверных статусов. Успешный разбор означает пригодность структуры JSON, а не точное совпадение каждой реплики с аудио.</p>
+<p>При сохранённом успешном задании <span class="ui" data-ui-key="Download result JSON" data-ui-label="Download result JSON">Download result JSON</span> повторно получает его результат. <span class="ui" data-ui-key="Re-parse downloaded JSON" data-ui-label="Re-parse downloaded JSON">Re-parse downloaded JSON</span> заново разбирает уже скачанный локальный файл; она не запускает серверную обработку. После перезапуска окна эти кнопки не являются универсальным загрузчиком любого старого JSON: для импорта нужен сохранённый в этой сессии контекст.</p>
+<h3>Проверьте положение во времени</h3>
+<p>Обычная формула позиции: <strong>начало выделения при запуске + время строки результата + дополнительное смещение импорта</strong>. Текущая позиция курсора и новое выделение не заменяют сохранённое начало. В <span class="ui" data-ui-key="Track-mode import base offset" data-ui-label="Track-mode import base offset">Track-mode import base offset</span> проверьте исходную базу. При включённом дополнительном смещении итог показан в <span class="ui" data-ui-key="Resolved import base offset" data-ui-label="Resolved import base offset">Resolved import base offset</span>.</p>
+<p>Например, начало выбранного фрагмента было 10:00, реплика в результате начинается через 12 секунд, дополнительное смещение выключено — ожидайте айтем на 10:12. Если весь результат действительно нужно сдвинуть на минуту вправо, включите соответствующее смещение: позиция станет 11:12. Это только пример расчёта, не рекомендуемая поправка для каждого проекта.</p>
+<h3>Выполните импорт</h3>
+<ol><li>Убедитесь, что открыт исходный проект, сводка понятна и смещение верно.</li><li>Нажмите <span class="ui" data-ui-key="Import parsed JSON to project" data-ui-label="Import parsed JSON to project">Import parsed JSON to project</span>. Для персонажа используется первая существующая дорожка с точно совпадающим именем; если её нет, создаётся новая в конце проекта. При одинаковых именах заранее проверьте, какая дорожка будет первой.</li><li>Реплики появляются как текстовые айтемы; текст хранится в заметках. Серверное исправленное время используется, когда оно корректно. Иначе применяется резервная позиция/длительность; оценка длины опирается на 20 символов в секунду с минимумом 1 секунду. Такие реплики особенно требуют ручной проверки.</li><li>Проверьте сообщение <span class="ui" data-ui-key="Last import" data-ui-label="Last import">Last import</span>, дорожки, заметки, цвета и предупреждающие маркеры. Прослушайте несколько совпавших и все проблемные участки.</li></ol>
+<p>Импорт добавляет айтемы и при необходимости маркеры/дорожки. Он не заменяет ранее импортированный набор автоматически. Повторное нажатие может добавить дубли. Для пересмотра смещения сначала отмените предыдущий импорт через Undo REAPER, затем повторите его. Undo не отменяет серверное задание и не удаляет скачанный JSON.</p>
+<aside class="callout" id="shot-SA-03" data-screenshot-placeholder="SA-03" aria-labelledby="shot-SA-03-caption"><strong id="shot-SA-03-caption">Сводка и смещение перед импортом</strong><p>Перед Import проверьте parsed/corrected/fallback и итоговое смещение. После изменения параметров разбора используйте Re-parse.</p></aside>
+<aside class="callout" id="shot-SA-04" data-screenshot-placeholder="SA-04" aria-labelledby="shot-SA-04-caption"><strong id="shot-SA-04-caption">Результат в проекте</strong><p>После импорта проверьте текстовые айтемы на дорожках персонажей, заметки реплик и совпадение с исходным аудио.</p></aside>
+<p class="back"><a href="#manual-start">К началу руководства</a></p></section>
+
+<section id="advanced"><h2>04 · Параметры и смещение</h2>
+<div class="table-wrap"><table><thead><tr><th>Элемент</th><th>Как использовать</th></tr></thead><tbody>
+<tr><td><span class="ui" data-ui-key="Match threshold (0-1)" data-ui-label="Match threshold (0-1)">Match threshold (0-1)</span></td><td>Порог уверенности сопоставления, 0–1, исходное значение 0.65. Это параметр следующего серверного запуска. Не считайте его процентом гарантированно правильных реплик.</td></tr>
+<tr><td><span class="ui" data-ui-key="Time window (sec)" data-ui-label="Time window (sec)">Time window (sec)</span></td><td>Окно времени 1–60 секунд, исходное значение 5. Меняйте осмысленно для задачи и оценивайте результат. Это не сдвиг всех айтемов.</td></tr>
+<tr><td><span class="ui" data-ui-key="Enable import offset" data-ui-label="Enable import offset">Enable import offset</span></td><td>Включает дополнительный локальный сдвиг при импорте. Он не требует повторной серверной обработки.</td></tr>
+<tr><td><span class="ui" data-ui-key="Offset direction" data-ui-label="Offset direction">Offset direction</span>, <span class="ui" data-ui-key="Left" data-ui-label="Left">Left</span>, <span class="ui" data-ui-key="Right" data-ui-label="Right">Right</span></td><td>Влево вычитает величину смещения, вправо прибавляет её. Проверяйте итоговую базу перед вставкой.</td></tr>
+<tr><td><span class="ui" data-ui-key="Offset hours:" data-ui-label="Offset hours:">Offset hours:</span>, <span class="ui" data-ui-key="Offset minutes:" data-ui-label="Offset minutes:">Offset minutes:</span></td><td>Размер сдвига в часах и минутах. Отдельного поля секунд здесь нет. Не задавайте сдвиг, уводящий реплики раньше начала проекта.</td></tr>
+</tbody></table></div>
+<p>Порог CSV в интерфейсе не задаётся: используется серверное значение по умолчанию. Руководство не обещает конкретную схему произвольного DOCX или качество результата при изменении параметров: это следует проверять на подготовленном материале.</p><p class="back"><a href="#manual-start">К началу руководства</a></p></section>
+
+<section id="recovery"><h2>05 · Ошибки и ограничения</h2>
+<div class="table-wrap"><table><thead><tr><th>Ситуация</th><th>Что делать</th></tr></thead><tbody>
+<tr><td>Запуск недоступен.</td><td>Проверьте сохранённый проект, вход, выбранный DOCX, ровно одну дорожку и ненулевое временное выделение. Завершите текущий запрос. <span class="ui" data-ui-key="Refresh checks" data-ui-label="Refresh checks">Refresh checks</span> в настройках повторяет проверку локальных условий.</td></tr>
+<tr><td>Файл не готов к загрузке или локальный рендер не создан.</td><td>Проверьте путь к DOCX, доступность исходного аудио, свободное место, права временной папки и состояние дорожки. Ошибка подготовки не означает, что виноват формат документа: прочитайте конкретную причину.</td></tr>
+<tr><td>Сбой опроса или скачивания.</td><td>Оставьте окно открытым, восстановите сеть, прочитайте строку запроса. Опрос может запланировать следующую попытку; ручная <span class="ui" data-ui-key="Retry" data-ui-label="Retry">Retry</span> относится к конкретной строке. Для уже успешной задачи доступна <span class="ui" data-ui-key="Download result JSON" data-ui-label="Download result JSON">Download result JSON</span>. Не повторяйте создание вместо скачивания.</td></tr>
+<tr><td>Сбой создания с неизвестным результатом.</td><td>Не используйте Retry до проверки в Studio. Сервер мог принять первый запрос, а повтор создаст дубликат. Передайте администратору безопасный текст ошибки и видимый идентификатор, если он есть.</td></tr>
+<tr><td><span class="ui" data-ui-key="Result parse failed" data-ui-label="Result parse failed">Result parse failed</span> или много fallback.</td><td>При ошибке скачивания заново получите JSON успешной задачи; для существующего файла используйте <span class="ui" data-ui-key="Re-parse downloaded JSON" data-ui-label="Re-parse downloaded JSON">Re-parse downloaded JSON</span>. При корректном разборе и плохом совпадении проверьте редакцию сценария, исходное аудио и тайминг. Не импортируйте вслепую.</td></tr>
+<tr><td>Нет сохранённого начала выделения.</td><td>Импорт требует контекст этой сессии. Новый курсор не восстанавливает его автоматически. Не обходите сообщение случайным сдвигом; согласуйте восстановление результата с поддержкой.</td></tr>
+<tr><td>Импорт завершился ошибкой.</td><td>Осмотрите проект: часть айтемов могла быть добавлена до ошибки. Используйте Undo для отмены частичного импорта, исправьте причину, затем повторите. Отрицательная позиция после сдвига недопустима.</td></tr>
+</tbody></table></div>
+<p><span class="ui" data-ui-key="Clear request table and reset state" data-ui-label="Clear request table and reset state">Clear request table and reset state</span> очищает локальное состояние, выбранный документ и контекст результата; это не отмена работы на сервере и не Undo импорта. Используйте её после сохранения нужных данных. Не закрывайте окно и не сбрасывайте состояние как первый способ лечения сетевой ошибки.</p>
+<p>Рабочий успешный путь ранее подтверждён владельцем. Безопасный повтор неоднозначного создания, восстановление после закрытия, полный набор плохих соединений и все платформы не квалифицированы.</p><p class="back"><a href="#manual-start">К началу руководства</a></p></section>
+
+<section id="settings"><h2>06 · Настройки и помощь</h2>
+<p><span class="ui" data-ui-key="Language" data-ui-label="Language">Language</span> меняет язык, <span class="ui" data-ui-key="Status window" data-ui-label="Окно статуса">Окно статуса <span class="ui-en">(Status window)</span></span> включает отдельное окно статуса. <span class="ui" data-ui-key="Settings" data-ui-label="Настройки">Настройки <span class="ui-en">(Settings)</span></span> содержит учётную запись, пути, <span class="ui" data-ui-key="Diagnostics" data-ui-label="Диагностика">Диагностика <span class="ui-en">(Diagnostics)</span></span> и <span class="ui" data-ui-key="Telemetry" data-ui-label="Телеметрия">Телеметрия <span class="ui-en">(Telemetry)</span></span>. <span class="ui" data-ui-key="Forget stored login (and logout)" data-ui-label="Forget stored login (and logout)">Forget stored login (and logout)</span> очищает сохранённый вход и выполняет выход; это не способ отменить серверную обработку.</p>
+<p><span class="ui" data-ui-key="Details" data-ui-label="Details">Details</span> помогает найти этап и причину. Передавайте поддержке версию, этап, понятную ошибку и идентификатор задачи, а не полные технические ответы с адресами загрузки или данными учётной записи.</p>
+<p><span class="ui" data-ui-key="Help" data-ui-label="Помощь">Помощь <span class="ui-en">(Help)</span></span> открывает этот локальный HTML без входа в сервис. При отсутствии файла на старте кнопка скрывается; восстановите руководство из комплекта и перезапустите инструмент. При ошибке открытия используйте показанный путь вручную. Чтение и печать работают без интернета; запуск Aligner требует сети.</p><p class="back"><a href="#manual-start">К началу руководства</a></p></section>
+<section id="review"><h2>Версия и проверка</h2>
+<p>Состояние исходников: <strong>28.10.2026</strong>. Руководство v1 описывает <code>neurocast_script_aligner_tool.lua v0.1.1</code>. Основа рабочего процесса — опубликованный скрипт <strong>v0.1.0</strong> в Neurocast Tools <strong>0.1.9</strong>; новая версия исходника добавляет кнопку открытия этого офлайн-руководства. Новое руководство и эта интеграция ещё не опубликованы в пакете. Номер пакета не равен версии отдельного скрипта.</p>
+<p>После обновления скрипта сведения могут устареть. Если версия или подписи отличаются, сверьте руководство с вашей установкой. Иллюстрации будут добавлены отдельно; все основные действия уже описаны текстом. Файл можно читать без подключения к интернету.</p>
+<div class="table-wrap"><table><thead><tr><th>Проверка</th><th>Состояние</th></tr></thead><tbody><tr><td>Содержание</td><td>Написано и сверено с текущей реализацией; готово к проверке владельцем.</td></tr><tr><td>Иллюстрации и внешний вид</td><td>Иллюстрации отложены для этой текстовой редакции. Проверка в обычном/узком окне браузера и печати не заявлена как пройденная.</td></tr><tr><td>Принятие владельцем</td><td>Ожидается; ранее принятые рабочие сценарии не означают принятия нового текста.</td></tr><tr><td>Живой запуск Help и платформы</td><td>Новая интеграция требует отдельной проверки Windows/macOS. При подготовке руководства реальные проекты и серверные операции не запускались.</td></tr></tbody></table></div>
+<p class="small">Техническая сверка использует активные исходники Neurocast Tools и документацию работающего сервиса, полученную 28.10.2026. Это не новая проверка обработки на сервере. Оставшиеся проверки и перечень снимков ведутся отдельно от выпуска пакета.</p>
+<p class="back"><a href="#manual-start">К началу руководства</a></p></section>
+<footer class="footer">Neurocast Tools · Русское офлайн-руководство · 2026-10-28</footer>
+</main>
+<script id="manual-manifest" type="application/json">
+{
+  "schema_version": 1,
+  "title": "Neurocast Script Aligner",
+  "language": "ru",
+  "manual_revision": "v2-text-first",
+  "canonical_file": "2026-10-28_neurocast_script_aligner_tool_manual_ru.html",
+  "maintenance": "Directly maintained HTML; no generator or secondary source of truth.",
+  "source_snapshot_date": "2026-10-28",
+  "source_base_commit": "14d022bc7b215c9e4527dfaca519c1a6f88a9f79",
+  "source_scope": "working tree: offline Help only added to the published workflow",
+  "script_version": "v0.1.1",
+  "source_toolset_version": "v0.1.0",
+  "published_package_version": "0.1.9",
+  "published_script_version": "v0.1.0",
+  "release_status": "Text-first release preparation authorized 2026-11-11; missing captures are not release blockers. Publication and packaged owner Help checks remain separate.",
+  "source_files_sha256": {
+    "scr/neurocast_script_aligner_tool.lua": "72adba7b8d24722843a1f822baf2287901cbd2da647bc6339c1812e6a144e968",
+    "scr/modules-neurocast/neurocast_script_aligner_helper.lua": "82f34604ec37b75f43094f4955dc739371a8a207e14c1b279ed26785f044e9a5",
+    "scr/modules-neurocast/neurocast_script_aligner_reaper.lua": "74ba663c1f997e96738ee9a6e107f3bc7390e06c792fa401aa9497a70c1be746",
+    "scr/modules-neurocast/neurocast_script_aligner_result.lua": "dda6d9414a8aaa0c9f97dbb76f8008f37416ca73eac3d0d422cb73cddec7557e",
+    "scr/modules-neurocast/neurocast_script_aligner_settings.lua": "c5e1c053af0f4e776f6a8aab3361bbb1361b6fdebfba9d2d375ef06029c1fd46",
+    "scr/modules-neurocast/neurocast_script_aligner_tool_languages.lua": "7a0b0182aefdaf94bfd527633cc00ee14a9c779a855e7688e627131b41089176",
+    "scr/modules-neurocast/offline_manual.lua": "ad986d8e48c502d4f60fccf420d82d0f549c40ff2a94e898a2bf4dd70d727f2c"
+  },
+  "backend_documentation": {
+    "target": "https://studio.neurocast.tech",
+    "retrieved_date": "2026-10-28",
+    "openapi_info_version": "1.0",
+    "evidence": "documentation GET only; no authenticated product or provider calls"
+  },
+  "sections": [
+    "overview",
+    "prepare",
+    "run",
+    "results",
+    "advanced",
+    "recovery",
+    "settings",
+    "review"
+  ],
+  "screenshots": [
+    {
+      "id": "SA-01",
+      "title": "Готовность к запуску",
+      "capture_request": "Показать учебный DOCX, одну выбранную дорожку, временной диапазон, параметры и доступную Start script aligner. Панель учётной записи закрыть.",
+      "status": "owner_capture_pending",
+      "original_filename": null,
+      "sha256": null,
+      "annotations": "separate HTML/SVG layer only",
+      "release_blocking": false
+    },
+    {
+      "id": "SA-02",
+      "title": "Обработка и опрос",
+      "capture_request": "Показать таблицу реальных этапов, состояние Run и отсчёт следующего опроса. Не включать полные адреса загрузки и технические ответы.",
+      "status": "owner_capture_pending",
+      "original_filename": null,
+      "sha256": null,
+      "annotations": "separate HTML/SVG layer only",
+      "release_blocking": false
+    },
+    {
+      "id": "SA-03",
+      "title": "Сводка и смещение перед импортом",
+      "capture_request": "Показать числа parsed/corrected/fallback, базовое и итоговое смещение, Re-parse и Import. Пример должен содержать понятный учебный результат.",
+      "status": "owner_capture_pending",
+      "original_filename": null,
+      "sha256": null,
+      "annotations": "separate HTML/SVG layer only",
+      "release_blocking": false
+    },
+    {
+      "id": "SA-04",
+      "title": "Результат в проекте",
+      "capture_request": "Показать текстовые айтемы на дорожках персонажей, заметку одной реплики, предупреждающий маркер при наличии и синхронный участок исходного аудио.",
+      "status": "owner_capture_pending",
+      "original_filename": null,
+      "sha256": null,
+      "annotations": "separate HTML/SVG layer only",
+      "release_blocking": false
+    }
+  ],
+  "embedded_image_count": 0,
+  "validation": {
+    "content": "complete; implementation-inspected; ready for owner review",
+    "html": "passed 2026-10-28: structure, anchors, offline references, exact UI labels, source hashes and privacy",
+    "visual": "Not claimed; illustrations deferred by owner for text-first release; normal/narrow browser and print review remain separate.",
+    "owner_review": "pending",
+    "live_help": "pending Windows and macOS; headless is separate",
+    "live_workflow": "No live workflow run for this manual; dated prior evidence in engineering verification record"
+  },
+  "freshness_policy": "Any change to workflow, labels, defaults, limits, results, recovery, backend or source version requires a manual impact review in the same change. Update text/manifest and request replacement screenshots; do not silently mark stale material current.",
+  "source_hash_format": "UTF-8 bytes with CRLF normalized to LF",
+  "manual_revision_date": "2026-11-11",
+  "illustration_policy": {
+    "owner_decision_date": "2026-11-11",
+    "release_blocking": false,
+    "status": "Deferred; capture IDs and requests retained as editorial backlog. Visible slots now contain operator reminders."
+  }
+}
+</script>
+</body>
+</html>

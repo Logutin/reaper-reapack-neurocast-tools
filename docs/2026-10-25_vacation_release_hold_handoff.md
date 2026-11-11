@@ -1,5 +1,11 @@
 # Vacation release hold — 2026-10-25
 
+> **November 11 update:** the owner resumed preparation and authorized
+> `C:\extra_Reapers\Reaper_Empty_01`. Missing screenshots are deferred for a
+> text-first release. This historical hold still applies to actual publication
+> and production cutover until their final go-ahead; see the
+> [current candidate record](2026-11-11_package_preparation_0.1.10.md).
+
 > **Source snapshot warning:** this handoff records the owner's decision and
 > repository state on 2026-10-25. Recheck current sources and authorization
 > before future release work; historical qualification is not a new acceptance.

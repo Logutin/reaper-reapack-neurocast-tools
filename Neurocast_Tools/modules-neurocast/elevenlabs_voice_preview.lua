@@ -7,6 +7,9 @@
 -- Remote preview requests must be built by an injected Studio Neurocast
 -- backend adapter. The source preview URL may identify/cache the selection but
 -- is never submitted directly by this module.
+-- Optional generation_payload is a copied text/model snapshot for explicitly
+-- requested IPA TTS. cache_identity separates generated audio from samples;
+-- mutations always have one attempt. See the November 11 pronunciation contract.
 
 local VoicePreview = {}
 VoicePreview.__index = VoicePreview
@@ -334,7 +337,7 @@ function VoicePreview:request(voice, callbacks, opts)
     projected.voice_id,
     language,
     accent,
-    projected.preview_url
+    tostring(opts.cache_identity or projected.preview_url)
   }, "\31")
   local request_key = table.concat({
     owner,
@@ -398,6 +401,16 @@ function VoicePreview:request(voice, callbacks, opts)
     finished = false,
     canceled = false
   }
+  if type(opts.generation_payload) == "table" then
+    -- A canceled paid curl job can still be draining. Its delayed cleanup must
+    -- never remove the partial file of a later explicit attempt.
+    request.partial_path = cache_base_path .. "." .. tostring(request.token) .. ".download.part"
+    request.generation_payload = {
+      text = opts.generation_payload.text,
+      model_id = opts.generation_payload.model_id
+    }
+    request.max_attempts = 1
+  end
   if request.max_attempts < 1 then request.max_attempts = 1 end
   callbacks_add(request, callbacks)
   self.current_request = request
@@ -468,6 +481,7 @@ function VoicePreview:request(voice, callbacks, opts)
       accent = request.accent,
       preview_id = request.preview_id,
       owner = request.owner,
+      generation_payload = request.generation_payload,
       download_path = request.partial_path,
       label = label,
       timeout_sec = tonumber(opts.timeout_sec or self.deps.timeout_sec) or 300
@@ -483,6 +497,7 @@ function VoicePreview:request(voice, callbacks, opts)
       return false, err_text
     end
     req.download_path = request.partial_path
+    if tostring(req.method or "GET"):upper() ~= "GET" then request.max_attempts = 1 end
     req.kind = req.kind or "el_voice_sample_preview"
     req.label = req.label or label
     req.timeout_sec = tonumber(req.timeout_sec) or

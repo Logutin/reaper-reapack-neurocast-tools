@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="MVSEP: русское офлайн-руководство оператора, рабочий процесс, результаты и восстановление.">
+  <meta name="manual-script" content="mvsep_tool.lua">
+  <meta name="manual-script-version" content="v0.2.2">
+  <meta name="manual-source-snapshot" content="2026-10-28">
+  <meta name="manual-revision" content="v2-text-first">
+  <meta name="manual-status" content="content-complete-awaiting-owner-review">
+  <title>MVSEP — Рабочее руководство</title>
+  <style>
+    :root { --paper:#faf9f5; --ink:#202e32; --muted:#536367; --line:#d7dfda; --green:#176351; --pale:#edf4ee; --rail:236px; }
+    * { box-sizing:border-box; }
+    html { scroll-padding-top:20px; }
+    body { margin:0; background:var(--paper); color:var(--ink); font:16px/1.5 "Segoe UI",Arial,sans-serif; }
+    a { color:var(--green); text-underline-offset:3px; }
+    a:hover { text-decoration-thickness:2px; }
+    a:focus-visible, [tabindex]:focus-visible { outline:3px solid #b56c14; outline-offset:4px; }
+    .skip { position:fixed; top:-100px; left:16px; z-index:10; padding:10px 16px; background:#fff; }
+    .skip:focus { top:10px; }
+    .sidebar { position:fixed; inset:0 auto 0 0; width:var(--rail); overflow:auto; padding:24px 18px; background:#f0f2ed; border-right:1px solid var(--line); }
+    .brand { margin:0 0 18px; font-size:17px; line-height:1.4; }
+    .brand small { display:block; margin-top:3px; color:var(--muted); font-size:12px; font-weight:400; }
+    .sidebar nav a { display:block; padding:6px 8px; font-size:14px; text-decoration:none; border-radius:4px; }
+    .sidebar nav a:hover { background:#e1e9e1; }
+    .side-label { margin:20px 8px 6px; font-size:12px; color:var(--muted); }
+    .main { margin-left:var(--rail); padding:24px 32px 36px; max-width:1180px; }
+    .topline { font-size:13px; color:var(--muted); margin-bottom:16px; }
+    h1 { font-size:36px; line-height:1.15; margin:0 0 12px; letter-spacing:-0.6px; }
+    h2 { font-size:25px; line-height:1.25; margin:0 0 16px; }
+    h3 { font-size:19px; line-height:1.35; margin:26px 0 10px; }
+    p { margin:10px 0; }
+    section { padding:28px 0; border-top:1px solid var(--line); }
+    li { margin:7px 0; }
+    .draft-note, .small { font-size:13px; color:var(--muted); }
+    .draft-note { margin:0 0 22px; }
+    .toc { margin:16px 0; padding:16px 20px; background:var(--pale); border:1px solid var(--line); border-radius:6px; }
+    .toc ol { margin:10px 0 0; padding-left:24px; }
+    .callout { margin:18px 0; padding:14px 18px; border-left:4px solid var(--green); background:var(--pale); }
+    .warning { border-left-color:#b56c14; background:#fff3dd; }
+    .table-wrap { overflow-x:auto; margin:14px 0; }
+    table { border-collapse:collapse; width:100%; font-size:14px; }
+    th, td { padding:10px 12px; text-align:left; vertical-align:top; border:1px solid var(--line); overflow-wrap:anywhere; }
+    th { background:#edf1eb; font-weight:600; }
+    .ui { font:inherit; font-weight:600; color:var(--green); }
+    code { font:0.9em/1.4 Consolas,"Courier New",monospace; overflow-wrap:anywhere; }
+    pre { padding:14px 18px; margin:12px 0; border:1px solid var(--line); border-radius:4px; background:#f0f2ed; white-space:pre-wrap; overflow-wrap:anywhere; font:14px/1.5 Consolas,"Courier New",monospace; }
+    kbd { font:0.9em "Segoe UI",Arial,sans-serif; border:1px solid #aebdb6; border-radius:3px; padding:1px 5px; background:#fff; white-space:nowrap; }
+    .footer { margin-top:12px; padding-top:14px; border-top:1px solid var(--line); font-size:13px; text-align:right; }
+    @media(max-width:760px) { .sidebar { position:static; width:auto; padding:16px 20px; border-right:0; border-bottom:1px solid var(--line); } .brand { margin-bottom:10px; } .sidebar nav { display:flex; flex-wrap:wrap; gap:3px 7px; } .sidebar nav a { padding:4px 6px; font-size:13px; } .side-label { flex-basis:100%; margin:8px 6px 3px; } .main { margin-left:0; padding:20px; } h1 { font-size:28px; } }
+    @media(max-width:480px) { .main { padding:18px 14px; } th,td { padding:8px; } h2 { font-size:23px; } }
+    @media print { @page { margin:14mm; } body { background:#fff; color:#000; font-size:10pt; } .sidebar,.skip,.topline,.footer { display:none; } .main { margin:0; padding:0; max-width:none; } section { padding:14px 0; } h1 { font-size:23pt; } h2 { font-size:16pt; } h3 { font-size:12pt; } h1,h2,h3 { break-after:avoid; } p,li { orphans:3; widows:3; } table { font-size:9pt; } tr { break-inside:avoid; } thead { display:table-header-group; } .table-wrap { overflow:visible; } .toc,.callout { padding:8px 12px; } pre { white-space:pre-wrap; } .draft-note,.small { font-size:8pt; } a,.ui { color:inherit; } }
+    .screenshot { margin:18px 0 24px; }
+    .screenshot-grid { display:grid; grid-template-columns:minmax(0,1fr); gap:6px; }
+    .figure-graphic { overflow-x:auto; border:1px solid var(--line); border-radius:5px; background:#fff; }
+    .figure-graphic svg { display:block; width:100%; min-width:var(--min-width); height:auto; }
+    .screenshot-zoom { margin:0 5px 8px 0; }
+    .screenshot-zoom-label { font-size:13px; cursor:pointer; }
+    .screenshot-zoom:checked ~ .figure-graphic svg { width:var(--native-width); min-width:var(--native-width); }
+    .annotations { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 16px; margin:6px 0 0; padding:0; list-style:none; font-size:14px; }
+    .annotations li { display:grid; grid-template-columns:22px 1fr; gap:7px; margin:5px 0; }
+    .annotation-number { display:inline-grid; place-items:center; width:21px; height:21px; border:2px solid #d71920; border-radius:50%; color:#d71920; background:#fff; font-size:12px; font-weight:700; line-height:1; }
+    .annotations strong { font-weight:600; }
+    figcaption { margin-top:7px; color:var(--muted); font-size:13px; }
+    @media(max-width:760px) { .annotations { grid-template-columns:1fr; } }
+    @media print { .screenshot { break-inside:avoid; } .screenshot-grid { display:block; } .figure-graphic { overflow:visible; border:0; } .figure-graphic svg, .screenshot-zoom:checked ~ .figure-graphic svg { width:100%; min-width:0; height:auto; } .screenshot-zoom,.screenshot-zoom-label { display:none; } .annotations { display:block; font-size:9pt; } .annotations li { margin:3px 0; } figcaption { font-size:8pt; } }
+
+    .placeholder { border:1px dashed #81988d; padding:16px; background:#f0f2ed; break-inside:avoid; }
+    .placeholder p { font-size:14px; }
+    .ui-en { color:var(--muted); font-weight:400; }
+    .back { margin-top:18px; font-size:13px; }
+    @media print { .placeholder { padding:7px 10px; } .placeholder p { font-size:8pt; } .back { display:none; } }
+  </style>
+</head>
+<body>
+<a class="skip" href="#overview">К содержанию</a>
+<aside class="sidebar"><p class="brand"><strong>MVSEP</strong><small>Рабочее руководство · REAPER<br>Руководство v1 · 28.10.2026</small></p><nav aria-label="Главы руководства"><a href="#overview">Назначение и короткий маршрут</a>
+<a href="#prepare">01 · Подготовка и модель</a>
+<a href="#queue">02 · Отправка и очередь</a>
+<a href="#results">03 · Вставка результатов</a>
+<a href="#repeat">04 · Повторная загрузка и удаление</a>
+<a href="#recovery">05 · Ошибки и восстановление</a>
+<a href="#settings">06 · Настройки и помощь</a>
+<a href="#review">Версия и проверка</a></nav></aside>
+<main class="main" id="manual-start">
+<div class="topline">Neurocast Tools / MVSEP</div>
+<h1>MVSEP · Рабочее руководство</h1>
+<p class="draft-note">Готово к проверке владельцем · исходник v0.2.2 · состояние на 28.10.2026. После обновления инструмента сведения могут устареть. Текстовая редакция от 11.11.2026: иллюстрации отложены по решению владельца; инструкции доступны без них. Новая проверка установленного Help остаётся отдельным шагом.</p>
+
+<section id="overview"><h2>Назначение и короткий маршрут</h2>
+<p><strong>MVSEP разделяет аудио на компоненты выбранной моделью через Neurocast.</strong> Например, модель может вернуть речь, музыку и эффекты. Состав и качество результата зависят от модели и исходного звука; одинаковый набор выходов для всех моделей не обещается. Используйте инструмент для готовой фонограммы, когда нужны её отдельные составляющие.</p>
+<div class="toc"><strong>Обычная работа</strong><ol><li>Сохраните проект, выделите ровно одну незаглушённую дорожку и задайте временное выделение.</li><li>Войдите в Neurocast, выберите модель, её параметры и формат результата.</li><li>Нажмите <span class="ui" data-ui-key="Add to que!" data-ui-label="Add to que!">Add to que!</span>: звук сразу рендерится, затем автоматически отправляется на разделение.</li><li>Дождитесь готовности и полной загрузки результатов.</li><li>Выберите <span class="ui" data-ui-key="Add results to" data-ui-label="Add results to">Add results to</span> и нажмите <span class="ui" data-ui-key="Add to project" data-ui-label="Добавить в проект">Добавить в проект <span class="ui-en">(Add to project)</span></span> в нужной строке.</li><li>Прослушайте все полученные компоненты и сохраните проект.</li></ol></div>
+<div class="callout warning">Добавление в очередь — запуск обработки, а не предварительный расчёт. Здесь нет отдельной кнопки платного старта, как в AutoMix. Перед нажатием проверьте модель, диапазон и право использовать ресурс аккаунта.</div>
+<p>Подписи ниже соответствуют текущей локализации; рядом с русской указана английская. Часть элементов, включая <span class="ui" data-ui-key="Add to que!" data-ui-label="Add to que!">Add to que!</span> и варианты назначения дорожек, может оставаться английской.</p><p class="back"><a href="#manual-start">К началу руководства</a></p></section>
+
+<section id="prepare"><h2>01 · Подготовка и модель</h2>
+<p>Запустите <code>mvsep_tool.lua</code> из списка действий REAPER. Нужны установленный Neurocast Tools с ReaImGui и вспомогательными файлами, выданная идентификация установки, рабочий вход Neurocast и разрешённый сервером доступ к разделению. Прямой ключ MVSEP в инструмент не вводится.</p>
+<ol><li>Сохраните проект. Проверьте папку записи, свободное место и доступность исходного аудио.</li><li>Выделите <strong>ровно одну дорожку</strong>, снимите с неё Mute и выделите нужный интервал на линейке времени. Выделение айтемов само по себе не определяет диапазон. Нулевая длительность и несколько выбранных дорожек не подходят.</li><li>Проверьте звучание выбранного интервала и обработку дорожки до отправки. Рендерится звук дорожки за весь диапазон, а не просто исходный файл выбранного айтема.</li><li>В <span class="ui" data-ui-key="Settings" data-ui-label="Настройки">Настройки <span class="ui-en">(Settings)</span></span> → <span class="ui" data-ui-key="Studio Neurocast account" data-ui-label="Аккаунт Studio Neurocast">Аккаунт Studio Neurocast <span class="ui-en">(Studio Neurocast account)</span></span> заполните <span class="ui" data-ui-key="Email" data-ui-label="Электронная почта">Электронная почта <span class="ui-en">(Email)</span></span> и <span class="ui" data-ui-key="Password" data-ui-label="Пароль">Пароль <span class="ui-en">(Password)</span></span>, нажмите <span class="ui" data-ui-key="Log in" data-ui-label="Войти">Войти <span class="ui-en">(Log in)</span></span>. <span class="ui" data-ui-key="Remember login" data-ui-label="Запомнить вход">Запомнить вход <span class="ui-en">(Remember login)</span></span> сохраняет вход. Рабочий сервер показан в <span class="ui" data-ui-key="Active backend: %s (%s)" data-ui-label="Активный бэкенд: production (reaper.neurocast.tech)" data-ui-example="[&quot;production&quot;, &quot;reaper.neurocast.tech&quot;]">Активный бэкенд: production (reaper.neurocast.tech) <span class="ui-en">(Active backend: production (reaper.neurocast.tech))</span></span> <small>(пример; значения зависят от проекта)</small>.</li><li>Откройте <span class="ui" data-ui-key="Model selection" data-ui-label="Выбор модели">Выбор модели <span class="ui-en">(Model selection)</span></span>, при необходимости <span class="ui" data-ui-key="Refresh catalog" data-ui-label="Обновить каталог">Обновить каталог <span class="ui-en">(Refresh catalog)</span></span>. Найдите модель через <span class="ui" data-ui-key="Filter models" data-ui-label="Фильтр моделей">Фильтр моделей <span class="ui-en">(Filter models)</span></span>, выберите её и проверьте доступные параметры справа.</li><li>Выберите <span class="ui" data-ui-key="Output format" data-ui-label="Формат вывода">Формат вывода <span class="ui-en">(Output format)</span></span> и <span class="ui" data-ui-key="Concurrency" data-ui-label="Concurrency">Concurrency</span>. Число одновременных процессов сохраняется и ограничено диапазоном 1–4. Для первого запуска удобно оставить 1; более высокое значение не гарантирует более быструю работу сервера.</li></ol>
+<p>Модели и их параметры приходят из каталога; не ориентируйтесь на старый снимок списка. <span class="ui" data-ui-key="Favorites only" data-ui-label="Только избранное">Только избранное <span class="ui-en">(Favorites only)</span></span> ограничивает список избранными моделями. Параметры запоминаются отдельно для модели. <span class="ui" data-ui-key="Reset all remembered model options" data-ui-label="Сбросить все сохранённые настройки моделей">Сбросить все сохранённые настройки моделей <span class="ui-en">(Reset all remembered model options)</span></span> сбрасывает сохранённые параметры всех моделей, поэтому после сброса проверьте выбор ещё раз.</p>
+<p>Инструмент работает с одной дорожкой и временным выделением. Режимы обработки регионов проекта и Free из старых демонстраций в активном инструменте отсутствуют.</p>
+<aside class="callout" id="shot-MV-01" data-screenshot-placeholder="MV-01" aria-labelledby="shot-MV-01-caption"><strong id="shot-MV-01-caption">Выбор модели</strong><p>Перед отправкой проверьте выбранный алгоритм и его доступные параметры.</p></aside>
+<p class="back"><a href="#manual-start">К началу руководства</a></p></section>
+
+<section id="queue"><h2>02 · Отправка и очередь</h2>
+<p>В <span class="ui" data-ui-key="Queue" data-ui-label="Очередь">Очередь <span class="ui-en">(Queue)</span></span> проверьте подпись <span class="ui" data-ui-key="Add to que!" data-ui-label="Add to que!">Add to que!</span>: при допустимом выборе она содержит номер, сокращённое имя дорожки и длительность. Если показано <span class="ui" data-ui-key="unmute track" data-ui-label="unmute track">unmute track</span>, снимите Mute. Если кнопка недоступна, проверьте одну выбранную дорожку, непустое временное выделение и выбранную модель.</p>
+<p>После нажатия сначала создаётся временный аудиофайл. После его готовности появляется строка задания, а загрузка, создание разделения, опрос сервера и скачивание результатов идут автоматически. После успешного рендера можно подготовить следующий диапазон: уже поставленная задача использует подготовленное аудио и выбранные для неё параметры. Повторное нажатие создаёт ещё одну задачу.</p>
+<p>В таблице смотрите состояние, запись, модель, прогресс, HTTP и действия. Новые группы находятся выше старых. Передача показывает ход загрузки/скачивания; ожидание сервера может продолжаться без передачи байтов. Для длинного аудио этапы распределения и объединения тоже могут быть нормальной частью обработки. Ответ HTTP 200 сам по себе не означает готовность аудио.</p>
+<p>Оставляйте окно и исходный проект открытыми до завершения. Очередь и ссылки на результаты не восстанавливаются после закрытия окна. Смена проекта во время обработки и импорта не является способом перенести задачу.</p>
+<aside class="callout" id="shot-MV-02" data-screenshot-placeholder="MV-02" aria-labelledby="shot-MV-02-caption"><strong id="shot-MV-02-caption">Диапазон и отправленная задача</strong><p>Проверьте одну выбранную дорожку, временное выделение и длительность у Add to que! После отправки следите за состоянием строки задания.</p></aside>
+<h3>Отмена ожидания</h3>
+<p><span class="ui" data-ui-key="Cancel remote job" data-ui-label="Отменить удалённое задание">Отменить удалённое задание <span class="ui-en">(Cancel remote job)</span></span> запрашивает отмену на сервере. Кнопка может появиться ещё до получения идентификатора: намерение отменить будет обработано после ответа создания. Сервер разрешает отмену только пока задача ожидает. Если обработка уже началась, отмена может быть отклонена, кнопка исчезнет и та же задача продолжит работу. Закрытие окна не является подтверждённой отменой.</p>
+<aside class="callout" id="shot-MV-03" data-screenshot-placeholder="MV-03" aria-labelledby="shot-MV-03-caption"><strong id="shot-MV-03-caption">Ожидание и отмена</strong><p>Cancel remote job относится к удалённой задаче. Дождитесь подтверждённого результата отмены; отклонённая отмена не означает остановку обработки.</p></aside>
+<p class="back"><a href="#manual-start">К началу руководства</a></p></section>
+
+<section id="results"><h2>03 · Вставка результатов</h2>
+<p>Когда все файлы полностью скачаны и прошли проверку, строка становится готовой и доступна <span class="ui" data-ui-key="Add to project" data-ui-label="Добавить в проект">Добавить в проект <span class="ui-en">(Add to project)</span></span>. До этого скачанные части не следует считать готовым набором. Результаты уже лежат прямо в текущей папке записи проекта; скачивание само по себе не добавляет айтемы.</p>
+<div class="table-wrap"><table><thead><tr><th>Вариант <span class="ui" data-ui-key="Add results to" data-ui-label="Add results to">Add results to</span></th><th>Куда попадёт звук</th></tr></thead><tbody>
+<tr><td><span class="ui" data-ui-key="New tracks below source" data-ui-label="New tracks below source">New tracks below source</span></td><td>Создаются новые дорожки сразу под сохранённой исходной дорожкой. Если исходная дорожка удалена, используется конец проекта.</td></tr>
+<tr><td><span class="ui" data-ui-key="Starting at track" data-ui-label="Starting at track">Starting at track</span></td><td>Сначала выделите ровно одну дорожку назначения, затем выберите этот вариант с её номером и именем. Дорожка запоминается в момент выбора режима. Стемы размещаются на ней и следующих существующих дорожках; если дорожек не хватает, новые добавляются в конец проекта.</td></tr>
+</tbody></table></div>
+<p>Второй вариант добавляет новые айтемы на существующие дорожки, не очищая их содержимое. Заранее проверьте занятые участки. Простое последующее выделение другой дорожки не меняет запомненное назначение: снова выберите вариант в списке.</p>
+<p>Нажмите <span class="ui" data-ui-key="Add to project" data-ui-label="Добавить в проект">Добавить в проект <span class="ui-en">(Add to project)</span></span> нужной строки. Все компоненты вставляются в позицию начала исходного временного выделения, запомненную при постановке задания, а не в текущий курсор. После успешной вставки эта кнопка для данного набора больше не активна. Проверьте синхронность, длительность, имена и каждый компонент на слух.</p>
+<p>Изменения проекта можно отменить обычным Undo REAPER. Это не удаляет скачанные файлы и не отменяет удалённое разделение. Если импорт закончился ошибкой после частичной вставки, сначала осмотрите проект и при необходимости отмените частичный результат, чтобы не получить дубли.</p>
+<aside class="callout" id="shot-MV-04" data-screenshot-placeholder="MV-04" aria-labelledby="shot-MV-04-caption"><strong id="shot-MV-04-caption">Готовые стемы и назначение</strong><p>У готовой задачи проверьте нужное действие и настройку Add results to перед вставкой стемов.</p></aside>
+<p class="back"><a href="#manual-start">К началу руководства</a></p></section>
+
+<section id="repeat"><h2>04 · Повторная загрузка и удаление</h2>
+<p><span class="ui" data-ui-key="Re-download results" data-ui-label="Скачать заново">Скачать заново <span class="ui-en">(Re-download results)</span></span> повторно скачивает <strong>все</strong> компоненты той же удалённой задачи в новые файлы с числовыми суффиксами. Она работает до или после импорта, а также после ошибки импорта, пока в текущем окне сохранились пригодные ссылки. Ранее скачанные файлы могут уже отсутствовать — это не мешает запросить новые копии.</p>
+<p>Команда не рендерит исходник заново, не создаёт разделение и не заменяет файлы в существующих айтемах. После завершения снова нажмите <span class="ui" data-ui-key="Add to project" data-ui-label="Добавить в проект">Добавить в проект <span class="ui-en">(Add to project)</span></span>, если нужен новый набор в проекте. Эта кнопка использует последний полностью скачанный набор. Уже вставленные старые айтемы остаются на месте.</p>
+<p>Если новая загрузка оборвалась, <span class="ui" data-ui-key="Retry" data-ui-label="Повторить">Повторить <span class="ui-en">(Retry)</span></span> повторяет проблемный файл. Пока весь новый набор не готов, импорт и удаление недоступны. Истечение срока доступности результата на стороне сервиса может помешать повторному скачиванию; сохранность ссылки на неограниченное время не обещается.</p>
+<p><span class="ui" data-ui-key="Delete remote files" data-ui-label="Удалить файлы на сервере">Удалить файлы на сервере <span class="ui-en">(Delete remote files)</span></span> удаляет удалённые файлы созданной этим инструментом задачи. Используйте её только после проверки и сохранения локальных результатов. Это отдельное действие от отмены ожидающей задачи; файлы и айтемы в вашем проекте оно не удаляет. После подтверждённого или неопределённого удаления повторная загрузка блокируется. Не рассчитывайте на дополнительное диалоговое подтверждение перед этой кнопкой.</p><p class="back"><a href="#manual-start">К началу руководства</a></p></section>
+
+<section id="recovery"><h2>05 · Ошибки и восстановление</h2>
+<div class="table-wrap"><table><thead><tr><th>Что произошло</th><th>Безопасное продолжение</th></tr></thead><tbody>
+<tr><td>Нет моделей или нужная модель скрыта.</td><td>Проверьте вход, фильтр и <span class="ui" data-ui-key="Favorites only" data-ui-label="Только избранное">Только избранное <span class="ui-en">(Favorites only)</span></span>, затем <span class="ui" data-ui-key="Refresh catalog" data-ui-label="Обновить каталог">Обновить каталог <span class="ui-en">(Refresh catalog)</span></span>. При доступном кэше старый список может отображаться до ответа сервера; он не подтверждает рабочую сеть или доступ.</td></tr>
+<tr><td>Сохранённый вход истёк.</td><td>Прочитайте сообщение в <span class="ui" data-ui-key="Settings" data-ui-label="Настройки">Настройки <span class="ui-en">(Settings)</span></span>. Используйте <span class="ui" data-ui-key="Refresh stored login" data-ui-label="Обновить сохранённую сессию">Обновить сохранённую сессию <span class="ui-en">(Refresh stored login)</span></span> либо снова <span class="ui" data-ui-key="Log in" data-ui-label="Войти">Войти <span class="ui-en">(Log in)</span></span>. <span class="ui" data-ui-key="Forget stored login" data-ui-label="Забыть сохранённую сессию">Забыть сохранённую сессию <span class="ui-en">(Forget stored login)</span></span> удаляет сохранённый вход; это не восстановление очереди.</td></tr>
+<tr><td>Ошибка создания/отправки, а удалённый исход неизвестен.</td><td>Не добавляйте диапазон повторно автоматически. Создание могло состояться. Сохраните этап и ошибку, попросите администратора проверить удалённую задачу. Для этой стадии <span class="ui" data-ui-key="Retry" data-ui-label="Повторить">Повторить <span class="ui-en">(Retry)</span></span> не предлагается.</td></tr>
+<tr><td>Сбой проверки состояния после получения задачи.</td><td>Восстановите соединение и нажмите <span class="ui" data-ui-key="Retry" data-ui-label="Повторить">Повторить <span class="ui-en">(Retry)</span></span> в строке. Он продолжает проверку существующей задачи без нового рендера и создания.</td></tr>
+<tr><td>Сбой скачивания.</td><td>Проверьте сеть, диск и права записи, затем <span class="ui" data-ui-key="Retry" data-ui-label="Повторить">Повторить <span class="ui-en">(Retry)</span></span>. Неполный файл этой попытки удаляется перед повтором; успешно скачанные компоненты продолжают использоваться. Проверка сигнатуры не гарантирует целостность звука на всей длительности — прослушайте результат.</td></tr>
+<tr><td>Запомненная дорожка назначения недоступна.</td><td>Выберите <span class="ui" data-ui-key="New tracks below source" data-ui-label="New tracks below source">New tracks below source</span> либо выделите подходящую существующую дорожку и заново выберите <span class="ui" data-ui-key="Starting at track" data-ui-label="Starting at track">Starting at track</span>. После этого повторите вставку.</td></tr>
+<tr><td>Удаление не подтверждено.</td><td>Не повторяйте запрос вслепую. Проверьте локальные файлы и передайте администратору идентификатор/этап и безопасное сообщение. Неопределённость удаления блокирует повторное скачивание.</td></tr>
+</tbody></table></div>
+<p><span class="ui" data-ui-key="Retry" data-ui-label="Повторить">Повторить <span class="ui-en">(Retry)</span></span> предназначена только для допустимых сбоев опроса и скачивания. Ошибки рендера, терминальная ошибка сервера и сбой импорта не превращаются в повтор обработки. Закрытие окна теряет состояние восстановления, поэтому оставляйте его открытым при разборе проблемы.</p>
+<aside class="callout" id="shot-MV-05" data-screenshot-placeholder="MV-05" aria-labelledby="shot-MV-05-caption"><strong id="shot-MV-05-caption">Ошибка скачивания и Retry</strong><p>При ошибке скачивания прочитайте причину и используйте Retry. Импорт полного набора доступен после завершения скачивания.</p></aside>
+<p class="back"><a href="#manual-start">К началу руководства</a></p></section>
+
+<section id="settings"><h2>06 · Настройки и помощь</h2>
+<p><span class="ui" data-ui-key="Language" data-ui-label="Язык">Язык <span class="ui-en">(Language)</span></span> меняет язык, <span class="ui" data-ui-key="Status window" data-ui-label="Окно статуса">Окно статуса <span class="ui-en">(Status window)</span></span> включает отдельное окно статуса. <span class="ui" data-ui-key="Settings" data-ui-label="Настройки">Настройки <span class="ui-en">(Settings)</span></span> показывает вход, пути, диагностику и телеметрию. <span class="ui" data-ui-key="Use localhost development backend" data-ui-label="Использовать локальный бэкенд для разработки">Использовать локальный бэкенд для разработки <span class="ui-en">(Use localhost development backend)</span></span> — только для согласованных тестов, не для восстановления рабочего доступа.</p>
+<p>В <span class="ui" data-ui-key="Details (errors, status)" data-ui-label="Детали (ошибки, статус)">Детали (ошибки, статус) <span class="ui-en">(Details (errors, status))</span></span> можно уточнить этап сбоя. При обращении к поддержке сообщайте версию, модель, длительность, стадию и безопасный текст ошибки. Не пересылайте полный сетевой вывод, адреса скачивания, пароли или токены. <span class="ui" data-ui-key="Clear warnings" data-ui-label="Очистить предупреждения">Очистить предупреждения <span class="ui-en">(Clear warnings)</span></span> очищает список предупреждений, но не исправляет само задание.</p>
+<p><span class="ui" data-ui-key="Help" data-ui-label="Помощь">Помощь <span class="ui-en">(Help)</span></span> открывает этот HTML локально до входа и во время ожидания задач. Если кнопка отсутствует, восстановите файл руководства из комплекта и перезапустите инструмент. При ошибке запуска браузера откройте показанный путь вручную. Читать и печатать руководство можно без интернета; обработке аудио сеть нужна.</p>
+<p class="back"><a href="#manual-start">К началу руководства</a></p></section>
+<section id="review"><h2>Версия и проверка</h2>
+<p>Состояние исходников: <strong>28.10.2026</strong>. Руководство v1 описывает <code>mvsep_tool.lua v0.2.2</code>. Основа рабочего процесса — опубликованный скрипт <strong>v0.2.1</strong> в Neurocast Tools <strong>0.1.9</strong>; новая версия исходника добавляет кнопку открытия этого офлайн-руководства. Новое руководство и эта интеграция ещё не опубликованы в пакете. Номер пакета не равен версии отдельного скрипта.</p>
+<p>После обновления скрипта сведения могут устареть. Если версия или подписи отличаются, сверьте руководство с вашей установкой. Иллюстрации будут добавлены отдельно; все основные действия уже описаны текстом. Файл можно читать без подключения к интернету.</p>
+<div class="table-wrap"><table><thead><tr><th>Проверка</th><th>Состояние</th></tr></thead><tbody><tr><td>Содержание</td><td>Написано и сверено с текущей реализацией; готово к проверке владельцем.</td></tr><tr><td>Иллюстрации и внешний вид</td><td>Иллюстрации отложены для этой текстовой редакции. Проверка в обычном/узком окне браузера и печати не заявлена как пройденная.</td></tr><tr><td>Принятие владельцем</td><td>Ожидается; ранее принятые рабочие сценарии не означают принятия нового текста.</td></tr><tr><td>Живой запуск Help и платформы</td><td>Новая интеграция требует отдельной проверки Windows/macOS. При подготовке руководства реальные проекты и серверные операции не запускались.</td></tr></tbody></table></div>
+<p class="small">Техническая сверка использует активные исходники Neurocast Tools и документацию работающего сервиса, полученную 28.10.2026. Это не новая проверка обработки на сервере. Оставшиеся проверки и перечень снимков ведутся отдельно от выпуска пакета.</p>
+<p class="back"><a href="#manual-start">К началу руководства</a></p></section>
+<footer class="footer">Neurocast Tools · Русское офлайн-руководство · 2026-10-28</footer>
+</main>
+<script id="manual-manifest" type="application/json">
+{
+  "schema_version": 1,
+  "title": "MVSEP",
+  "language": "ru",
+  "manual_revision": "v2-text-first",
+  "canonical_file": "2026-10-28_mvsep_tool_manual_ru.html",
+  "maintenance": "Directly maintained HTML; no generator or secondary source of truth.",
+  "source_snapshot_date": "2026-10-28",
+  "source_base_commit": "14d022bc7b215c9e4527dfaca519c1a6f88a9f79",
+  "source_scope": "working tree: offline Help only added to the published workflow",
+  "script_version": "v0.2.2",
+  "source_toolset_version": "v0.2.1",
+  "published_package_version": "0.1.9",
+  "published_script_version": "v0.2.1",
+  "release_status": "Text-first release preparation authorized 2026-11-11; missing captures are not release blockers. Publication and packaged owner Help checks remain separate.",
+  "source_files_sha256": {
+    "scr/mvsep_tool.lua": "3ea1c818c2296e58fed54e9bda2a35f1e6062118a71f723920158149fe3f428b",
+    "scr/modules-neurocast/mvsep_api_via_neurocast.lua": "15e99eeac9dc3e2862069989e37141c9ec8f4b080fc0b12f8e77335db841bfa2",
+    "scr/modules-neurocast/mvsep_api.lua": "2194fabdb87ca8599b7fdc0abf9e7ee3d5b827e171b19e7eddf59217570352a2",
+    "scr/modules-neurocast/mvsep_model_options.lua": "b3c777d4522a9e364ec68405730555b5e52f68f8f6060d99f9741e2b31127758",
+    "scr/modules-neurocast/mvsep_reaper.lua": "4e8a8298df65d75b64b53b5742f83a21cbbe90a09d1efaa750316648b38a3077",
+    "scr/modules-neurocast/mvsep_tool_languages.lua": "96684b5facabb00dc7d6ee68ef3b907c58ae2105a621bb85edd45bd677c9bf00",
+    "scr/modules-neurocast/offline_manual.lua": "ad986d8e48c502d4f60fccf420d82d0f549c40ff2a94e898a2bf4dd70d727f2c"
+  },
+  "backend_documentation": {
+    "target": "https://reaper.neurocast.tech",
+    "retrieved_date": "2026-10-28",
+    "openapi_info_version": "1.9-manager-balance-precision-20260913",
+    "evidence": "documentation GET only; no authenticated product or provider calls"
+  },
+  "sections": [
+    "overview",
+    "prepare",
+    "queue",
+    "results",
+    "repeat",
+    "recovery",
+    "settings",
+    "review"
+  ],
+  "screenshots": [
+    {
+      "id": "MV-01",
+      "title": "Выбор модели",
+      "capture_request": "Показать раскрытый выбор модели, её параметры, формат результата и Concurrency. Настройки входа закрыть; не показывать адрес электронной почты.",
+      "status": "owner_capture_pending",
+      "original_filename": null,
+      "sha256": null,
+      "annotations": "separate HTML/SVG layer only",
+      "release_blocking": false
+    },
+    {
+      "id": "MV-02",
+      "title": "Диапазон и отправленная задача",
+      "capture_request": "Показать одну выбранную дорожку, временное выделение, подпись Add to que! с длительностью и строку задания с реальным прогрессом.",
+      "status": "owner_capture_pending",
+      "original_filename": null,
+      "sha256": null,
+      "annotations": "separate HTML/SVG layer only",
+      "release_blocking": false
+    },
+    {
+      "id": "MV-03",
+      "title": "Ожидание и отмена",
+      "capture_request": "Показать реальную ожидающую задачу и доступную Cancel remote job; для отклонения отмены нужен отдельный реальный кадр. Не создавать задачу специально ради снимка.",
+      "status": "owner_capture_pending",
+      "original_filename": null,
+      "sha256": null,
+      "annotations": "separate HTML/SVG layer only",
+      "release_blocking": false
+    },
+    {
+      "id": "MV-04",
+      "title": "Готовые стемы и назначение",
+      "capture_request": "Показать готовую строку с тремя действиями, раскрытые варианты Add results to и вставленные компоненты на учебных дорожках.",
+      "status": "owner_capture_pending",
+      "original_filename": null,
+      "sha256": null,
+      "annotations": "separate HTML/SVG layer only",
+      "release_blocking": false
+    },
+    {
+      "id": "MV-05",
+      "title": "Ошибка скачивания и Retry",
+      "capture_request": "Показать реальный сбой загрузки, понятную причину, Retry и недоступный импорт до завершения набора. Не инсценировать сетевую ошибку в рабочем задании.",
+      "status": "owner_capture_pending",
+      "original_filename": null,
+      "sha256": null,
+      "annotations": "separate HTML/SVG layer only",
+      "release_blocking": false
+    }
+  ],
+  "embedded_image_count": 0,
+  "validation": {
+    "content": "complete; implementation-inspected; ready for owner review",
+    "html": "passed 2026-10-28: structure, anchors, offline references, exact UI labels, source hashes and privacy",
+    "visual": "Not claimed; illustrations deferred by owner for text-first release; normal/narrow browser and print review remain separate.",
+    "owner_review": "pending",
+    "live_help": "pending Windows and macOS; headless is separate",
+    "live_workflow": "No live workflow run for this manual; dated prior evidence in engineering verification record"
+  },
+  "freshness_policy": "Any change to workflow, labels, defaults, limits, results, recovery, backend or source version requires a manual impact review in the same change. Update text/manifest and request replacement screenshots; do not silently mark stale material current.",
+  "source_hash_format": "UTF-8 bytes with CRLF normalized to LF",
+  "manual_revision_date": "2026-11-11",
+  "illustration_policy": {
+    "owner_decision_date": "2026-11-11",
+    "release_blocking": false,
+    "status": "Deferred; capture IDs and requests retained as editorial backlog. Visible slots now contain operator reminders."
+  }
+}
+</script>
+</body>
+</html>

@@ -125,6 +125,31 @@ function ElevenLabsViaNeurocast.create_client(opts)
     self.base_url = normalize_base_url(base_url)
   end
 
+  -- Pronunciation is backend aggregation, independent of ElevenLabs balance.
+  -- Payload/context and result lifetime are owned by pronunciation_controller.
+  function client:pronunciation_request(payload)
+    local req, err = make_req(self, {
+      method = "POST", path = "/api/pronunciation/ipa", accept = "application/json",
+      content_type = "application/json", json_payload_tbl = payload,
+      kind = "pronunciation_ipa", label = "Pronunciation lookup", timeout_sec = 30
+    })
+    if req then req.connect_timeout_sec = 10; req.owner = "pronunciation"; req.blocking = false end
+    return req, err
+  end
+
+  function client:pronunciation_feedback_request(candidate_id, payload)
+    if type(candidate_id) ~= "string" or #candidate_id ~= 64 or not candidate_id:match("^[a-f0-9]+$") then
+      return nil, "Invalid pronunciation candidate ID."
+    end
+    local req, err = make_req(self, {
+      method = "PUT", path = "/api/pronunciation/candidates/" .. candidate_id .. "/feedback",
+      accept = "application/json", content_type = "application/json", json_payload_tbl = payload,
+      kind = "pronunciation_feedback", label = "Pronunciation feedback", timeout_sec = 30
+    })
+    if req then req.connect_timeout_sec = 10; req.owner = "pronunciation"; req.blocking = false end
+    return req, err
+  end
+
   function client:models_request(label, timeout_sec)
     return make_req(self, {
       method = "GET",

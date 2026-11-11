@@ -56,8 +56,8 @@ local function locale_display_name(locale)
 end
 
 local r = assert(reaper, t("Reaper API not found. This script must be run within Reaper."))
-local SCRIPT_VERSION = "v0.1.0"
-local TOOLSET_VERSION = SCRIPT_VERSION
+local SCRIPT_VERSION = "v0.1.1"
+local TOOLSET_VERSION = "v0.1.0"
 
 local function current_main_window_title_text()
   return t("Neurocast Script Aligner") .. " — script " .. SCRIPT_VERSION .. " / toolset " .. TOOLSET_VERSION
@@ -138,6 +138,16 @@ if not ok_telemetry_init then
   r.MB(string.format(t("Telemetry initialization failed:\n%s"), tostring(telemetry_init_err)), t("Telemetry Error"), 0)
   return
 end
+
+-- Offline Help bootstrap: require while the installation module path is active.
+local ok_offline_manual, offline_manual_or_err = pcall(require, "modules-neurocast.offline_manual")
+if not ok_offline_manual then
+  package.path = old_package_path
+  r.MB("Failed to load offline manual helper: " .. tostring(offline_manual_or_err), "Error", 0)
+  return
+end
+local OfflineManual = offline_manual_or_err
+-- End offline Help bootstrap.
 
 package.path = r.ImGui_GetBuiltinPath() .. "/?.lua"
 local ok_imgui, imgui_or_err = pcall(function()
@@ -2933,30 +2943,6 @@ local function draw_request_table()
   end
 end
 
-local function draw_locale_picker()
-  ImGui.Text(ctx, t("Language") .. ":")
-  ImGui.SameLine(ctx)
-  ImGui.SetNextItemWidth(ctx, 160)
-  local locale_combo_disabled = not translated_locale_available("rus")
-  if locale_combo_disabled and ImGui.BeginDisabled then ImGui.BeginDisabled(ctx, true) end
-  local locale_combo_open = ImGui.BeginCombo(ctx, "##aligner_ui_locale_combo", locale_display_name(active_locale))
-  if locale_combo_open then
-    local options = { "eng" }
-    if translated_locale_available("rus") then options[#options + 1] = "rus" end
-    for _, locale_id in ipairs(options) do
-      local is_selected = (active_locale == locale_id)
-      local activated = ImGui.Selectable(ctx, locale_display_name(locale_id), is_selected)
-      if activated then
-        set_active_runtime_locale(locale_id)
-        persist_locale(locale_id)
-      end
-      if is_selected then ImGui.SetItemDefaultFocus(ctx) end
-    end
-    ImGui.EndCombo(ctx)
-  end
-  if locale_combo_disabled and ImGui.EndDisabled then ImGui.EndDisabled(ctx) end
-end
-
 local function draw_current_user_block()
   if type(S.current_user) ~= "table" then return end
   ImGui.SeparatorText(ctx, t("Current User"))
@@ -3455,6 +3441,95 @@ local function reset_state(reason)
   S.status_text = t("State reset.")
 end
 
+-- Offline Help has independent error state; unrelated success must not clear it.
+local OfflineHelp = {}
+function OfflineHelp.init()
+  if S.help_path then return end
+  S.help_path = OfflineManual.path(script_path, "manuals/2026-10-28_neurocast_script_aligner_tool_manual_ru.html")
+  S.help_available = r.file_exists(S.help_path)
+  if not S.help_available then
+    Util.msg("!SHOW:Offline manual not found; Help hidden until script restart: " .. S.help_path, 2)
+  end
+end
+
+function OfflineHelp.open()
+  if not S.help_available then return end
+  local ok, reason = OfflineManual.open(r, S.help_path)
+  if ok then S.help_error = nil else S.help_error = reason end
+end
+
+function OfflineHelp.render_error()
+  if not S.help_error then return end
+  if S.help_error == "unsupported" then
+    ImGui.TextWrapped(ctx, t("Automatic Help opening is unavailable on this platform. Open the file below manually."))
+  else
+    ImGui.TextWrapped(ctx, t("Could not open Help. Check the default application for HTML files, or open the file below manually."))
+  end
+  ImGui.TextWrapped(ctx, S.help_path)
+end
+
+function OfflineHelp.render_header()
+    local row_right = ImGui.GetCursorPosX(ctx) + ImGui.GetContentRegionAvail(ctx)
+    local help_label = t("Help")
+    local frame_padding = ImGui.GetStyleVar(ctx, ImGui.StyleVar_FramePadding)
+    local spacing = ImGui.GetStyleVar(ctx, ImGui.StyleVar_ItemSpacing)
+    local help_width = S.help_available and (ImGui.CalcTextSize(ctx, help_label) + 2 * frame_padding) or 0
+    ImGui.AlignTextToFramePadding(ctx)
+    ImGui.Text(ctx, t("Language") .. ":")
+    ImGui.SameLine(ctx)
+    local remaining = ImGui.GetContentRegionAvail(ctx)
+    local status_width = ImGui.GetFrameHeight(ctx) + ImGui.CalcTextSize(ctx, t("Status window")) + spacing
+    ImGui.SetNextItemWidth(ctx, math.max(60, math.min(160, remaining - status_width - help_width - 3 * spacing)))
+    local locale_combo_disabled = not translated_locale_available("rus")
+    if locale_combo_disabled and ImGui.BeginDisabled then ImGui.BeginDisabled(ctx, true) end
+    local locale_combo_open = ImGui.BeginCombo(ctx, "##aligner_ui_locale_combo", locale_display_name(active_locale))
+    if locale_combo_open then
+      local options = { "eng" }
+      if translated_locale_available("rus") then options[#options + 1] = "rus" end
+      for _, locale_id in ipairs(options) do
+        local is_selected = (active_locale == locale_id)
+        local activated = ImGui.Selectable(ctx, locale_display_name(locale_id), is_selected)
+        if activated then
+          set_active_runtime_locale(locale_id)
+          persist_locale(locale_id)
+        end
+        if is_selected then ImGui.SetItemDefaultFocus(ctx) end
+      end
+      ImGui.EndCombo(ctx)
+    end
+    if locale_combo_disabled and ImGui.EndDisabled then ImGui.EndDisabled(ctx) end
+    ImGui.SameLine(ctx)
+    local changed_show_status, new_show_status = ImGui.Checkbox(ctx, t("Status window") .. "##status_window_toggle", S.show_status_window)
+    if changed_show_status then
+      S.show_status_window = new_show_status
+      persist_show_status_window(new_show_status)
+      TelemetryBridge.safe_event("feature_used", {
+        operation = "neurocast_status_window_toggle",
+        status = new_show_status and "enabled" or "disabled",
+        enabled = new_show_status == true
+      }, {
+        operation = "neurocast_status_window_toggle",
+        status = new_show_status and "enabled" or "disabled",
+        priority = "low"
+      })
+    end
+    if ImGui.BeginItemTooltip(ctx) then
+      ImGui.Text(ctx, t("Show status in dedicated window"))
+      ImGui.EndTooltip(ctx)
+    end
+    if S.help_available then
+      ImGui.SameLine(ctx)
+      ImGui.SetCursorPosX(ctx, math.max(ImGui.GetCursorPosX(ctx), row_right - help_width))
+      if ImGui.Button(ctx, help_label .. "##neurocast_script_aligner_tool_offline_help", help_width) then OfflineHelp.open() end
+      if ImGui.BeginItemTooltip(ctx) then
+        ImGui.Text(ctx, t("Open the offline manual (Russian)."))
+        ImGui.EndTooltip(ctx)
+      end
+    end
+    OfflineHelp.render_error()
+end
+-- End offline Help controller.
+
 local function gui_loop()
   refresh_project_relative_paths()
   local now_t = Jobs.now()
@@ -3487,22 +3562,8 @@ local function gui_loop()
   if visible then
     ImGui.PushFont(ctx, FONT, font_size)
 
-    draw_locale_picker()
-    ImGui.SameLine(ctx)
-    local changed_show_status, new_show_status = ImGui.Checkbox(ctx, t("Show status window"), S.show_status_window)
-    if changed_show_status then
-      S.show_status_window = new_show_status
-      persist_show_status_window(new_show_status)
-      TelemetryBridge.safe_event("feature_used", {
-        operation = "neurocast_status_window_toggle",
-        status = new_show_status and "enabled" or "disabled",
-        enabled = new_show_status == true
-      }, {
-        operation = "neurocast_status_window_toggle",
-        status = new_show_status and "enabled" or "disabled",
-        priority = "low"
-      })
-    end
+    OfflineHelp.render_header()
+
     if not S.show_status_window then
       render_status_panel(ctx, "_inline")
     end
@@ -3530,6 +3591,7 @@ local function gui_loop()
 end
 
 load_locale_on_startup()
+OfflineHelp.init()
 do
   local stored = load_show_status_window()
   if stored ~= nil then S.show_status_window = stored end

@@ -414,15 +414,16 @@
       </table></div>
 
       <h3 id="progress-retry">Повторить или отменить</h3>
-      <p>При некоторых сетевых сбоях скрипт повторяет запрос автоматически с паузой. Когда попытки закончились или ошибка не допускает автоматического повтора, строка переходит в состояние <code class="ui">ошибка</code>.</p>
+      <div class="note caution"><strong>Снимок исходников: 2026-10-21, v2.1.8.</strong> Эти правила могут устареть. Изменение ещё не проверено в живом REAPER и не опубликовано в ReaPack.</div>
+      <p>При некоторых сетевых сбоях скрипт повторяет чтение данных или загрузку уже созданного образца с паузой. Отправленные запросы TTS, STS, Voice Design, создания голоса, IVC и OpenAI автоматически не повторяются. Когда попытки закончились или ошибка не допускает автоматического повтора, строка переходит в состояние <code class="ui">ошибка</code>.</p>
       <p><code class="ui">Повторить</code> доступно только для завершившейся с ошибкой строки, у которой есть действие повтора. Сначала прочитайте причину и восстановите соединение или вход, если это требуется. Затем нажмите кнопку у нужной строки один раз и наблюдайте её прогресс. Ручной повтор начинает новую серию попыток.</p>
       <div class="table-wrap"><table>
         <thead><tr><th scope="col">Операция</th><th scope="col">Граница повтора</th></tr></thead>
         <tbody>
           <tr><td>Получение списка голосов</td><td>Повторяется запрос данных. Проверяйте завершение загрузки и затем ищите голос в списке.</td></tr>
           <tr><td>Загрузка образца Voice Design</td><td>Повторяется загрузка образца уже созданного варианта. Отличайте эту строку от самой генерации дизайна.</td></tr>
-          <tr><td>TTS, STS, генерация Voice Design, OpenAI</td><td>Может повториться запрос обработки, а не только скачивание результата. Доступная кнопка не гарантирует отсутствие повторной обработки или списания. Если неизвестно, чем закончился предыдущий запрос, сохраните сведения об ошибке и уточните дальнейшие действия у менеджера.</td></tr>
-          <tr><td>Создание голоса / IVC</td><td>После обрыва связи сначала <a href="#account-voices-refresh">обновите голоса аккаунта</a> и проверьте результат по имени. Если голос уже появился, не создавайте его повторно. При неясном результате передайте вопрос менеджеру.</td></tr>
+          <tr><td>TTS, STS, генерация Voice Design, OpenAI</td><td>После ошибки отправленного запроса автоматический и ручной повтор строки отключены. Причина и следующий шаг видны в строке задания и сохраняются после фонового обновления. При явном отказе исправьте причину и подготовьте новый запрос; если результат неизвестен, сначала проверьте историю или обратитесь к менеджеру. Пустой файл не доказывает, что обработки и списания не было.</td></tr>
+          <tr><td>Создание голоса / IVC</td><td>Повтор отправленного запроса отключён. После обрыва связи сначала <a href="#account-voices-refresh">обновите голоса аккаунта</a> и проверьте результат по имени. Если голос уже появился, не создавайте его повторно. При неясном результате передайте вопрос менеджеру.</td></tr>
         </tbody>
       </table></div>
       <p>Если нужно изменить исходный текст, выделение или параметры, вернитесь к инструкции соответствующего режима. Кнопка повтора строки не заменяет подготовку нового задания.</p>
@@ -617,9 +618,32 @@
     <section id="tts" class="sts-chapter" aria-labelledby="tts-title">
       <span id="plan-tts"></span>
       <h2 id="tts-title">05 · Озвучивание текста · TTS</h2>
+      <section id="tts-pronunciation" aria-labelledby="tts-pronunciation-title">
+        <h3 id="tts-pronunciation-title">Помощник произношения · IPA</h3>
+        <div class="note caution"><strong>Снимок исходников: 2026-11-11, v2.1.12.</strong> Панель реализована в исходниках для локального сервера разработки. В опубликованном пакете её пока нет. Эти сведения могут устареть. Владелец подтвердил успешную проверку v2.1.11 и v2.1.12 в REAPER. Иллюстрация новой панели отложена: эта редакция использует полные текстовые инструкции; отсутствие снимка не блокирует подготовку выпуска.</div>
+        <p>Разверните <code class="ui">Произношение / IPA</code> (<code>Pronunciation / IPA</code>) под выбором модели TTS. Помощник предлагает фонетические записи одного слова. Поиск и копирование не расходуют средства ElevenLabs и не меняют проект. Кнопка Preview у варианта создаёт платную озвучку показанного текста, без добавления аудио в проект. Для поиска нужен вход в Studio; баланс, назначенный аккаунт ElevenLabs и загруженные модели или голоса не требуются.</p>
+        <ol>
+          <li>Введите одно слово: до 128 символов, без пробелов и цифр; внутри слова допустимы апострофы и дефисы. Регистр и акценты сохраняются.</li>
+          <li>Явно выберите французский для Франции, португальский для Бразилии или португальский для Португалии. Бразилия и Португалия — разные запросы. Регион не определяется автоматически по голосу. Последний выбор языка запоминается; слово и результаты хранятся только до конца сеанса.</li>
+          <li>Нажмите <code class="ui">Найти IPA</code> (<code>Find IPA</code>). Ниже появятся все варианты: транскрипция, ранг, регион, причины порядка, источники, словарные значения и пометки, даты и ссылки на Wiktionary. Сворачивание панели не стирает результаты.</li>
+          <li>Нажмите <code class="ui">Копировать IPA</code> (<code>Copy IPA</code>) у нужного варианта. В буфер попадает сама транскрипция, без добавленных скобок или SSML. Для ручного редактирования вставьте её вместо проблемного слова в заметки нужного айтема. Для замены всех найденных вхождений используйте «Применить к айтему», описанную ниже.</li>
+          <li>Выберите ровно одну дорожку с именем, точно совпадающим с уникальным голосом аккаунта, и текущую модель TTS. Отдельного выбора голоса в помощнике нет. При пустом, неизвестном или неоднозначном имени либо выборе нескольких дорожек появится предупреждение; поиск и копирование остаются доступны.</li>
+          <li>Нажмите <code class="ui">Preview</code> у нужного варианта; <code class="ui">Стоп</code> останавливает прослушивание. Как в Voice Library, жёлтый цвет означает ожидание, зелёный — воспроизведение; громкость общая для предпрослушивания. Повторное нажатие использует сохранённое аудио того же полного текста, варианта, модели и голоса в текущем сеансе. Для личной оценки используются текущая модель и голос выбранной дорожки. Нажмите <code class="ui">Подошло</code>, <code class="ui">Не подошло</code> или <code class="ui">Не уверен</code>. Дождитесь сообщения о сохранении.</li>
+        </ol>
+        <p>Сначала идут словарные варианты с явным совпадением региона, затем профиль eSpeak выбранного региона, затем французский gruut и французские словарные варианты без указанного региона. Одинаковый ранг означает равный приоритет. Это порядок для проверки на слух, а не процент уверенности или экспертная оценка. Значения слова относятся к конкретному источнику; значение изолированного омографа автоматически не выбирается. Для португальского варианты без явного региона исключаются, gruut не используется.</p>
+        <p><code class="ui">Обновить источники</code> (<code>Refresh sources</code>) явно запрашивает новые данные. Обычный поиск использует SQLite на сервере; отдельная клиентская база не создаётся. Успешные данные используются до обновления или смены версии адаптера. Отсутствие варианта запоминается на 24 часа, временная ошибка — минимум на 10 минут или дольше по требованию источника. Кнопка обновления не обходит ограничение повторных запросов. Дата и время в панели указаны в UTC.</p>
+        <p>При частичной ошибке можно копировать доступные варианты; прочитайте предупреждение источника. После неудачного обновления прежние варианты остаются на экране с предупреждением и датами. При смене слова или региона старые результаты удаляются. Выбор другой модели или дорожки с другим голосом очищает личные оценки и сообщение об их сохранении, затем загружает оценки для новой комбинации. Для оценки нужны загруженные модель и голос; сам поиск IPA работает без них.</p>
+        <p>Ошибка отображается в самой панели и не исчезает из-за успешной фоновой операции. При разрыве соединения проверьте сервер и повторите запрос вручную. Если сохранение оценки не подтверждено, на экране остаётся последняя подтверждённая оценка: повторная отправка того же значения безопасна. Оценки принадлежат текущему пользователю и конкретным модели/голосу; общий рейтинг вариантов они не меняют. Вход другой учётной записью или смена сервера очищают результаты и личные оценки.</p>
+        <p>Первое Preview — платная генерация через выбранный сервер; нужны назначенный аккаунт ElevenLabs, доступ к голосу/модели и положительный баланс. После ошибки генерация не повторяется автоматически, даже при истечении времени или ошибке входа. Проверьте сообщение и повторите Preview вручную; предыдущая попытка могла быть оплачена. Стоп или смена дорожки/модели отменяют автоматическое воспроизведение, но не гарантируют отмену уже отправленной генерации или списания. До завершения этого запроса новое Preview недоступно. Другая запись Voice Library использует тот же канал воспроизведения. При прослушивании заметки айтемов, медиа и транспорт проекта не меняются. Разные модели могут по-разному реагировать на IPA; правильное произношение проверяется на слух.</p>
+        <p><strong>Контекстное прослушивание (v2.1.12):</strong> если выбран ровно один айтем с текстом заметок и искомое слово найдено, каждый вариант показывает весь текст с заменой всех вхождений на IPA между косыми чертами, например <code>/ˈti.ɐ/</code>. В поле поиска по-прежнему вводится только слово, например <code>tia</code>; буквы IPA в текст не добавляются. Preview читает именно показанный текст, а «Применить к айтему» записывает его вместе с косыми чертами. Без одного выбранного айтема, без текста или без совпадений читается только IPA между косыми чертами; причина показана в панели. Голос по-прежнему берётся из имени выбранной дорожки, даже если айтем находится на другой дорожке. Источник текста и голос подписаны отдельно.</p>
+        <p>Поиск не учитывает регистр и распознаёт эквивалентные составные и разложенные записи акцентов, но различает сами акценты; составные слова с апострофом или дефисом считаются целиком: amour не совпадает с l’amour, tia — с tia-avó. Замена выполняется также внутри инструкций в квадратных скобках и разметки. Остальной текст, пунктуация и переносы строк сохраняются. Полный текст каждого варианта всегда виден под подписью «Текст превью:», но не редактируется в панели; «Замен» показывает число совпадений. Текст не сокращается и не делится на отдельные запросы автоматически. Если сервер отклонил слишком длинный текст, уменьшите его в заметках и повторите Preview вручную.</p>
+        <p><code class="ui">Применить к айтему</code> (<code>Apply to item</code>) сразу записывает показанный текст в заметки этого айтема, без дополнительного подтверждения. Это отдельное локальное действие, доступное даже при неверном голосе. Отмена — обычным Undo в REAPER, одним шагом. Само Preview ничего в проекте не меняет. После применения исходная фраза остаётся основой для сравнения: можно прослушать и применить другой вариант. Уже применённый вариант отмечен; повторное применение не создаёт лишний шаг отмены. Изменение текста вне помощника, выбор другого айтема или проекта, либо смена искомого слова сбрасывает эту основу. При изменении айтема после показа текста запись отклоняется: проверьте обновлённый вариант и нажмите кнопку снова.</p>
+        <div id="tts-pronunciation-capture" class="note caution"><strong>Текстовая редакция панели IPA:</strong> новый снимок интерфейса отложен по решению владельца. Используйте инструкции выше: полный текст и счётчик замен показаны у каждого варианта; Preview прослушивает его, а «Применить к айтему» записывает с возможностью Undo. Прежние иллюстрации TTS сохранены как исторические и не показывают эту панель.</div>
+      </section>
       <nav class="toc" aria-label="Темы главы TTS">
         <strong>Содержание</strong>
         <ul>
+          <li><a href="#tts-pronunciation">Помощник произношения · IPA</a></li>
           <li><a href="#tts-source">Подготовить текст и выбрать голос</a></li>
           <li><a href="#tts-model">Выбрать модель</a></li>
           <li><a href="#tts-regular">Запустить обычный TTS</a></li>
@@ -1476,10 +1500,10 @@
   "workflow": "elevenlabs_tool_manual",
   "language": "ru",
   "title": "ElevenLabs Tool - foundations, existing voices, TTS, STS, voice acquisition/creation and REAPER commands",
-  "source_snapshot_date": "2026-09-28",
+  "source_snapshot_date": "2026-11-11",
   "authored_date": "2026-09-27",
-  "script_version": "v2.1.6",
-  "source_commit": "f41f2752c31dfedcfe24a5573326b3f0cac0c23d",
+  "script_version": "v2.1.12",
+  "source_commit": null,
   "help_revision": {
     "date": "2026-09-29",
     "scope": "Working-tree v2.1.5 replaces the rejected 0.1.6 candidate opener. Startup-only native file check; missing manual hides Help and logs a warning. Direct system opening without SWS or temporary files. All 31 screenshot payloads and chapter review states retained.",
@@ -1582,7 +1606,10 @@
     "actions-shortcut",
     "actions-run",
     "actions-unavailable",
-    "outline"
+    "outline",
+    "tts-pronunciation",
+    "tts-pronunciation-title",
+    "tts-pronunciation-capture"
   ],
   "screenshot": {
     "source_filename": "Screenshot 2026-09-27 230617.png",
@@ -1686,6 +1713,21 @@
       "source_evidence": "Active ACTIONS inventory, registration fallback, startup flag reset, polling, per-action cooldown and network guards; four fixed wrappers; shared FAST and selected-item notes helpers; Jobs.network_busy and Util.remove_brackets. Existing hotkey regression inspected, not rerun for this documentation-only change.",
       "screenshot_evidence": "Three owner PNGs show the four exact current command names, Alt+V entered for FAST STS with Normal scope, and the assigned shortcut. Older similarly named actions remain visible. No command execution or shortcut conflict check was independently observed.",
       "verification_limits": "No desktop control, new capture, provider request, project change/save, runtime change, release operation or full HTML browser preview. Closed-tool behavior, busy/cooldown skips, focused-window dispatch and command effects are source-inspected; fresh owner live checks remain pending. Busy/cooldown rejection currently has no separate visible reason; documentation does not fix that runtime limitation."
+    },
+    "tts_pronunciation": {
+      "script_version": "v2.1.12",
+      "source_snapshot_date": "2026-11-11",
+      "source_base_commit": "5df1cc86c78ce3d744b4c88bddf310655a08f85f",
+      "manual_status": "Source-aligned text-first prose; owner live v2.1.12 pass recorded. Missing capture deferred by owner; full browser/print/platform acceptance not claimed.",
+      "source_evidence": "Active contextual IPA UI and helper: ordinary word input, slash-delimited word/sentence previews and Apply, unchanged raw candidate/copy behavior. Local OpenAPI retrieved 2026-11-11 15:32:41 UTC, version 1.15-pronunciation-20261109.",
+      "live_verification": "Owner explicitly reported v2.1.11 and v2.1.12 live REAPER tests passed on 2026-11-11. Packaged update/Help and production deployment remain separate; no measured pronunciation-accuracy claim.",
+      "screenshot_request": "tts-pronunciation-capture retained as deferred editorial backlog; nonblocking for the owner-authorized text-first release.",
+      "source_sha256": "bee7a75f34d01d334e7cfc5c94f5bce9a03ad3fb17755a61a1b111bcaffe0fce",
+      "module_sha256": "2aa584df90ae71afccef33988a2c7b34906019d7e1d9641d8a25a9b20a926704",
+      "review_date": "2026-11-11",
+      "additional_verification": "All 13 focused Lua suites pass after exact delimiter assertions were updated: 11 context, 20 controller, 21 UI/transport, 13 actual preview groups, plus existing preview/API/auth/Voice Library/hotkey/retry/STS/Help suites. Lua syntax, 929-entry localization, manual links/hash/image preservation and whitespace checks pass. No paid calls or agent-run REAPER checks.",
+      "preview_module_sha256": "9de682d493f456896b929d8ff725362ada3449c0b68083b06daad6e49c99af49",
+      "context_module_sha256": "45ffdcf478fe37cbc1e21718b6aab9f869c2dea91a2af1412ae88ede15c1b9c9"
     }
   },
   "sts_screenshots": [
@@ -1777,11 +1819,18 @@
   "sts_screenshot_policy": "Original owner-provided PNG and authorized agent-captured JPEG bytes are embedded unchanged. Screenshot 14 and Screenshot 15 show the current v2.1.3 STS controls through clipped SVG viewports. Red arrows and numbers are separate SVG overlays. Other screenshots retain their original provenance. Current numbering includes the TTS chapter and the preceding Chapter 03, Chapter 04, Chapter 05 and Chapter 06 figures. Rejection and duplicate-voice-dialog instructions are based on active source.",
   "screenshot_numbering": "All 28 figures numbered in current document order. Stable figure IDs and original capture filenames retained. Captions, accessible titles, cross-references and manifest numbers agree; callout numbers remain local to their figure.",
   "editorial_policy": "Russian operator instructions explain what to do and why. Use exact UI labels for navigation; explain technical UI terms through their user-visible purpose. Keep implementation details in English technical metadata. Preserve owner-approved wording and screenshot originals. Show keyboard shortcuts for both Windows and Mac. Order shared foundations before everyday processing and optional voice acquisition/creation. Cross-links may lead to a later workflow; that does not make the workflow a prerequisite.",
-  "revised_date": "2026-09-28",
-  "source_base_commit": "80d41e396991a440414f5fa4a6c4489ceefb3074",
-  "source_state": "Active v2.1.3 source SHA-256 rechecked unchanged on clean main matching origin/main at e35e68ca67541c5d0479057d10e54c2b121308e4 before Chapter 02 authoring. Earlier chapter source snapshots remain recorded separately. Before Chapter 04, the checkout was clean main matching live origin/main at 051f48170df732ae5c66398720a88455fc6728af; the active source hash remained unchanged. Before Chapter 05, clean main matched live origin/main at a7b106f7249efb5a4992a07b2deb11075d46193c; active source hash unchanged. Before Chapter 06, clean main matched live origin/main at 36003caff8f53b6b960e53412e6e9b4c494f1ca0; active source SHA-256 unchanged. Before Chapter 09, clean main matched live origin/main at 663450078c328fa10f9d82d54b9b122637133cc1; active v2.1.3 source SHA-256 unchanged. Before Chapter 10, clean main matched live origin/main at 8cbe434d4624ed51b69bfc4070b7aca68a7cfcc3; active v2.1.3 source SHA-256 unchanged.",
-  "source_sha256": "14a5118d1e2ddd41e479173d6743700683afaa23249e9db0dacfb251063e48d6",
-  "pending_screenshots": [],
+  "revised_date": "2026-11-11",
+  "source_base_commit": "5df1cc86c78ce3d744b4c88bddf310655a08f85f",
+  "source_state": "Reviewed v2.1.12 source on main; focused headless and explicit owner live passes recorded. Text-first release preparation authorized; missing screenshots deferred. Historical chapter evidence preserved.",
+  "source_sha256": "bee7a75f34d01d334e7cfc5c94f5bce9a03ad3fb17755a61a1b111bcaffe0fce",
+  "pending_screenshots": [
+    {
+      "id": "tts-pronunciation-capture",
+      "status": "deferred by owner 2026-11-11",
+      "scope": "v2.1.12 contextual previews and Apply with /…/ IPA delimiters, full text/count, item/voice labels and per-candidate controls. v2.1.11 live pass is recorded; earlier TTS images remain historical.",
+      "release_blocking": false
+    }
+  ],
   "tts_screenshots": [
     {
       "figure_id": "tts-notes",

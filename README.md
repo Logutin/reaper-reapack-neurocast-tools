@@ -3,10 +3,11 @@
 The current published package is **Neurocast Tools 0.1.9**, a
 limited-internal release for selected team members.
 
-> **Vacation hold (2026-10-25):** keep 0.1.9 / ElevenLabs v2.1.7 and the existing
-> production backend in use. The next client/backend rollout is postponed until
-> the owner explicitly resumes it. Read the
-> [handoff](docs/2026-10-25_vacation_release_hold_handoff.md) before release work.
+> **Preparation resumed, 2026-11-11:** the owner passed source v2.1.12 live,
+> authorized the existing isolated REAPER and deferred missing manual screenshots.
+> Candidate 0.1.10 is being prepared from source 49ef853. The public root feed
+> remains 0.1.9 until backend readiness, owner packaged Help acceptance and final
+> publication go-ahead. See the [candidate record](docs/2026-11-11_package_preparation_0.1.10.md).
 
 Install/update through the repository
 [index.xml](https://raw.githubusercontent.com/Logutin/reaper-reapack-neurocast-tools/main/index.xml).

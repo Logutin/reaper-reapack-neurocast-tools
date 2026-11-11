@@ -1,124 +1,151 @@
 schema_version: 1
-
 package:
   display_name: Neurocast Tools
   slug: Neurocast_Tools
-  version: 0.1.9
+  version: 0.1.10
   inventory: release-manifest.yml
-
 tracked_lua:
   repository: https://github.com/Logutin/auphonic-mt
-  commit: 1f5ca2a87e0fc36e5cd621f1c86934fa85fd6a15
-  count: 61
-  policy: All Lua inputs match the pinned source commit after its Git clean filter. Two updated Lua files are byte-exact source blobs; six unchanged files retain historical CRLF bytes. Source SCRIPT_VERSION and TOOLSET_VERSION values are independent of ReaPack version 0.1.9.
+  commit: 49ef8535efa44dd8e49ad20e124fed7809d7dc51
+  count: 63
+  policy: Changed/new Lua are byte-exact pinned source blobs; unchanged files preserve prior published bytes. Source
+    versions are independent of ReaPack 0.1.10.
   byte_exact_changed_files:
-    - scr/elevenlabs_tool.lua
-    - scr/modules-neurocast/elevenlabs_tool_languages.lua
+  - scr/automix_tool.lua
+  - scr/elevenlabs_manager_tool.lua
+  - scr/elevenlabs_tool.lua
+  - scr/modules-neurocast/automix_tool_languages.lua
+  - scr/modules-neurocast/elevenlabs_api_via_neurocast.lua
+  - scr/modules-neurocast/elevenlabs_tool_languages.lua
+  - scr/modules-neurocast/elevenlabs_voice_preview.lua
+  - scr/modules-neurocast/mvsep_tool_languages.lua
+  - scr/modules-neurocast/neurocast_script_aligner_tool_languages.lua
+  - scr/modules-neurocast/pronunciation_context.lua
+  - scr/modules-neurocast/pronunciation_controller.lua
+  - scr/mvsep_tool.lua
+  - scr/neurocast_script_aligner_tool.lua
   historical_crlf_preserved_distribution_files:
-    - Neurocast_Tools/modules-neurocast/json.lua
-    - Neurocast_Tools/modules-neurocast/neurocast_auth.lua
-    - Neurocast_Tools/modules-neurocast/prompts.lua
-    - Neurocast_Tools/modules-neurocast/Util.lua
-    - Neurocast_Tools/modules-neurocast/docx_dialogue_parser.lua
-    - Neurocast_Tools/modules-neurocast/neurocast_script_aligner_tool_languages.lua
-
+  - Neurocast_Tools/modules-neurocast/Util.lua
+  - Neurocast_Tools/modules-neurocast/docx_dialogue_parser.lua
+  - Neurocast_Tools/modules-neurocast/json.lua
+  - Neurocast_Tools/modules-neurocast/neurocast_auth.lua
+  - Neurocast_Tools/modules-neurocast/prompts.lua
 tracked_assets:
   repository: https://github.com/Logutin/auphonic-mt
-  commit: 1f5ca2a87e0fc36e5cd621f1c86934fa85fd6a15
-  policy: Both directly maintained Russian HTML support assets match the committed source bytes exactly; embedded screenshots are unchanged.
+  commit: 49ef8535efa44dd8e49ad20e124fed7809d7dc51
+  policy: Six canonical Help manuals match pinned source blobs exactly. Original images preserved; missing new illustrations
+    deferred by owner.
   files:
-    - source_path: scr/manuals/2026-09-28_elevenlabs_tool_manual_ru.html
-      destination: Neurocast_Tools/manuals/2026-09-28_elevenlabs_tool_manual_ru.html
-      size_bytes: 3305303
-      sha256: 92acf441fd662d8cd2c7007d2d0e9ed56ee073d5fb016d76f1c8ced7c4ceca05
-    - source_path: scr/manuals/2026-10-05_docx_import_tool_manual_ru.html
-      destination: Neurocast_Tools/manuals/2026-10-05_docx_import_tool_manual_ru.html
-      size_bytes: 1862686
-      sha256: 017e9476b1b4c041cfc98b33b9298cdfb02b0184c67dacbc7dbb004b9d4848d9
-
+  - source_path: scr/manuals/2026-09-28_elevenlabs_tool_manual_ru.html
+    destination: Neurocast_Tools/manuals/2026-09-28_elevenlabs_tool_manual_ru.html
+    size_bytes: 3322124
+    sha256: 062cf25c84c918074523208fc4965c6e5e5aed6196beb16530a2710c6589894c
+  - source_path: scr/manuals/2026-10-05_docx_import_tool_manual_ru.html
+    destination: Neurocast_Tools/manuals/2026-10-05_docx_import_tool_manual_ru.html
+    size_bytes: 1862686
+    sha256: 017e9476b1b4c041cfc98b33b9298cdfb02b0184c67dacbc7dbb004b9d4848d9
+  - source_path: scr/manuals/2026-10-28_automix_tool_manual_ru.html
+    destination: Neurocast_Tools/manuals/2026-10-28_automix_tool_manual_ru.html
+    size_bytes: 52403
+    sha256: 172a63238212a5b8032cf7fbf5b7b7ce38f187b97640dcb7edfc26a3b822557f
+  - source_path: scr/manuals/2026-10-28_mvsep_tool_manual_ru.html
+    destination: Neurocast_Tools/manuals/2026-10-28_mvsep_tool_manual_ru.html
+    size_bytes: 46958
+    sha256: 1b0c26599a9cd2ca56aabdab387af30e9a097af8e086523d6b3d42c013b2a083
+  - source_path: scr/manuals/2026-10-28_neurocast_script_aligner_tool_manual_ru.html
+    destination: Neurocast_Tools/manuals/2026-10-28_neurocast_script_aligner_tool_manual_ru.html
+    size_bytes: 44866
+    sha256: 8ee564b87868bf2dca083bbb8be5b3216d01e3118ea5dce366c0c784a256e163
+  - source_path: scr/manuals/2026-10-28_elevenlabs_manager_tool_manual_ru.html
+    destination: Neurocast_Tools/manuals/2026-10-28_elevenlabs_manager_tool_manual_ru.html
+    size_bytes: 44777
+    sha256: 88033ee02b08eef8c001d83afbc3ae9d1a0a48dace005104251a39894d36dbf2
 local_windows_inputs:
   repository: https://github.com/Logutin/auphonic-mt
-  policy: These local gitignored release inputs are path-, size-, and hash-pinned and are not claimed to be contained in the tracked Lua commit.
+  policy: These local gitignored release inputs are path-, size-, and hash-pinned and are not claimed to be contained
+    in the tracked Lua commit.
   files:
-    - source_path: scr/bin/win/curl.exe
-      destination: Neurocast_Tools/bin/win/curl.exe
-      size_bytes: 711736
-      sha256: 3345339164cf384eff527b6c3160fea8d849a4231ec6ca80513e3a739e505168
-    - source_path: scr/bin/win/7z.exe
-      destination: Neurocast_Tools/bin/win/7z.exe
-      size_bytes: 577536
-      sha256: 6ee3c0ed0b27663c1b948ae85a7c0bb073aed1498983182f3f0df1f6a8c30b2f
-    - source_path: scr/bin/win/7z.dll
-      destination: Neurocast_Tools/bin/win/7z.dll
-      size_bytes: 1906688
-      sha256: 65e4c1f855f9ef6e8f0f5df8e3f27d9eb5f07311408639da0a1ca0b8f4871b0d
-
+  - source_path: scr/bin/win/curl.exe
+    destination: Neurocast_Tools/bin/win/curl.exe
+    size_bytes: 711736
+    sha256: 3345339164cf384eff527b6c3160fea8d849a4231ec6ca80513e3a739e505168
+  - source_path: scr/bin/win/7z.exe
+    destination: Neurocast_Tools/bin/win/7z.exe
+    size_bytes: 577536
+    sha256: 6ee3c0ed0b27663c1b948ae85a7c0bb073aed1498983182f3f0df1f6a8c30b2f
+  - source_path: scr/bin/win/7z.dll
+    destination: Neurocast_Tools/bin/win/7z.dll
+    size_bytes: 1906688
+    sha256: 65e4c1f855f9ef6e8f0f5df8e3f27d9eb5f07311408639da0a1ca0b8f4871b0d
 component_notices:
   repository: https://github.com/Logutin/slava-reaper-reapack-test-curl-jobs-imgui
   commit: dc1632c0d576a375002cc78c5df7d134764acb40
-  policy: This pinned repository supplies only these four curated notice texts and supplies no runtime, executable, native, or package metadata.
+  policy: This pinned repository supplies only these four curated notice texts and supplies no runtime, executable,
+    native, or package metadata.
   files:
-    - source_path: Slava-Testing/licenses/curl-COPYING.license
-      destination: Neurocast_Tools/licenses/curl-COPYING.txt
-      size_bytes: 1088
-      sha256: e18f1989333b70044b2adfb7dc2f905d0119dbdcac3bc9f4bc9d540e3a29de5b
-      platforms: [win64]
-    - source_path: Slava-Testing/licenses/zlib-LICENSE.license
-      destination: Neurocast_Tools/licenses/zlib-LICENSE.txt
-      size_bytes: 1001
-      sha256: 32341cbfaac7f5b3c9eec9887530353204fa231bcd354dfdc3d750c10fabfb0a
-      platforms: [win64]
-    - source_path: Slava-Testing/licenses/7-Zip-License.license
-      destination: Neurocast_Tools/licenses/7-Zip-License.txt
-      size_bytes: 5885
-      sha256: 32369594a3a9f7c643d124035120eaa6a7707e75e57c4386ef509f801447bc49
-      platforms: [win64]
-    - source_path: Slava-Testing/licenses/Unicode-License.license
-      destination: Neurocast_Tools/licenses/Unicode-License.txt
-      size_bytes: 1995
-      sha256: e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96
-      platforms: [win64, darwin64, darwin-arm64]
-
+  - source_path: Slava-Testing/licenses/curl-COPYING.license
+    destination: Neurocast_Tools/licenses/curl-COPYING.txt
+    size_bytes: 1088
+    sha256: e18f1989333b70044b2adfb7dc2f905d0119dbdcac3bc9f4bc9d540e3a29de5b
+    platforms:
+    - win64
+  - source_path: Slava-Testing/licenses/zlib-LICENSE.license
+    destination: Neurocast_Tools/licenses/zlib-LICENSE.txt
+    size_bytes: 1001
+    sha256: 32341cbfaac7f5b3c9eec9887530353204fa231bcd354dfdc3d750c10fabfb0a
+    platforms:
+    - win64
+  - source_path: Slava-Testing/licenses/7-Zip-License.license
+    destination: Neurocast_Tools/licenses/7-Zip-License.txt
+    size_bytes: 5885
+    sha256: 32369594a3a9f7c643d124035120eaa6a7707e75e57c4386ef509f801447bc49
+    platforms:
+    - win64
+  - source_path: Slava-Testing/licenses/Unicode-License.license
+    destination: Neurocast_Tools/licenses/Unicode-License.txt
+    size_bytes: 1995
+    sha256: e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96
+    platforms:
+    - win64
+    - darwin64
+    - darwin-arm64
 native_inputs:
   repository: https://github.com/Logutin/reaper_cyr_essentials
   evidence_repository_commit: 3163f56ba9729aa7f00f0b11e01c9ea091cc0445
   policy: Native build outputs are hash- and evidence-pinned; they are not rebuilt or modified here.
   files:
-    - source_path: build/reaper_cyr_essentials-windows-x64/Release/reaper_cyr_essentials.dll
-      package_source: Neurocast_Tools/native/win64/reaper_cyr_essentials.dll
-      installed_destination: UserPlugins/reaper_cyr_essentials.dll
-      size_bytes: 14336
-      sha256: 1df283154fa3183c4437132b621ca9bda908f4a52dbca9051bee5c07410c1527
-      architecture: PE x86_64
-      evidence_run: 30766075451
-      evidence_source_commit: ae71dd8260631bbd490f0206afbabdc8e447f135
-    - source_path: build/reaper_cyr_essentials-macos-x86_64/reaper_cyr_essentials.dylib
-      package_source: Neurocast_Tools/native/darwin64/reaper_cyr_essentials.dylib
-      installed_destination: UserPlugins/reaper_cyr_essentials.dylib
-      size_bytes: 17856
-      sha256: adac7be285d1bb7ee30fcc85f2241d8f797eb152165a9d1d20cf66810e0eb9fa
-      architecture: thin Mach-O x86_64
-      evidence_run: 30765082450
-      evidence_source_commit: 3566e976853bcc5073acd5910c6df7ff6fd45ce9
-    - source_path: build/reaper_cyr_essentials-macos-arm64/reaper_cyr_essentials.dylib
-      package_source: Neurocast_Tools/native/darwin-arm64/reaper_cyr_essentials.dylib
-      installed_destination: UserPlugins/reaper_cyr_essentials.dylib
-      size_bytes: 51064
-      sha256: 541c511053b19685f81aa3470a82891c728a8d1ee7597800d51382fb3d9ee72d
-      architecture: thin Mach-O arm64
-      evidence_run: 30765082450
-      evidence_source_commit: 3566e976853bcc5073acd5910c6df7ff6fd45ce9
-
+  - source_path: build/reaper_cyr_essentials-windows-x64/Release/reaper_cyr_essentials.dll
+    package_source: Neurocast_Tools/native/win64/reaper_cyr_essentials.dll
+    installed_destination: UserPlugins/reaper_cyr_essentials.dll
+    size_bytes: 14336
+    sha256: 1df283154fa3183c4437132b621ca9bda908f4a52dbca9051bee5c07410c1527
+    architecture: PE x86_64
+    evidence_run: 30766075451
+    evidence_source_commit: ae71dd8260631bbd490f0206afbabdc8e447f135
+  - source_path: build/reaper_cyr_essentials-macos-x86_64/reaper_cyr_essentials.dylib
+    package_source: Neurocast_Tools/native/darwin64/reaper_cyr_essentials.dylib
+    installed_destination: UserPlugins/reaper_cyr_essentials.dylib
+    size_bytes: 17856
+    sha256: adac7be285d1bb7ee30fcc85f2241d8f797eb152165a9d1d20cf66810e0eb9fa
+    architecture: thin Mach-O x86_64
+    evidence_run: 30765082450
+    evidence_source_commit: 3566e976853bcc5073acd5910c6df7ff6fd45ce9
+  - source_path: build/reaper_cyr_essentials-macos-arm64/reaper_cyr_essentials.dylib
+    package_source: Neurocast_Tools/native/darwin-arm64/reaper_cyr_essentials.dylib
+    installed_destination: UserPlugins/reaper_cyr_essentials.dylib
+    size_bytes: 51064
+    sha256: 541c511053b19685f81aa3470a82891c728a8d1ee7597800d51382fb3d9ee72d
+    architecture: thin Mach-O arm64
+    evidence_run: 30765082450
+    evidence_source_commit: 3566e976853bcc5073acd5910c6df7ff6fd45ce9
 validated_toolchain:
   ruby: 4.0.6
   reapack_index: 1.2.6
   pandoc: 3.10.2
   git: 2.55.0.windows.3
-
 status: published_limited_internal_owner_smoke_passed_delivery_verified
-
 seven_zip_upstream:
-  version: "26.03"
+  version: '26.03'
   release_date: 2026-09-03
   repository: https://github.com/ip7z/7zip
   release_url: https://github.com/ip7z/7zip/releases/tag/26.03
@@ -126,6 +153,8 @@ seven_zip_upstream:
   asset_size_bytes: 1661239
   asset_sha256: 0859c524b8a63551848f0c246abddcb1d0b7b656b0fbfe879f8d85e61a9e6edd
   digest_verified_against: GitHub release asset API
-  extraction_policy: Extract matching x64 7z.exe and 7z.dll from the same verified installer without running the installer.
-  license_policy: Existing curated 7-Zip notice is text-identical to the official 26.03 License.txt after newline normalization; retain its existing bytes and source pin.
+  extraction_policy: Extract matching x64 7z.exe and 7z.dll from the same verified installer without running the
+    installer.
+  license_policy: Existing curated 7-Zip notice is text-identical to the official 26.03 License.txt after newline
+    normalization; retain its existing bytes and source pin.
   official_license_sha256: 519ac0a4bded9c18ea02e0afb71f663d8c47373bd9facd3ac96a79f51d77765d
