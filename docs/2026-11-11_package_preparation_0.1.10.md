@@ -30,6 +30,7 @@ layouts are not marked accepted.
 | Input | Pin / count |
 | --- | --- |
 | Runtime/manual source | `49ef8535efa44dd8e49ad20e124fed7809d7dc51` |
+| Frozen candidate payload | `3e6419b14efd607463deec3d2ee7264ebcf83b92` |
 | Previous distribution baseline | `48aeb1062bbe45c75656b7960f8d90375656e213` |
 | Lua payload | 63 files: 13 changed/new exact source blobs, 50 unchanged historical payload files |
 | Offline manuals | Six canonical HTML files, exact source bytes |
@@ -48,6 +49,15 @@ the package number. No legacy direct-era source is included.
 Payload verification passed syntax, dependency closure (including custom require
 wrappers), source/blob equality, all six Help paths, original image counts,
 binary/notice pins, exact platform/action records and strict ReaPack validation.
+The generated [candidate feed](../qualification/Neurocast_Tools_0.1.10_candidate.xml)
+pins all 219 new source records to that payload commit and preserves all nine
+historical versions. Its SHA-256 is
+`c5814cca525a05098f1fd42a0c310547add5c97eae7661fe930b755858c1fc0a`.
+Root `index.xml` is byte-identical to the previous distribution baseline.
+The owner helper passed Lua syntax and six headless cases: both incorrect path
+guards, missing prerequisites, setup, setup failure and installed instructions.
+The disposable's identity, ReaPack configuration and action-list hashes remain
+unchanged from the initial readback. No candidate install is claimed yet.
 Source verification passed 15 Lua suites, localization (929 entries), manual,
 link, hash, image-preservation and whitespace checks. Source live passes are
 owner evidence; headless checks do not replace packaged GUI acceptance.
