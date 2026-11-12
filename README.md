@@ -5,8 +5,9 @@ limited-internal release for selected team members.
 
 > **Published, 2026-11-12:** the owner authorized promotion after installed
 > Windows production/IPA/cache and Help checks passed. The public root feed
-> promotes the documentation-corrected candidate unchanged. The disposable
-> public-feed switch and same-version reinstall/readback remain pending.
+> promotes the documentation-corrected candidate unchanged. The owner completed
+> the public-feed reinstall and passed live testing; exact installed file/action,
+> public cache and identity checks passed. Limited-internal release checks are complete.
 > See the [release record](docs/2026-11-12_package_acceptance_0.1.10.md).
 
 Install/update through the repository
@@ -28,8 +29,10 @@ deferred; no broader platform or pronunciation-accuracy claim is made.
 - All nine historical public versions preserved; native components unchanged.
 
 The owner-tested runtime is unchanged by the subsequent manual correction.
-Final corrected-manual installation readback is pending in the authorized
-`C:\extra_Reapers\Reaper_Empty_01`; no repeat paid listening test is required.
+Final corrected-manual installation readback passed in the authorized
+`C:\extra_Reapers\Reaper_Empty_01`: receipt 0.1.10, 77 exact files, 14 Main
+actions, one public-feed repository, exact public cache and unchanged identity.
+The owner reported the reinstalled version passed live. Release checks are complete.
 
 ## Previous release: 0.1.9
 

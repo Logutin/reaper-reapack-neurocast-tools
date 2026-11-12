@@ -46,13 +46,13 @@ The owner explicitly authorized publication on November 12. Public root
 `index.xml` promotes the corrected candidate byte-for-byte as limited-internal
 0.1.10. No new paid listening test is required: runtime is unchanged and source
 listening/Apply passed on November 11. Public download verification and the
-owner disposable public-feed switch/reinstall follow publication. Verify
-77 exact installed files and 14 actions again; a same-version synchronization
-alone does not prove the manual update was installed.
+owner disposable public-feed reinstall are complete. Independent readback
+confirms 77 exact installed files and 14 actions; synchronization alone was
+not used as proof of corrected-manual installation.
 
-The current disposable still contains the original tested manual bytes until
-that reinstall. Do not claim a successful installed readback of the corrected
-manuals before it occurs. Missing illustrations stay deferred. This is limited
+The current disposable contains the corrected published manuals; exact-file
+verification passed after the owner reported the reinstall live test passed.
+Missing illustrations stay deferred. This is limited
 Windows acceptance, not measured pronunciation accuracy, a fresh production
 feedback write, bad-connection, macOS, print-layout or full-content acceptance.
 
@@ -65,8 +65,9 @@ preservation, unchanged original screenshots and changed Markdown file links.
 Payload verification passed 63 Lua syntax/content/dependency checks, six Help
 assets, binary/notice pins, 219 records and strict ReaPack validation with zero
 failures. A direct comparison against the owner-tested candidate found changes
-only in five HTML manuals and the non-runtime package metadata. All 77 files
-in the disposable still match the original accepted candidate.
+only in five HTML manuals and the non-runtime package metadata. Before the
+final reinstall, all 77 disposable files matched the original accepted candidate;
+after reinstall they match the corrected published payload.
 
 The generated candidate index passed all 219 pinned URL/role/platform checks
 and preservation of all nine historical versions. Candidate XML SHA-256:
@@ -76,15 +77,13 @@ No published historical version or pinned payload was modified.
 
 ## Final disposable reinstall
 
-The owner runs `qualification/Neurocast_Tools_restore_public_feed.lua` only in
-`C:\extra_Reapers\Reaper_Empty_01`. It checks both resource and executable
-paths, restores the public URL for the existing repository and synchronizes.
-The owner then opens ReaPack Browse packages, selects Neurocast Tools and
-explicitly reinstalls 0.1.10. No uninstall or duplicate repository is needed.
-After completion, `qualification/verify_0_1_10.py --installed` must confirm all
-77 corrected files and 14 actions. Also verify public repository/cache URL,
-unchanged identity and the corrected IPA Help paragraph. This readback is
-pending until the owner completes that reinstall.
+The owner completed the public-feed switch and same-version reinstall in
+`C:\extra_Reapers\Reaper_Empty_01`, then reported: "Reinstalled. Tested live.
+Pass." Independent readback confirmed receipt 0.1.10, all 77 exact published
+files, 14 exactly-once Main actions, one enabled public-root repository with
+manual installation retained, byte-exact cached public index and the unchanged
+private identity. All six manuals match the corrected frozen payload. The
+limited-internal Windows release checks are complete.
 
 ## Public download verification
 
@@ -94,5 +93,11 @@ At 15:24:33 Moscow on November 12, the normal public
 URL returned the exact promoted index. All five corrected immutable manual URLs
 also returned byte-exact files. Root feed and candidate SHA-256 remain
 `ba5f2ae988292766ea9aafd40242e8084c7baf8f6bb0aabf8896fd142d8ec6ce`.
-The remaining final delivery check is the owner's disposable public-feed
-switch/reinstall and the subsequent exact installed receipt/file/action readback.
+A final normal-public-URL check at 15:46:19 Moscow returned HTTP 200 and the
+same exact index, with ten versions and 219 current source records. The
+post-reinstall payload/index/receipt/file/action verification passed, including
+all nine historical versions. The local ReaPack cache matches this feed and
+the private identity matches its pre-update baseline. The owner's final live
+pass and these independent checks close the release. No paid generation or
+agent-operated project changes were needed; deferred broader checks remain
+separate.
