@@ -1,20 +1,37 @@
 # Neurocast Tools
 
-The current published package is **Neurocast Tools 0.1.9**, a
+The current published package is **Neurocast Tools 0.1.10**, a
 limited-internal release for selected team members.
 
-> **Candidate accepted, 2026-11-12:** the owner passed installed 0.1.10
-> startup/login, all three IPA locales, cache reuse and five changed Help
-> entrypoints against production backend 1.15. A documentation-only candidate
-> revision corrects stale development/pending-check wording. Runtime is unchanged.
-> Public root feed remains 0.1.9 pending final publication approval. See the
-> [acceptance record](docs/2026-11-12_package_acceptance_0.1.10.md).
+> **Published, 2026-11-12:** the owner authorized promotion after installed
+> Windows production/IPA/cache and Help checks passed. The public root feed
+> promotes the documentation-corrected candidate unchanged. The disposable
+> public-feed switch and same-version reinstall/readback remain pending.
+> See the [release record](docs/2026-11-12_package_acceptance_0.1.10.md).
 
 Install/update through the repository
 [index.xml](https://raw.githubusercontent.com/Logutin/reaper-reapack-neurocast-tools/main/index.xml).
 ReaImGui remains an external prerequisite; package minimum remains REAPER 7.72+.
 
-## Current release: 0.1.9
+## Current release: 0.1.10
+
+ElevenLabs v2.1.12 adds regional IPA suggestions, selected-track previews,
+contextual sentence preview and undoable slash-delimited item replacements.
+The package includes safe TTS retry controls and six offline manuals, including
+the four newly packaged Help integrations. Status prose now reflects production
+backend 1.15 and the owner's Windows acceptance. Missing illustrations remain
+deferred; no broader platform or pronunciation-accuracy claim is made.
+
+- Source/manual pin: `fa51860c858df0c810d3d124899ec709c54216b3`.
+- Frozen corrected payload: `91e233c5be1478d72659cf1789d08c1a27ab32e6`.
+- 63 Lua files, 219 platform records, 77 Windows files and 14 Main actions.
+- All nine historical public versions preserved; native components unchanged.
+
+The owner-tested runtime is unchanged by the subsequent manual correction.
+Final corrected-manual installation readback is pending in the authorized
+`C:\extra_Reapers\Reaper_Empty_01`; no repeat paid listening test is required.
+
+## Previous release: 0.1.9
 
 ElevenLabs v2.1.7 accepts broad STS selections: empty/MIDI items and tracks
 without matching voices are skipped while eligible audio continues. The

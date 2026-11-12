@@ -1,4 +1,4 @@
-# Neurocast Tools 0.1.10 owner acceptance and manual correction
+# Neurocast Tools 0.1.10 release and acceptance
 
 > **Source snapshot: November 12, 2026.** Recheck feed, deployment and installed
 > files before publication. This record supersedes the pending deployment and
@@ -42,11 +42,11 @@ closure, syntax, binaries, 219 platform rows and the new index URLs.
 
 ## Publication handoff
 
-Public root `index.xml` remains 0.1.9 until final owner authorization. No new
-paid listening test is required: runtime is unchanged and source listening/
-Apply passed on November 11. Once publication is approved, promote the corrected
-candidate, verify the public feed, and have the owner switch the disposable to
-the public feed and reinstall 0.1.10 to receive its corrected manuals. Verify
+The owner explicitly authorized publication on November 12. Public root
+`index.xml` promotes the corrected candidate byte-for-byte as limited-internal
+0.1.10. No new paid listening test is required: runtime is unchanged and source
+listening/Apply passed on November 11. Public download verification and the
+owner disposable public-feed switch/reinstall follow publication. Verify
 77 exact installed files and 14 actions again; a same-version synchronization
 alone does not prove the manual update was installed.
 
@@ -70,5 +70,19 @@ in the disposable still match the original accepted candidate.
 
 The generated candidate index passed all 219 pinned URL/role/platform checks
 and preservation of all nine historical versions. Candidate XML SHA-256:
-`ba5f2ae988292766ea9aafd40242e8084c7baf8f6bb0aabf8896fd142d8ec6ce`. The source and corrected candidate are prepared for final
-publication approval; public root feed bytes remain unchanged.
+`ba5f2ae988292766ea9aafd40242e8084c7baf8f6bb0aabf8896fd142d8ec6ce`. The public root
+feed is now the exact same generated artifact, following final owner approval.
+No published historical version or pinned payload was modified.
+
+
+## Final disposable reinstall
+
+The owner runs `qualification/Neurocast_Tools_restore_public_feed.lua` only in
+`C:\extra_Reapers\Reaper_Empty_01`. It checks both resource and executable
+paths, restores the public URL for the existing repository and synchronizes.
+The owner then opens ReaPack Browse packages, selects Neurocast Tools and
+explicitly reinstalls 0.1.10. No uninstall or duplicate repository is needed.
+After completion, `qualification/verify_0_1_10.py --installed` must confirm all
+77 corrected files and 14 actions. Also verify public repository/cache URL,
+unchanged identity and the corrected IPA Help paragraph. This readback is
+pending until the owner completes that reinstall.
