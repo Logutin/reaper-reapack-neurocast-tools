@@ -167,9 +167,9 @@
 <p><span class="ui" data-ui-key="Help" data-ui-label="Помощь">Помощь <span class="ui-en">(Help)</span></span> открывает именно этот локальный HTML в системном браузере и доступна до входа. Интернет нужен обработке, но не чтению руководства. Если HTML отсутствовал при запуске, кнопка скрыта: восстановите файл из комплекта и перезапустите скрипт. При ошибке открытия используйте показанный в окне путь и откройте файл вручную. Для печати используйте команду печати браузера.</p>
 <p class="back"><a href="#manual-start">К началу руководства</a></p></section>
 <section id="review"><h2>Версия и проверка</h2>
-<p>Состояние исходников: <strong>28.10.2026</strong>. Руководство v1 описывает <code>automix_tool.lua v0.1.3</code>. Основа рабочего процесса — опубликованный скрипт <strong>v0.1.2</strong> в Neurocast Tools <strong>0.1.9</strong>; новая версия исходника добавляет кнопку открытия этого офлайн-руководства. Новое руководство и эта интеграция ещё не опубликованы в пакете. Номер пакета не равен версии отдельного скрипта.</p>
+<p>Состояние исходников: <strong>28.10.2026</strong>. Руководство описывает <code>automix_tool.lua v0.1.3</code>. Основа рабочего процесса — опубликованный скрипт <strong>v0.1.2</strong> в Neurocast Tools <strong>0.1.9</strong>; версия скрипта, описанная здесь, добавляет кнопку открытия этого офлайн-руководства. Руководство и кнопка справки входят в пакет Neurocast Tools 0.1.10. 12.11.2026 владелец подтвердил открытие установленной справки в изолированной Windows-установке REAPER. Это не новая проверка платной обработки, macOS или печати. Номер пакета не равен версии отдельного скрипта.</p>
 <p>После обновления скрипта сведения могут устареть. Если версия или подписи отличаются, сверьте руководство с вашей установкой. Иллюстрации будут добавлены отдельно; все основные действия уже описаны текстом. Файл можно читать без подключения к интернету.</p>
-<div class="table-wrap"><table><thead><tr><th>Проверка</th><th>Состояние</th></tr></thead><tbody><tr><td>Содержание</td><td>Написано и сверено с текущей реализацией; готово к проверке владельцем.</td></tr><tr><td>Иллюстрации и внешний вид</td><td>Иллюстрации отложены для этой текстовой редакции. Проверка в обычном/узком окне браузера и печати не заявлена как пройденная.</td></tr><tr><td>Принятие владельцем</td><td>Ожидается; ранее принятые рабочие сценарии не означают принятия нового текста.</td></tr><tr><td>Живой запуск Help и платформы</td><td>Новая интеграция требует отдельной проверки Windows/macOS. При подготовке руководства реальные проекты и серверные операции не запускались.</td></tr></tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th>Проверка</th><th>Состояние</th></tr></thead><tbody><tr><td>Содержание</td><td>Написано и сверено с текущей реализацией; готово к проверке владельцем.</td></tr><tr><td>Иллюстрации и внешний вид</td><td>Иллюстрации отложены для этой текстовой редакции. Проверка в обычном/узком окне браузера и печати не заявлена как пройденная.</td></tr><tr><td>Принятие владельцем</td><td>Ожидается; ранее принятые рабочие сценарии не означают принятия нового текста.</td></tr><tr><td>Живой запуск Help и платформы</td><td>Владелец подтвердил открытие справки из установленного кандидата 0.1.10 в Windows 12.11.2026. Проверка macOS остаётся открытой; серверная обработка в этом проходе не запускалась.</td></tr></tbody></table></div>
 <p class="small">Техническая сверка использует активные исходники Neurocast Tools и документацию работающего сервиса, полученную 28.10.2026. Это не новая проверка обработки на сервере. Оставшиеся проверки и перечень снимков ведутся отдельно от выпуска пакета.</p>
 <p class="back"><a href="#manual-start">К началу руководства</a></p></section>
 <footer class="footer">Neurocast Tools · Русское офлайн-руководство · 2026-10-28</footer>
@@ -184,12 +184,12 @@
   "maintenance": "Directly maintained HTML; no generator or secondary source of truth.",
   "source_snapshot_date": "2026-10-28",
   "source_base_commit": "14d022bc7b215c9e4527dfaca519c1a6f88a9f79",
-  "source_scope": "working tree: offline Help only added to the published workflow",
+  "source_scope": "Package 0.1.10: offline Help added to the prior published workflow; runtime unchanged during November 12 documentation correction",
   "script_version": "v0.1.3",
   "source_toolset_version": "v0.1.0",
   "published_package_version": "0.1.9",
   "published_script_version": "v0.1.2",
-  "release_status": "Text-first release preparation authorized 2026-11-11; missing captures are not release blockers. Publication and packaged owner Help checks remain separate.",
+  "release_status": "Owner passed packaged Windows Help on 2026-11-12. Documentation-only status correction follows that pass; missing captures remain deferred. Candidate 0.1.10 awaits final public-feed authorization; 0.1.9 remains the published baseline at this snapshot.",
   "source_files_sha256": {
     "scr/automix_tool.lua": "4ecf39755d777cca4baee1ffb5fd3740c3ee1f3c26fb1b8ea774e330ec7c1f57",
     "scr/modules-neurocast/auphonic_api_via_neurocast.lua": "c16048707c4826d2a616248a847c0617f7d39b765fac2671473e443e52c2e955",
@@ -273,12 +273,12 @@
     "html": "passed 2026-10-28: structure, anchors, offline references, exact UI labels, source hashes and privacy",
     "visual": "Not claimed; illustrations deferred by owner for text-first release; normal/narrow browser and print review remain separate.",
     "owner_review": "pending",
-    "live_help": "pending Windows and macOS; headless is separate",
+    "live_help": "Owner reported installed candidate 0.1.10 Help passed on Windows on 2026-11-12 in C:/extra_Reapers/Reaper_Empty_01; macOS remains pending. Documentation-only status correction follows that pass.",
     "live_workflow": "No live workflow run for this manual; dated prior evidence in engineering verification record"
   },
   "freshness_policy": "Any change to workflow, labels, defaults, limits, results, recovery, backend or source version requires a manual impact review in the same change. Update text/manifest and request replacement screenshots; do not silently mark stale material current.",
   "source_hash_format": "UTF-8 bytes with CRLF normalized to LF",
-  "manual_revision_date": "2026-11-11",
+  "manual_revision_date": "2026-11-12",
   "illustration_policy": {
     "owner_decision_date": "2026-11-11",
     "release_blocking": false,

@@ -12,7 +12,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = Path("C:/code/auphonic-mt")
-SOURCE_COMMIT = "49ef8535efa44dd8e49ad20e124fed7809d7dc51"
+SOURCE_COMMIT = "fa51860c858df0c810d3d124899ec709c54216b3"
 PREVIOUS = "48aeb1062bbe45c75656b7960f8d90375656e213"
 DISPOSABLE = Path("C:/extra_Reapers/Reaper_Empty_01")
 CHANGED = {'scr/modules-neurocast/elevenlabs_api_via_neurocast.lua', 'scr/modules-neurocast/elevenlabs_tool_languages.lua', 'scr/modules-neurocast/elevenlabs_voice_preview.lua', 'scr/elevenlabs_tool.lua', 'scr/modules-neurocast/mvsep_tool_languages.lua', 'scr/neurocast_script_aligner_tool.lua', 'scr/mvsep_tool.lua', 'scr/modules-neurocast/pronunciation_context.lua', 'scr/automix_tool.lua', 'scr/modules-neurocast/neurocast_script_aligner_tool_languages.lua', 'scr/elevenlabs_manager_tool.lua', 'scr/modules-neurocast/automix_tool_languages.lua', 'scr/modules-neurocast/pronunciation_controller.lua'}

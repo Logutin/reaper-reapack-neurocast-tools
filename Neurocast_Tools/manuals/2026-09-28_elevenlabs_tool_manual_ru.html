@@ -6,9 +6,10 @@
   <meta name="color-scheme" content="light">
   <meta name="description" content="Offline Russian operator manual for ElevenLabs Tool: Settings, project preparation, Voice Library, Account Voices, IVC, Voice Design, TTS, STS, jobs, results, errors and REAPER commands.">
   <meta name="manual-script" content="elevenlabs_tool.lua">
-  <meta name="manual-script-version" content="v2.1.7">
+  <meta name="manual-script-version" content="v2.1.12">
   <meta name="manual-sts-source-snapshot" content="2026-10-09">
-  <meta name="manual-source-snapshot" content="2026-09-28">
+  <meta name="manual-source-snapshot" content="2026-11-11">
+  <meta name="manual-revision-date" content="2026-11-12">
   <meta name="manual-status" content="draft-awaiting-owner-review">
   <title>ElevenLabs Tool — Рабочее руководство</title>
   <style>
@@ -414,7 +415,7 @@
       </table></div>
 
       <h3 id="progress-retry">Повторить или отменить</h3>
-      <div class="note caution"><strong>Снимок исходников: 2026-10-21, v2.1.8.</strong> Эти правила могут устареть. Изменение ещё не проверено в живом REAPER и не опубликовано в ReaPack.</div>
+      <div class="note caution"><strong>Снимок исходников: 2026-10-21, v2.1.8.</strong> Эти правила могут устареть. Изменение включено в v2.1.12 пакета Neurocast Tools 0.1.10. Проверка запуска и справки не подтверждает работу повторов при плохой связи: отдельная проверка такого сценария в REAPER остаётся открытой.</div>
       <p>При некоторых сетевых сбоях скрипт повторяет чтение данных или загрузку уже созданного образца с паузой. Отправленные запросы TTS, STS, Voice Design, создания голоса, IVC и OpenAI автоматически не повторяются. Когда попытки закончились или ошибка не допускает автоматического повтора, строка переходит в состояние <code class="ui">ошибка</code>.</p>
       <p><code class="ui">Повторить</code> доступно только для завершившейся с ошибкой строки, у которой есть действие повтора. Сначала прочитайте причину и восстановите соединение или вход, если это требуется. Затем нажмите кнопку у нужной строки один раз и наблюдайте её прогресс. Ручной повтор начинает новую серию попыток.</p>
       <div class="table-wrap"><table>
@@ -620,7 +621,7 @@
       <h2 id="tts-title">05 · Озвучивание текста · TTS</h2>
       <section id="tts-pronunciation" aria-labelledby="tts-pronunciation-title">
         <h3 id="tts-pronunciation-title">Помощник произношения · IPA</h3>
-        <div class="note caution"><strong>Снимок исходников: 2026-11-11, v2.1.12.</strong> Панель реализована в исходниках для локального сервера разработки. В опубликованном пакете её пока нет. Эти сведения могут устареть. Владелец подтвердил успешную проверку v2.1.11 и v2.1.12 в REAPER. Иллюстрация новой панели отложена: эта редакция использует полные текстовые инструкции; отсутствие снимка не блокирует подготовку выпуска.</div>
+        <div class="note caution"><strong>Снимок исходников: 2026-11-11, v2.1.12.</strong> Панель входит в пакет Neurocast Tools 0.1.10 и работает с основным сервером <code>https://reaper.neurocast.tech</code>. 12.11.2026 владелец подтвердил успешную проверку установленного кандидата 0.1.10: запуск v2.1.12, вход, поиск IPA для трёх региональных вариантов, повторный поиск из кэша и открытие справки. Прослушивание и применение текста проверены отдельно 11.11.2026. После обновлений сведения могут устареть. Иллюстрация панели отложена; эта редакция содержит полные текстовые инструкции.</div>
         <p>Разверните <code class="ui">Произношение / IPA</code> (<code>Pronunciation / IPA</code>) под выбором модели TTS. Помощник предлагает фонетические записи одного слова. Поиск и копирование не расходуют средства ElevenLabs и не меняют проект. Кнопка Preview у варианта создаёт платную озвучку показанного текста, без добавления аудио в проект. Для поиска нужен вход в Studio; баланс, назначенный аккаунт ElevenLabs и загруженные модели или голоса не требуются.</p>
         <ol>
           <li>Введите одно слово: до 128 символов, без пробелов и цифр; внутри слова допустимы апострофы и дефисы. Регистр и акценты сохраняются.</li>
@@ -1717,14 +1718,14 @@
     "tts_pronunciation": {
       "script_version": "v2.1.12",
       "source_snapshot_date": "2026-11-11",
-      "source_base_commit": "5df1cc86c78ce3d744b4c88bddf310655a08f85f",
-      "manual_status": "Source-aligned text-first prose; owner live v2.1.12 pass recorded. Missing capture deferred by owner; full browser/print/platform acceptance not claimed.",
-      "source_evidence": "Active contextual IPA UI and helper: ordinary word input, slash-delimited word/sentence previews and Apply, unchanged raw candidate/copy behavior. Local OpenAPI retrieved 2026-11-11 15:32:41 UTC, version 1.15-pronunciation-20261109.",
-      "live_verification": "Owner explicitly reported v2.1.11 and v2.1.12 live REAPER tests passed on 2026-11-11. Packaged update/Help and production deployment remain separate; no measured pronunciation-accuracy claim.",
+      "source_base_commit": "49ef8535efa44dd8e49ad20e124fed7809d7dc51",
+      "manual_status": "Text-first prose for package 0.1.10 and production. Owner source and packaged Windows passes recorded; missing capture deferred. Full browser/print and macOS acceptance not claimed.",
+      "source_evidence": "Active contextual IPA UI and helper: ordinary word input, slash-delimited word/sentence previews and Apply, unchanged raw candidate/copy behavior. Production OpenAPI retrieved 2026-11-12 14:46:41 Moscow from https://reaper.neurocast.tech/api_v1-json, HTTP 200, version 1.15-pronunciation-20261109, with both IPA endpoints.",
+      "live_verification": "Owner explicitly reported v2.1.11 and v2.1.12 live REAPER tests passed on 2026-11-11. On 2026-11-12 the owner reported all packaged Windows checks passed in C:/extra_Reapers/Reaper_Empty_01: startup/login against production, fr-FR/pt-BR/pt-PT lookups, cache reuse and all five changed Help entrypoints. Runtime payload 3e6419b14efd607463deec3d2ee7264ebcf83b92 was independently verified: 77 exact files, 14 Main actions, unchanged identity. This documentation correction follows that pass; no measured pronunciation-accuracy claim.",
       "screenshot_request": "tts-pronunciation-capture retained as deferred editorial backlog; nonblocking for the owner-authorized text-first release.",
       "source_sha256": "bee7a75f34d01d334e7cfc5c94f5bce9a03ad3fb17755a61a1b111bcaffe0fce",
       "module_sha256": "2aa584df90ae71afccef33988a2c7b34906019d7e1d9641d8a25a9b20a926704",
-      "review_date": "2026-11-11",
+      "review_date": "2026-11-12",
       "additional_verification": "All 13 focused Lua suites pass after exact delimiter assertions were updated: 11 context, 20 controller, 21 UI/transport, 13 actual preview groups, plus existing preview/API/auth/Voice Library/hotkey/retry/STS/Help suites. Lua syntax, 929-entry localization, manual links/hash/image preservation and whitespace checks pass. No paid calls or agent-run REAPER checks.",
       "preview_module_sha256": "9de682d493f456896b929d8ff725362ada3449c0b68083b06daad6e49c99af49",
       "context_module_sha256": "45ffdcf478fe37cbc1e21718b6aab9f869c2dea91a2af1412ae88ede15c1b9c9"
@@ -1819,9 +1820,9 @@
   "sts_screenshot_policy": "Original owner-provided PNG and authorized agent-captured JPEG bytes are embedded unchanged. Screenshot 14 and Screenshot 15 show the current v2.1.3 STS controls through clipped SVG viewports. Red arrows and numbers are separate SVG overlays. Other screenshots retain their original provenance. Current numbering includes the TTS chapter and the preceding Chapter 03, Chapter 04, Chapter 05 and Chapter 06 figures. Rejection and duplicate-voice-dialog instructions are based on active source.",
   "screenshot_numbering": "All 28 figures numbered in current document order. Stable figure IDs and original capture filenames retained. Captions, accessible titles, cross-references and manifest numbers agree; callout numbers remain local to their figure.",
   "editorial_policy": "Russian operator instructions explain what to do and why. Use exact UI labels for navigation; explain technical UI terms through their user-visible purpose. Keep implementation details in English technical metadata. Preserve owner-approved wording and screenshot originals. Show keyboard shortcuts for both Windows and Mac. Order shared foundations before everyday processing and optional voice acquisition/creation. Cross-links may lead to a later workflow; that does not make the workflow a prerequisite.",
-  "revised_date": "2026-11-11",
-  "source_base_commit": "5df1cc86c78ce3d744b4c88bddf310655a08f85f",
-  "source_state": "Reviewed v2.1.12 source on main; focused headless and explicit owner live passes recorded. Text-first release preparation authorized; missing screenshots deferred. Historical chapter evidence preserved.",
+  "revised_date": "2026-11-12",
+  "source_base_commit": "49ef8535efa44dd8e49ad20e124fed7809d7dc51",
+  "source_state": "Runtime v2.1.12 unchanged from 49ef853; owner source pass on November 11 and packaged production pass on November 12. Documentation-only correction removes obsolete development-only wording. Candidate 0.1.10 remains pending final public-feed authorization; missing illustrations deferred. Historical chapter evidence preserved.",
   "source_sha256": "bee7a75f34d01d334e7cfc5c94f5bce9a03ad3fb17755a61a1b111bcaffe0fce",
   "pending_screenshots": [
     {

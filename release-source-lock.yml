@@ -6,7 +6,7 @@ package:
   inventory: release-manifest.yml
 tracked_lua:
   repository: https://github.com/Logutin/auphonic-mt
-  commit: 49ef8535efa44dd8e49ad20e124fed7809d7dc51
+  commit: fa51860c858df0c810d3d124899ec709c54216b3
   count: 63
   policy: Changed/new Lua are byte-exact pinned source blobs; unchanged files preserve prior published bytes. Source
     versions are independent of ReaPack 0.1.10.
@@ -32,34 +32,34 @@ tracked_lua:
   - Neurocast_Tools/modules-neurocast/prompts.lua
 tracked_assets:
   repository: https://github.com/Logutin/auphonic-mt
-  commit: 49ef8535efa44dd8e49ad20e124fed7809d7dc51
+  commit: fa51860c858df0c810d3d124899ec709c54216b3
   policy: Six canonical Help manuals match pinned source blobs exactly. Original images preserved; missing new illustrations
     deferred by owner.
   files:
   - source_path: scr/manuals/2026-09-28_elevenlabs_tool_manual_ru.html
     destination: Neurocast_Tools/manuals/2026-09-28_elevenlabs_tool_manual_ru.html
-    size_bytes: 3322124
-    sha256: 062cf25c84c918074523208fc4965c6e5e5aed6196beb16530a2710c6589894c
+    size_bytes: 3323211
+    sha256: d0a0f0ca59308c1e1f12f825f7352af44e17f8a69ada6f5c1301d729b48a58ae
   - source_path: scr/manuals/2026-10-05_docx_import_tool_manual_ru.html
     destination: Neurocast_Tools/manuals/2026-10-05_docx_import_tool_manual_ru.html
     size_bytes: 1862686
     sha256: 017e9476b1b4c041cfc98b33b9298cdfb02b0184c67dacbc7dbb004b9d4848d9
   - source_path: scr/manuals/2026-10-28_automix_tool_manual_ru.html
     destination: Neurocast_Tools/manuals/2026-10-28_automix_tool_manual_ru.html
-    size_bytes: 52403
-    sha256: 172a63238212a5b8032cf7fbf5b7b7ce38f187b97640dcb7edfc26a3b822557f
+    size_bytes: 53042
+    sha256: bb83cb08fd58be760346ae7d6553d568286ebb9f1ca5b628a0e8de8d7e36b28f
   - source_path: scr/manuals/2026-10-28_mvsep_tool_manual_ru.html
     destination: Neurocast_Tools/manuals/2026-10-28_mvsep_tool_manual_ru.html
-    size_bytes: 46958
-    sha256: 1b0c26599a9cd2ca56aabdab387af30e9a097af8e086523d6b3d42c013b2a083
+    size_bytes: 47597
+    sha256: ce65fa990d2af6360aca8d41be04e5cc358b8c4792a8b7edab315777fb453748
   - source_path: scr/manuals/2026-10-28_neurocast_script_aligner_tool_manual_ru.html
     destination: Neurocast_Tools/manuals/2026-10-28_neurocast_script_aligner_tool_manual_ru.html
-    size_bytes: 44866
-    sha256: 8ee564b87868bf2dca083bbb8be5b3216d01e3118ea5dce366c0c784a256e163
+    size_bytes: 45505
+    sha256: 8f142b2ad6e4677900a1329423668c05e69cc43651f4a830172697f60f3dd26b
   - source_path: scr/manuals/2026-10-28_elevenlabs_manager_tool_manual_ru.html
     destination: Neurocast_Tools/manuals/2026-10-28_elevenlabs_manager_tool_manual_ru.html
-    size_bytes: 44777
-    sha256: 88033ee02b08eef8c001d83afbc3ae9d1a0a48dace005104251a39894d36dbf2
+    size_bytes: 45416
+    sha256: ecead692210fe6fdf2f7441b7a00d6e56e0da8167dd81ff985f71425f14cb02e
 local_windows_inputs:
   repository: https://github.com/Logutin/auphonic-mt
   policy: These local gitignored release inputs are path-, size-, and hash-pinned and are not claimed to be contained

@@ -2,12 +2,12 @@
 -- @version 0.1.10
 -- @author Slava Logutin
 -- @metapackage
--- @changelog ElevenLabs v2.1.12 adds regional IPA lookup, track-based contextual previews and undoable slash-delimited replacements. Include the prior safe TTS retry controls and four new text-first Help manuals. Requires the pronunciation backend before publication. Native components unchanged.
+-- @changelog ElevenLabs v2.1.12 adds regional IPA lookup, track-based contextual previews and undoable slash-delimited replacements. Include the prior safe TTS retry controls and four new text-first Help manuals. Production IPA/cache and packaged Windows Help checks passed on November 12; manual status corrected. Native components unchanged.
 -- @about
 --   Neurocast Tools for Windows x64, macOS x86_64, and macOS ARM64, including the local DOCX importer.
 --   ReaImGui is an external prerequisite. Package minimum: REAPER 7.72+.
---   Limited-internal candidate. The owner passed ElevenLabs v2.1.12 source live; packaged update/Help acceptance is separate.
---   Production pronunciation backend must be deployed before this candidate is promoted. Missing screenshots are deferred by owner for text-first manuals.
+--   Limited-internal package. The owner passed ElevenLabs v2.1.12 source live and candidate Windows update/Help checks against production.
+--   Production pronunciation backend 1.15 is available. Missing screenshots are deferred by owner for text-first manuals.
 --   Other-platform, difficult-network, MVSEP telemetry and Script Aligner ambiguous-create retry limitations remain separate.
 --   Source SCRIPT_VERSION/TOOLSET_VERSION values are independent of ReaPack 0.1.10.
 -- @link https://github.com/Logutin/reaper-reapack-neurocast-tools

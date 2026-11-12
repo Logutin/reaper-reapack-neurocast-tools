@@ -154,9 +154,9 @@
 <p><span class="ui" data-ui-key="Use local development" data-ui-label="Use local development">Use local development</span> предназначена только для согласованной работы с тестовым сервером. При смене сервера теряется текущий рабочий контекст; это не средство восстановления после неопределённой правки. Сначала завершите сверку.</p>
 <p><span class="ui" data-ui-key="Help" data-ui-label="Help">Help</span> открывает это русское руководство без входа и независимо от блокировки серверных действий. Если HTML отсутствовал на старте, кнопка скрыта: восстановите руководство из комплекта и перезапустите скрипт. При ошибке открытия используйте путь из сообщения вручную. Интернет для чтения и печати не нужен; для чтения/изменения серверных данных нужен.</p><p class="back"><a href="#manual-start">К началу руководства</a></p></section>
 <section id="review"><h2>Версия и проверка</h2>
-<p>Состояние исходников: <strong>28.10.2026</strong>. Руководство v1 описывает <code>elevenlabs_manager_tool.lua v0.2.3</code>. Основа рабочего процесса — опубликованный скрипт <strong>v0.2.2</strong> в Neurocast Tools <strong>0.1.9</strong>; новая версия исходника добавляет кнопку открытия этого офлайн-руководства. Новое руководство и эта интеграция ещё не опубликованы в пакете. Номер пакета не равен версии отдельного скрипта.</p>
+<p>Состояние исходников: <strong>28.10.2026</strong>. Руководство описывает <code>elevenlabs_manager_tool.lua v0.2.3</code>. Основа рабочего процесса — опубликованный скрипт <strong>v0.2.2</strong> в Neurocast Tools <strong>0.1.9</strong>; версия скрипта, описанная здесь, добавляет кнопку открытия этого офлайн-руководства. Руководство и кнопка справки входят в пакет Neurocast Tools 0.1.10. 12.11.2026 владелец подтвердил открытие установленной справки в изолированной Windows-установке REAPER. Это не новая проверка платной обработки, macOS или печати. Номер пакета не равен версии отдельного скрипта.</p>
 <p>После обновления скрипта сведения могут устареть. Если версия или подписи отличаются, сверьте руководство с вашей установкой. Иллюстрации будут добавлены отдельно; все основные действия уже описаны текстом. Файл можно читать без подключения к интернету.</p>
-<div class="table-wrap"><table><thead><tr><th>Проверка</th><th>Состояние</th></tr></thead><tbody><tr><td>Содержание</td><td>Написано и сверено с текущей реализацией; готово к проверке владельцем.</td></tr><tr><td>Иллюстрации и внешний вид</td><td>Иллюстрации отложены для этой текстовой редакции. Проверка в обычном/узком окне браузера и печати не заявлена как пройденная.</td></tr><tr><td>Принятие владельцем</td><td>Ожидается; ранее принятые рабочие сценарии не означают принятия нового текста.</td></tr><tr><td>Живой запуск Help и платформы</td><td>Новая интеграция требует отдельной проверки Windows/macOS. При подготовке руководства реальные проекты и серверные операции не запускались.</td></tr></tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th>Проверка</th><th>Состояние</th></tr></thead><tbody><tr><td>Содержание</td><td>Написано и сверено с текущей реализацией; готово к проверке владельцем.</td></tr><tr><td>Иллюстрации и внешний вид</td><td>Иллюстрации отложены для этой текстовой редакции. Проверка в обычном/узком окне браузера и печати не заявлена как пройденная.</td></tr><tr><td>Принятие владельцем</td><td>Ожидается; ранее принятые рабочие сценарии не означают принятия нового текста.</td></tr><tr><td>Живой запуск Help и платформы</td><td>Владелец подтвердил открытие справки из установленного кандидата 0.1.10 в Windows 12.11.2026. Проверка macOS остаётся открытой; серверная обработка в этом проходе не запускалась.</td></tr></tbody></table></div>
 <p class="small">Техническая сверка использует активные исходники Neurocast Tools и документацию работающего сервиса, полученную 28.10.2026. Это не новая проверка обработки на сервере. Оставшиеся проверки и перечень снимков ведутся отдельно от выпуска пакета.</p>
 <p class="back"><a href="#manual-start">К началу руководства</a></p></section>
 <footer class="footer">Neurocast Tools · Русское офлайн-руководство · 2026-10-28</footer>
@@ -171,12 +171,12 @@
   "maintenance": "Directly maintained HTML; no generator or secondary source of truth.",
   "source_snapshot_date": "2026-10-28",
   "source_base_commit": "14d022bc7b215c9e4527dfaca519c1a6f88a9f79",
-  "source_scope": "working tree: offline Help only added to the published workflow",
+  "source_scope": "Package 0.1.10: offline Help added to the prior published workflow; runtime unchanged during November 12 documentation correction",
   "script_version": "v0.2.3",
   "source_toolset_version": null,
   "published_package_version": "0.1.9",
   "published_script_version": "v0.2.2",
-  "release_status": "Text-first release preparation authorized 2026-11-11; missing captures are not release blockers. Publication and packaged owner Help checks remain separate.",
+  "release_status": "Owner passed packaged Windows Help on 2026-11-12. Documentation-only status correction follows that pass; missing captures remain deferred. Candidate 0.1.10 awaits final public-feed authorization; 0.1.9 remains the published baseline at this snapshot.",
   "source_files_sha256": {
     "scr/elevenlabs_manager_tool.lua": "e1dac58cb2ef203bbc7e4b0901ab5414a3a14094ae256980469357340a837d48",
     "scr/modules-neurocast/reaper_manager_elevenlabs_api.lua": "11218181987d1ee4431701a869b4c844ddc602e0d0d57a5a76a9486c01902ca1",
@@ -257,12 +257,12 @@
     "html": "passed 2026-10-28: structure, anchors, offline references, exact UI labels, source hashes and privacy",
     "visual": "Not claimed; illustrations deferred by owner for text-first release; normal/narrow browser and print review remain separate.",
     "owner_review": "pending",
-    "live_help": "pending Windows and macOS; headless is separate",
+    "live_help": "Owner reported installed candidate 0.1.10 Help passed on Windows on 2026-11-12 in C:/extra_Reapers/Reaper_Empty_01; macOS remains pending. Documentation-only status correction follows that pass.",
     "live_workflow": "No live workflow run for this manual; dated prior evidence in engineering verification record"
   },
   "freshness_policy": "Any change to workflow, labels, defaults, limits, results, recovery, backend or source version requires a manual impact review in the same change. Update text/manifest and request replacement screenshots; do not silently mark stale material current.",
   "source_hash_format": "UTF-8 bytes with CRLF normalized to LF",
-  "manual_revision_date": "2026-11-11",
+  "manual_revision_date": "2026-11-12",
   "illustration_policy": {
     "owner_decision_date": "2026-11-11",
     "release_blocking": false,

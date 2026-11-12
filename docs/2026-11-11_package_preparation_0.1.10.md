@@ -1,5 +1,10 @@
 # Neurocast Tools 0.1.10 preparation
 
+> **November 12 update:** production and the owner packaged Windows checks
+> passed. The [acceptance record](2026-11-12_package_acceptance_0.1.10.md)
+> supersedes pending deployment/install/Help statements below and records the
+> documentation-only candidate revision. Earlier artifact evidence is historical.
+
 > **Source snapshot: November 11, 2026.** This record becomes stale when commits,
 > running services or installation state change. Recheck them before cutover.
 

@@ -3,11 +3,12 @@
 The current published package is **Neurocast Tools 0.1.9**, a
 limited-internal release for selected team members.
 
-> **Preparation resumed, 2026-11-11:** the owner passed source v2.1.12 live,
-> authorized the existing isolated REAPER and deferred missing manual screenshots.
-> Candidate 0.1.10 is prepared from source 49ef853, payload 3e6419b. The public root feed
-> remains 0.1.9 until backend readiness, owner packaged Help acceptance and final
-> publication go-ahead. See the [candidate record](docs/2026-11-11_package_preparation_0.1.10.md).
+> **Candidate accepted, 2026-11-12:** the owner passed installed 0.1.10
+> startup/login, all three IPA locales, cache reuse and five changed Help
+> entrypoints against production backend 1.15. A documentation-only candidate
+> revision corrects stale development/pending-check wording. Runtime is unchanged.
+> Public root feed remains 0.1.9 pending final publication approval. See the
+> [acceptance record](docs/2026-11-12_package_acceptance_0.1.10.md).
 
 Install/update through the repository
 [index.xml](https://raw.githubusercontent.com/Logutin/reaper-reapack-neurocast-tools/main/index.xml).
