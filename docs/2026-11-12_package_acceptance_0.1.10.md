@@ -74,7 +74,6 @@ and preservation of all nine historical versions. Candidate XML SHA-256:
 feed is now the exact same generated artifact, following final owner approval.
 No published historical version or pinned payload was modified.
 
-
 ## Final disposable reinstall
 
 The owner runs `qualification/Neurocast_Tools_restore_public_feed.lua` only in
@@ -86,3 +85,14 @@ After completion, `qualification/verify_0_1_10.py --installed` must confirm all
 77 corrected files and 14 actions. Also verify public repository/cache URL,
 unchanged identity and the corrected IPA Help paragraph. This readback is
 pending until the owner completes that reinstall.
+
+## Public download verification
+
+Publication commit: `cf54ff947482ef781d65e2b898cce8d1cad829f3`.
+At 15:24:33 Moscow on November 12, the normal public
+`https://raw.githubusercontent.com/Logutin/reaper-reapack-neurocast-tools/main/index.xml`
+URL returned the exact promoted index. All five corrected immutable manual URLs
+also returned byte-exact files. Root feed and candidate SHA-256 remain
+`ba5f2ae988292766ea9aafd40242e8084c7baf8f6bb0aabf8896fd142d8ec6ce`.
+The remaining final delivery check is the owner's disposable public-feed
+switch/reinstall and the subsequent exact installed receipt/file/action readback.
