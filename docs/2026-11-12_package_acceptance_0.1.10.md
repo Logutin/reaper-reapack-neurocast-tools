@@ -34,8 +34,9 @@ utilities, notices and DOCX HTML remain byte-identical to the owner-tested
 payload. Source script versions remain unchanged, including ElevenLabs v2.1.12.
 The package metadata and lock/manifest identify the documentation correction.
 
-The corrected candidate feed will be regenerated from public 0.1.9 plus a new
-immutable payload commit, without changing any of the nine public versions.
+The corrected candidate feed was regenerated from public 0.1.9 plus new
+immutable payload commit `91e233c5be1478d72659cf1789d08c1a27ab32e6`, without
+changing any of the nine public versions.
 The verification command checks source/blob pins, all six manuals, dependency
 closure, syntax, binaries, 219 platform rows and the new index URLs.
 
@@ -66,3 +67,8 @@ assets, binary/notice pins, 219 records and strict ReaPack validation with zero
 failures. A direct comparison against the owner-tested candidate found changes
 only in five HTML manuals and the non-runtime package metadata. All 77 files
 in the disposable still match the original accepted candidate.
+
+The generated candidate index passed all 219 pinned URL/role/platform checks
+and preservation of all nine historical versions. Candidate XML SHA-256:
+`ba5f2ae988292766ea9aafd40242e8084c7baf8f6bb0aabf8896fd142d8ec6ce`. The source and corrected candidate are prepared for final
+publication approval; public root feed bytes remain unchanged.
